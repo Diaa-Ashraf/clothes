@@ -16,9 +16,9 @@ class DatabaseSeeder extends Seeder
             RoleAndPermissionSeeder::class,
             SettingsSeeder::class,
             AdminUserSeeder::class,
-            LuxuryProductsSeeder::class,
-            DealsSeeder::class,
-            BannersSeeder::class,
+            //LuxuryProductsSeeder::class,
+            //DealsSeeder::class,
+            //BannersSeeder::class,
         ]);
     }
 }

@@ -28,10 +28,15 @@ class OrderService
                     if (!$product) {
                         throw new Exception(__('المنتج المطلوب لم يعد متوفراً.'));
                     }
-                    if ($product->stock_quantity < $item['quantity']) {
+                    if ($product->available_stock <= 5 && $item['quantity'] > 1) {
+                        throw new Exception(__('المنتج ":product" ذو كمية محدودة بالمخزون (5 قطع أو أقل)، الحد الأقصى المسموح به هو قطعة واحدة فقط.', [
+                            'product' => $product->name,
+                        ]));
+                    }
+                    if ($product->available_stock < $item['quantity']) {
                         throw new Exception(__('الكمية المطلوبة من ":product" غير متوفرة حالياً بالمخزون (المتبقي: :stock قطعة).', [
                             'product' => $product->name,
-                            'stock' => $product->stock_quantity,
+                            'stock' => $product->available_stock,
                         ]));
                     }
                 } elseif (($item['type'] ?? '') === 'bundle') {

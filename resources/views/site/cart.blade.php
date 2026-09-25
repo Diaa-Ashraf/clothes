@@ -41,6 +41,14 @@
                  this.removeItem(key);
                  return;
              }
+
+             // Check if item has limited stock (5 pieces or less)
+             const item = this.cart.items ? this.cart.items.find(i => i.key === key) : null;
+             if (item && item.type === 'product' && (item.is_limited_stock || (item.available_stock !== undefined && item.available_stock <= 5)) && newQty > 1) {
+                 toastr.warning('{{ __("عذراً، هذا المنتج ذو كمية محدودة (5 قطع أو أقل بالمخزون)، الحد الأقصى المسموح به للطلب هو قطعة واحدة فقط.") }}');
+                 return;
+             }
+
              this.loading = true;
              $.post('{{ route('update.cart.quantity') }}', {
                  item_key: key,
@@ -197,6 +205,12 @@
                                                     </span>
                                                 </template>
                                                 <h3 class="font-bold text-sm text-[#18181B] truncate" :title="item.name" x-text="item.name"></h3>
+                                                <template x-if="item.is_limited_stock">
+                                                    <div class="mt-1 flex items-center gap-1.5 text-[11px] font-semibold text-amber-800 bg-amber-50 border border-amber-200/80 px-2 py-0.5 rounded-full w-fit">
+                                                        <span>⚠️</span>
+                                                        <span>{{ __('كمية محدودة (الحد الأقصى قطعة واحدة)') }}</span>
+                                                    </div>
+                                                </template>
                                                 <div class="sm:hidden text-xs text-[#71717A] mt-1 flex items-center gap-2">
                                                     <span class="font-bold text-[#18181B]" x-text="item.formatted_price_usd"></span>
                                                     <span>×</span>
@@ -223,7 +237,9 @@
                                                     <span class="w-8 text-center text-xs font-bold text-[#18181B] tabular-nums" x-text="item.quantity"></span>
                                                     <button type="button" 
                                                             @click="changeQuantity(item.key, item.quantity + 1)"
-                                                            class="w-7 h-7 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-[#18181B] text-xs font-bold transition-all active:scale-90 cursor-pointer">
+                                                            :class="item.is_limited_stock ? 'text-amber-600 hover:bg-amber-50' : 'text-gray-500 hover:bg-gray-100 hover:text-[#18181B]'"
+                                                            class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all active:scale-90 cursor-pointer"
+                                                            :title="item.is_limited_stock ? '{{ __('الكمية محدودة: قطعة واحدة كحد أقصى') }}' : '{{ __('زيادة الكمية') }}'">
                                                         +
                                                     </button>
                                                 </div>

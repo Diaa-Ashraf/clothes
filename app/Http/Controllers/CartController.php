@@ -101,28 +101,9 @@ class CartController extends Controller
     public function getCartPayload(): JsonResponse
     {
         $items = $this->cartService->getItems();
+        $formattedItems = $this->cartService->getDetailedItems();
         $totals = $this->cartService->getTotals();
         $subtotalUsd = (float)($totals['subtotal'] ?? 0);
-        $rate = get_exchange_rate();
-        $subtotalSyp = $subtotalUsd * $rate;
-
-        $formattedItems = [];
-        foreach ($items as $key => $item) {
-            $priceUsd = (float)$item['price'];
-            $totalUsd = (float)$item['total'];
-            $formattedItems[] = [
-                'key' => $key,
-                'id' => $item['id'],
-                'type' => $item['type'] ?? 'product',
-                'name' => $item['name'],
-                'image' => $item['image'],
-                'quantity' => (int)$item['quantity'],
-                'price_usd' => $priceUsd,
-                'formatted_price_usd' => '$' . number_format($priceUsd, 2),
-                'total_usd' => $totalUsd,
-                'formatted_total_usd' => '$' . number_format($totalUsd, 2),
-            ];
-        }
 
         $taxRate = (float)($totals['tax_rate'] ?? 0);
         $taxAmount = (float)($totals['tax_amount'] ?? 0);

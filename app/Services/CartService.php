@@ -34,8 +34,16 @@ class CartService
 
         $cart = $this->getItems();
         $key = 'product_' . $productId;
-        $currentQty = isset($cart[$key]) ? $cart[$key]['quantity'] : 0;
+        $currentQty = isset($cart[$key]) ? (int)$cart[$key]['quantity'] : 0;
         $newQty = $currentQty + $quantity;
+
+        // If product stock is 5 or less, allow only 1 piece max per customer
+        if ($product->available_stock <= 5 && $newQty > 1) {
+            return [
+                'success' => false,
+                'message' => __('عذراً، هذا المنتج ذو كمية محدودة في المخزون (5 قطع أو أقل)، الحد الأقصى المسموح به هو قطعة واحدة فقط.'),
+            ];
+        }
 
         if ($newQty > $product->available_stock) {
             return [
@@ -44,7 +52,7 @@ class CartService
             ];
         }
 
-        $price = $product->final_price;
+        $price = (float)$product->final_price;
 
         $cart[$key] = [
             'type' => 'product',
@@ -54,6 +62,8 @@ class CartService
             'original_price' => (float)$product->price,
             'image' => $product->image_url,
             'quantity' => $newQty,
+            'available_stock' => (int)$product->available_stock,
+            'is_limited_stock' => $product->available_stock <= 5,
             'total' => $price * $newQty,
         ];
 
@@ -93,7 +103,7 @@ class CartService
 
         $cart = $this->getItems();
         $key = 'bundle_' . $bundle->id;
-        $currentQty = isset($cart[$key]) ? $cart[$key]['quantity'] : 0;
+        $currentQty = isset($cart[$key]) ? (int)$cart[$key]['quantity'] : 0;
         $newQty = $currentQty + 1;
 
         $cart[$key] = [
@@ -130,7 +140,10 @@ class CartService
         $cart = $this->getItems();
 
         if (!isset($cart[$itemKey])) {
-            return ['success' => false, 'message' => __('العنصر غير موجود في السلة.')];
+            return [
+                'success' => false,
+                'message' => __('العنصر غير موجود في السلة.'),
+            ];
         }
 
         if ($quantity <= 0) {
@@ -138,18 +151,28 @@ class CartService
         }
 
         // Check stock if product
-        if ($cart[$itemKey]['type'] === 'product') {
+        if (($cart[$itemKey]['type'] ?? 'product') === 'product') {
             $product = Product::find($cart[$itemKey]['id']);
-            if ($product && $quantity > $product->available_stock) {
-                return [
-                    'success' => false,
-                    'message' => __('الكمية المتاحة في المخزون هي :count فقط', ['count' => $product->available_stock]),
-                ];
+            if ($product) {
+                // If product stock is 5 or less, maximum allowed quantity is 1
+                if ($product->available_stock <= 5 && $quantity > 1) {
+                    return [
+                        'success' => false,
+                        'message' => __('عذراً، هذا المنتج ذو كمية محدودة في المخزون (5 قطع أو أقل)، الحد الأقصى المسموح به هو قطعة واحدة فقط.'),
+                    ];
+                }
+
+                if ($quantity > $product->available_stock) {
+                    return [
+                        'success' => false,
+                        'message' => __('الكمية المتاحة في المخزون هي :count فقط', ['count' => $product->available_stock]),
+                    ];
+                }
             }
         }
 
         $cart[$itemKey]['quantity'] = $quantity;
-        $cart[$itemKey]['total'] = $cart[$itemKey]['price'] * $quantity;
+        $cart[$itemKey]['total'] = (float)$cart[$itemKey]['price'] * $quantity;
 
         Session::put($this->sessionKey, $cart);
 
@@ -158,6 +181,64 @@ class CartService
             'message' => __('تم تحديث كمية السلة بنجاح.'),
             'totals' => $this->getTotals(),
         ];
+    }
+
+    /**
+     * Get detailed items with live stock and limited stock checks
+     */
+    public function getDetailedItems(): array
+    {
+        $items = $this->getItems();
+        $productIds = collect($items)->where('type', 'product')->pluck('id')->filter()->unique();
+        $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
+
+        $formattedItems = [];
+        $cartModified = false;
+
+        foreach ($items as $key => $item) {
+            $priceUsd = (float)$item['price'];
+            $stock = 999;
+            $isProduct = ($item['type'] ?? 'product') === 'product';
+
+            if ($isProduct) {
+                $prod = $products->get($item['id']);
+                $stock = $prod ? (int)$prod->available_stock : (int)($item['available_stock'] ?? 999);
+            }
+
+            $isLimitedStock = $isProduct && ($stock <= 5);
+
+            // Safeguard: If product has limited stock and session quantity is > 1, enforce 1
+            $quantity = (int)$item['quantity'];
+            if ($isLimitedStock && $quantity > 1) {
+                $quantity = 1;
+                $items[$key]['quantity'] = 1;
+                $items[$key]['total'] = $priceUsd;
+                $cartModified = true;
+            }
+
+            $totalUsd = $priceUsd * $quantity;
+
+            $formattedItems[] = [
+                'key' => $key,
+                'id' => $item['id'],
+                'type' => $item['type'] ?? 'product',
+                'name' => $item['name'] ?? '',
+                'image' => $item['image'] ?? null,
+                'quantity' => $quantity,
+                'available_stock' => $stock,
+                'is_limited_stock' => $isLimitedStock,
+                'price_usd' => $priceUsd,
+                'formatted_price_usd' => '$' . number_format($priceUsd, 2),
+                'total_usd' => $totalUsd,
+                'formatted_total_usd' => '$' . number_format($totalUsd, 2),
+            ];
+        }
+
+        if ($cartModified) {
+            Session::put($this->sessionKey, $items);
+        }
+
+        return $formattedItems;
     }
 
     /**
@@ -195,7 +276,7 @@ class CartService
     {
         $count = 0;
         foreach ($this->getItems() as $item) {
-            $count += $item['quantity'];
+            $count += (int)($item['quantity'] ?? 0);
         }
         return $count;
     }
@@ -207,8 +288,9 @@ class CartService
     {
         $subtotal = 0.0;
         foreach ($this->getItems() as $item) {
-            $subtotal += (float)$item['total'];
+            $subtotal += (float)($item['total'] ?? 0);
         }
+    
 
         $taxRate = (float) settings('tax_rate', 0); // Configurable, default 0%
         $taxAmount = $subtotal * ($taxRate / 100);

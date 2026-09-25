@@ -10,9 +10,14 @@
      x-data="{
         quantity: 1,
         maxStock: {{ (int)($product->available_stock ?? 1) }},
+        isLimited: {{ $product->available_stock <= 5 ? 'true' : 'false' }},
         isAdding: false,
         imgZoom: false,
         increment() {
+            if (this.isLimited) {
+                toastr.warning('{{ __("عذراً، هذا المنتج ذو كمية محدودة (5 قطع أو أقل بالمخزون)، الحد الأقصى المسموح به هو قطعة واحدة فقط.") }}');
+                return;
+            }
             if (this.quantity < this.maxStock) {
                 this.quantity++;
             }
@@ -298,16 +303,24 @@
                                         <span class="w-10 sm:w-12 text-center font-bold text-sm text-[#18181B] tabular-nums select-none" x-text="quantity"></span>
                                         <button type="button" 
                                                 @click="increment()"
-                                                :disabled="quantity >= maxStock"
-                                                class="w-8 h-8 rounded-lg sm:rounded-xl bg-white border border-gray-200 text-gray-700 hover:border-[#C5A059] hover:text-[#C5A059] flex items-center justify-center font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer active:scale-95">
+                                                :disabled="quantity >= maxStock || isLimited"
+                                                class="w-8 h-8 rounded-lg sm:rounded-xl bg-white border border-gray-200 text-gray-700 hover:border-[#C5A059] hover:text-[#C5A059] flex items-center justify-center font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer active:scale-95"
+                                                :title="isLimited ? '{{ __('الكمية محدودة: قطعة واحدة كحد أقصى') }}' : '{{ __('زيادة الكمية') }}'">
                                             +
                                         </button>
                                     </div>
                                 </div>
 
-                                <span class="text-xs text-[#71717A]">
-                                    {{ __('الحد الأقصى للطلب:') }} <span class="font-bold text-[#18181B]" x-text="maxStock"></span>
-                                </span>
+                                <template x-if="isLimited">
+                                    <span class="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200/80 px-2.5 py-1 rounded-full">
+                                        ⚠️ {{ __('كمية محدودة بالمخزون (الحد الأقصى قطعة واحدة فقط)') }}
+                                    </span>
+                                </template>
+                                <template x-if="!isLimited">
+                                    <span class="text-xs text-[#71717A]">
+                                        {{ __('الحد الأقصى للطلب:') }} <span class="font-bold text-[#18181B]" x-text="maxStock"></span>
+                                    </span>
+                                </template>
                             </div>
 
                             {{-- Action Buttons: Buy Now, Add to Cart & Direct WhatsApp --}}
