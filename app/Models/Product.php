@@ -4,24 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Astrotomic\Translatable\Contracts\Translatable as TranslatableContract;
-use Astrotomic\Translatable\Translatable;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Builder;
 
-class Product extends Model implements TranslatableContract
+class Product extends Model
 {
-    use Translatable, HasFactory;
-
-    public array $translatedAttributes = ['name', 'description', 'keywords'];
+    use HasFactory;
 
     protected static function booted(): void
     {
         static::deleting(function (Product $product) {
-            $product->translations()->delete();
             $product->deals()->delete();
             $product->reviews()->delete();
             $product->wishlistItems()->delete();
@@ -30,6 +25,9 @@ class Product extends Model implements TranslatableContract
     }
 
     protected $fillable = [
+        'name',
+        'description',
+        'keywords',
         'category_id',
         'image',
         'quantity',
@@ -38,6 +36,8 @@ class Product extends Model implements TranslatableContract
         'discount_price',
         'slug',
         'featured',
+        'is_weighted',
+        'unit_type',
         'is_active',
         'is_available',
         'sort_order',
@@ -46,9 +46,11 @@ class Product extends Model implements TranslatableContract
     ];
 
     protected $casts = [
+        'keywords' => 'array',
         'price' => 'decimal:2',
         'discount_price' => 'decimal:2',
         'featured' => 'boolean',
+        'is_weighted' => 'boolean',
         'is_active' => 'boolean',
         'is_available' => 'boolean',
         'quantity' => 'integer',
@@ -192,12 +194,12 @@ class Product extends Model implements TranslatableContract
 
     public function getFormattedPriceAttribute(): string
     {
-        return '$' . number_format($this->price, 2);
+        return number_format($this->price, 2) . ' ج.م';
     }
 
     public function getFormattedFinalPriceAttribute(): string
     {
-        return '$' . number_format($this->final_price, 2);
+        return number_format($this->final_price, 2) . ' ج.م';
     }
 
     public function getAvailableStockAttribute(): int

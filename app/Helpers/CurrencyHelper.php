@@ -2,17 +2,17 @@
 
 if (!function_exists('get_active_currency')) {
     /**
-     * Get the active currency code (Always USD)
+     * Get the active currency code (Always EGP)
      */
     function get_active_currency(): string
     {
-        return 'USD';
+        return 'EGP';
     }
 }
 
 if (!function_exists('get_exchange_rate')) {
     /**
-     * Get exchange rate (Fixed to 1.0 for USD)
+     * Get exchange rate (Fixed to 1.0 for EGP)
      */
     function get_exchange_rate(): float
     {
@@ -22,21 +22,21 @@ if (!function_exists('get_exchange_rate')) {
 
 if (!function_exists('convert_price')) {
     /**
-     * Convert USD price to current target currency
+     * Convert price (Identity 1:1 for EGP)
      */
-    function convert_price(float $amountInUsd, ?string $currency = null): float
+    function convert_price(float $amount, ?string $currency = null): float
     {
-        return $amountInUsd;
+        return $amount;
     }
 }
 
 if (!function_exists('format_currency')) {
     /**
-     * Format a price in USD ($XX.XX)
+     * Format a price in Egyptian Pounds (XX.XX ج.م)
      */
-    function format_currency(?float $amountInUsd, ?string $currency = null): string
+    function format_currency(?float $amount, ?string $currency = null): string
     {
-        $amountInUsd = (float) ($amountInUsd ?? 0.0);
-        return '$' . number_format($amountInUsd, 2);
+        $amount = (float) ($amount ?? 0.0);
+        return number_format($amount, 2) . ' ج.م';
     }
 }

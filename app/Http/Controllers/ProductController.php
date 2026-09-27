@@ -19,6 +19,7 @@ class ProductController extends Controller
         $query = Product::query()
             ->select([
                 'id',
+                'name',
                 'category_id',
                 'image',
                 'price',
@@ -27,9 +28,11 @@ class ProductController extends Controller
                 'featured',
                 'is_active',
                 'is_available',
+                'is_weighted',
+                'unit_type',
                 'created_at',
             ])
-            ->with(['translations', 'category.translations'])
+            ->with(['category'])
             ->latest();
 
         if ($request->filled('category_id')) {
@@ -42,18 +45,18 @@ class ProductController extends Controller
 
         if ($request->filled('search')) {
             $search = trim($request->search);
-            $query->whereTranslationLike('name', "%{$search}%");
+            $query->where('name', 'LIKE', "%{$search}%");
         }
 
         $products = $query->paginate(12)->withQueryString();
-        $categories = Category::with('translations')->get();
+        $categories = Category::all();
 
         return view('admin.products.index', compact('products', 'categories'));
     }
 
     public function create(): View
     {
-        $categories = Category::with('translations')->get();
+        $categories = Category::all();
         return view('admin.products.create', compact('categories'));
     }
 
@@ -67,12 +70,14 @@ class ProductController extends Controller
             $data['image'] = 'default.jpg';
         }
 
-        $data['slug'] = Str::slug($request->input('en.name') ?: $request->input('ar.name')) . '-' . time();
+        $data['slug'] = Str::slug($request->input('name') ?? 'product-' . time()) . '-' . time();
         $data['stock_quantity'] = (int)($data['stock_quantity'] ?? $data['quantity'] ?? 0);
         $data['quantity'] = $data['stock_quantity'];
         $data['is_available'] = $data['stock_quantity'] > 0;
         $data['featured'] = $request->boolean('featured', false);
         $data['is_active'] = $request->boolean('is_active', true);
+        $data['is_weighted'] = $request->boolean('is_weighted', false);
+        $data['unit_type'] = $request->input('unit_type', 'piece');
         $data['created_by'] = auth()->id();
 
         Product::create($data);
@@ -82,8 +87,8 @@ class ProductController extends Controller
 
     public function edit(int $id): View
     {
-        $product = Product::with(['translations', 'category'])->findOrFail($id);
-        $categories = Category::with('translations')->get();
+        $product = Product::with(['category'])->findOrFail($id);
+        $categories = Category::all();
 
         return view('admin.products.edit', compact('product', 'categories'));
     }
@@ -106,6 +111,8 @@ class ProductController extends Controller
         $data['is_available'] = $stock > 0;
         $data['featured'] = $request->boolean('featured', $product->featured);
         $data['is_active'] = $request->boolean('is_active', $product->is_active);
+        $data['is_weighted'] = $request->boolean('is_weighted', false);
+        $data['unit_type'] = $request->input('unit_type', 'piece');
         $data['updated_by'] = auth()->id();
 
         $product->update($data);

@@ -22,12 +22,20 @@ class UpdateCategoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ar.name'=>'required',
-            'en.name'=>'required',
-            'ar.description'=>'required',
-            'en.description'=>'required',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'slug'=>'required'
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+            'slug' => 'nullable|string|max:255',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'اسم القسم مطلوب.',
+            'name.max' => 'اسم القسم يجب ألا يتجاوز 255 حرفاً.',
+            'image.image' => 'يجب أن يكون الملف المرفوع صورة.',
+            'image.max' => 'حجم الصورة لا يجب أن يتجاوز 2 ميجابايت.',
         ];
     }
 }

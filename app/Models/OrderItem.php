@@ -18,11 +18,16 @@ class OrderItem extends Model
         'price',
         'total_price',
         'quantity',
+        'portion_type',
+        'portion_label',
+        'custom_amount',
+        'notes',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
         'total_price' => 'decimal:2',
+        'custom_amount' => 'decimal:2',
         'quantity' => 'integer',
     ];
 

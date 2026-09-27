@@ -17,7 +17,7 @@ class Banner extends Model
         'position',
         'status',
     ];
-    
+
     // Helper to get image URL
     public function getImageUrlAttribute(): ?string
     {

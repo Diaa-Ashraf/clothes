@@ -22,13 +22,21 @@ class StoreCategoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ar.name'=>'required',
-            'en.name'=>'required',
-            'slug'=>'required',
-            'ar.description'=>'required',
-            'en.description'=>'required',
-            'image'=>'required',
-            
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'slug' => 'nullable|string|max:255',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'اسم القسم مطلوب.',
+            'name.max' => 'اسم القسم يجب ألا يتجاوز 255 حرفاً.',
+            'image.required' => 'صورة القسم مطلوبة.',
+            'image.image' => 'يجب أن يكون الملف المرفوع صورة.',
+            'image.max' => 'حجم الصورة لا يجب أن يتجاوز 2 ميجابايت.',
         ];
     }
 }

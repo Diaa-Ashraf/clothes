@@ -71,8 +71,7 @@ class AnalyticsRepository
 
         $productIds = $topItems->pluck('product_id')->toArray();
         $products = Product::query()
-            ->select(['id', 'image', 'price', 'slug'])
-            ->with(['translations'])
+            ->select(['id', 'name', 'image', 'price', 'slug'])
             ->whereIn('id', $productIds)
             ->get()
             ->keyBy('id');
@@ -85,6 +84,40 @@ class AnalyticsRepository
                 'image' => $product?->image_url,
                 'total_sold' => (int)$item->total_sold,
                 'total_revenue' => (float)$item->total_revenue,
+            ];
+        })->toArray();
+    }
+
+    /**
+     * Get branch-level performance & order statistics
+     */
+    public function getBranchPerformance(): array
+    {
+        $branches = \App\Models\Branch::select(['id', 'name', 'phone', 'address'])->get();
+
+        $branchStats = Order::query()
+            ->select(
+                'branch_id',
+                DB::raw('COUNT(*) as total_orders'),
+                DB::raw('SUM(CASE WHEN status != "cancelled" THEN total_price ELSE 0 END) as total_revenue'),
+                DB::raw('SUM(CASE WHEN status = "delivered" THEN 1 ELSE 0 END) as delivered_count'),
+                DB::raw('SUM(CASE WHEN status = "pending" OR status = "under_review" THEN 1 ELSE 0 END) as active_count')
+            )
+            ->groupBy('branch_id')
+            ->get()
+            ->keyBy('branch_id');
+
+        return $branches->map(function ($branch) use ($branchStats) {
+            $stat = $branchStats->get($branch->id);
+            return [
+                'id' => $branch->id,
+                'name' => $branch->name,
+                'phone' => $branch->phone,
+                'address' => $branch->address,
+                'total_orders' => (int)($stat?->total_orders ?? 0),
+                'total_revenue' => (float)($stat?->total_revenue ?? 0.0),
+                'delivered_count' => (int)($stat?->delivered_count ?? 0),
+                'active_count' => (int)($stat?->active_count ?? 0),
             ];
         })->toArray();
     }
@@ -211,13 +244,92 @@ class AnalyticsRepository
                 ];
             }
 
-            // 6. Top Selling Products
+            // 6. Branch Level Analytics & Revenue breakdown
+            $branches = \App\Models\Branch::select(['id', 'name', 'phone', 'address'])->get();
+            $branchStats = Order::query()
+                ->select(
+                    'branch_id',
+                    DB::raw('COUNT(*) as total_orders'),
+                    DB::raw('SUM(CASE WHEN status != "cancelled" THEN total_price ELSE 0 END) as total_revenue'),
+                    DB::raw('SUM(CASE WHEN status = "delivered" THEN 1 ELSE 0 END) as delivered_count'),
+                    DB::raw('SUM(CASE WHEN status IN ("pending", "under_review", "processing", "ready_for_pickup", "on_the_way") THEN 1 ELSE 0 END) as active_count'),
+                    DB::raw('SUM(CASE WHEN delivery_type = "delivery" THEN 1 ELSE 0 END) as delivery_orders'),
+                    DB::raw('SUM(CASE WHEN delivery_type = "pickup" THEN 1 ELSE 0 END) as pickup_orders')
+                )
+                ->where('created_at', '>=', $startDate)
+                ->groupBy('branch_id')
+                ->get()
+                ->keyBy('branch_id');
+
+            // Today's specific branch performance
+            $todayBranchStats = Order::query()
+                ->select(
+                    'branch_id',
+                    DB::raw('COUNT(*) as today_orders'),
+                    DB::raw('SUM(CASE WHEN status != "cancelled" THEN total_price ELSE 0 END) as today_revenue')
+                )
+                ->whereDate('created_at', Carbon::today())
+                ->groupBy('branch_id')
+                ->get()
+                ->keyBy('branch_id');
+
+            $branchMetrics = $branches->map(function ($branch) use ($branchStats, $todayBranchStats, $totalSales) {
+                $stat = $branchStats->get($branch->id);
+                $todayStat = $todayBranchStats->get($branch->id);
+                $rev = (float)($stat?->total_revenue ?? 0.0);
+                $orders = (int)($stat?->total_orders ?? 0);
+                $share = $totalSales > 0 ? round(($rev / $totalSales) * 100, 1) : 0;
+                $todayRev = (float)($todayStat?->today_revenue ?? 0.0);
+                $todayOrders = (int)($todayStat?->today_orders ?? 0);
+
+                return [
+                    'id' => $branch->id,
+                    'name' => $branch->name,
+                    'phone' => $branch->phone,
+                    'address' => $branch->address,
+                    'total_orders' => $orders,
+                    'total_revenue' => $rev,
+                    'today_revenue' => $todayRev,
+                    'today_orders' => $todayOrders,
+                    'delivered_count' => (int)($stat?->delivered_count ?? 0),
+                    'active_count' => (int)($stat?->active_count ?? 0),
+                    'delivery_orders' => (int)($stat?->delivery_orders ?? 0),
+                    'pickup_orders' => (int)($stat?->pickup_orders ?? 0),
+                    'sales_share' => $share,
+                    'avg_order_value' => $orders > 0 ? round($rev / $orders, 2) : 0,
+                ];
+            })->sortByDesc('total_revenue')->values()->toArray();
+
+            // Unassigned / Direct delivery orders (orders with no specific branch)
+            $unassignedStat = $branchStats->get(null);
+            $unassignedTodayStat = $todayBranchStats->get(null);
+            $unassignedRev = (float)($unassignedStat?->total_revenue ?? 0.0);
+            $unassignedOrders = (int)($unassignedStat?->total_orders ?? 0);
+            if ($unassignedOrders > 0) {
+                $branchMetrics[] = [
+                    'id' => 0,
+                    'name' => 'طلبات التوصيل المركزي / بدون تحديد فرع',
+                    'phone' => '-',
+                    'address' => 'توصيل مباشر من المخزن الرئيسي',
+                    'total_orders' => $unassignedOrders,
+                    'total_revenue' => $unassignedRev,
+                    'today_revenue' => (float)($unassignedTodayStat?->today_revenue ?? 0.0),
+                    'today_orders' => (int)($unassignedTodayStat?->today_orders ?? 0),
+                    'delivered_count' => (int)($unassignedStat?->delivered_count ?? 0),
+                    'active_count' => (int)($unassignedStat?->active_count ?? 0),
+                    'delivery_orders' => (int)($unassignedStat?->delivery_orders ?? 0),
+                    'pickup_orders' => (int)($unassignedStat?->pickup_orders ?? 0),
+                    'sales_share' => $totalSales > 0 ? round(($unassignedRev / $totalSales) * 100, 1) : 0,
+                    'avg_order_value' => $unassignedOrders > 0 ? round($unassignedRev / $unassignedOrders, 2) : 0,
+                ];
+            }
+
+            // 7. Top Selling Products
             $topProducts = $this->getTopProducts(6);
 
-            // 7. Inventory & Stock Status Alerts
+            // 8. Inventory & Stock Status Alerts
             $lowStockProducts = Product::query()
-                ->select(['id', 'stock_quantity', 'quantity', 'price', 'slug', 'image'])
-                ->with(['translations'])
+                ->select(['id', 'name', 'stock_quantity', 'quantity', 'price', 'slug', 'image'])
                 ->where(function ($q) {
                     $q->whereBetween('stock_quantity', [1, 5])
                       ->orWhereBetween('quantity', [1, 5]);
@@ -246,6 +358,7 @@ class AnalyticsRepository
                 'cancelled_orders' => $cancelledOrdersCount,
                 'avg_order_value' => $averageOrderValue,
                 'orders_by_status' => $ordersByStatus,
+                'branch_metrics' => $branchMetrics,
                 'whatsapp' => [
                     'total' => $totalWhatsappClicks,
                     'checkout' => $checkoutClicks,

@@ -21,8 +21,11 @@ class UpdateOrderStatusRequest extends FormRequest
                 'string',
                 Rule::in([
                     Order::STATUS_PENDING,
+                    Order::STATUS_UNDER_REVIEW,
                     Order::STATUS_CONFIRMED,
                     Order::STATUS_PROCESSING,
+                    Order::STATUS_READY_FOR_PICKUP,
+                    Order::STATUS_ON_THE_WAY,
                     Order::STATUS_SHIPPED,
                     Order::STATUS_DELIVERED,
                     Order::STATUS_CANCELLED,
@@ -37,7 +40,6 @@ class UpdateOrderStatusRequest extends FormRequest
         return [
             'status.required' => 'حالة الطلب مطلوبة.',
             'status.in' => 'حالة الطلب المختارة غير صالحة.',
-            'cancel_reason.required_if' => 'يرجى تدوين سبب إلغاء الطلب.',
             'cancel_reason.max' => 'سبب الإلغاء يجب ألا يتجاوز 500 حرف.',
         ];
     }

@@ -42,8 +42,7 @@ class BundleController extends Controller
     public function create(): View
     {
         $products = Product::query()
-            ->select(['id', 'price'])
-            ->with('translations')
+            ->select(['id', 'name', 'price'])
             ->active()
             ->get();
 
@@ -83,8 +82,7 @@ class BundleController extends Controller
     {
         $bundle = Bundle::with('products')->findOrFail($id);
         $products = Product::query()
-            ->select(['id', 'price'])
-            ->with('translations')
+            ->select(['id', 'name', 'price'])
             ->active()
             ->get();
 

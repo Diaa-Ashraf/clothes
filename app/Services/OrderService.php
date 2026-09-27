@@ -17,8 +17,8 @@ class OrderService
     public function createOrder(array $customerData, array $cartItems, array $totals, ?User $user = null): Order
     {
         return DB::transaction(function () use ($customerData, $cartItems, $totals, $user) {
-            $currency = get_active_currency();
-            $exchangeRate = get_exchange_rate();
+            $currency = function_exists('get_active_currency') ? get_active_currency() : 'EGP';
+            $exchangeRate = function_exists('get_exchange_rate') ? get_exchange_rate() : 1.0;
             $customerName = trim($customerData['name'] ?? '') ?: ($user?->name ?? __('عميل مباشر'));
 
             // 1. Validate stock availability before making any changes
@@ -51,16 +51,27 @@ class OrderService
                 }
             }
 
+            // Determine initial status based on payment method
+            $paymentMethod = $customerData['payment_method'] ?? Order::PAYMENT_METHOD_CASH;
+            $initialStatus = ($paymentMethod === Order::PAYMENT_METHOD_INSTAPAY)
+                ? Order::STATUS_UNDER_REVIEW
+                : Order::STATUS_PENDING;
+
             // 2. Create the order record
             $order = Order::create([
-                'order_number' => $this->generateOrderNumber(),
+                'public_order_id' => $customerData['public_order_id'] ?? $this->generatePublicOrderId(),
+                'order_number' => $customerData['order_number'] ?? $this->generateOrderNumber(),
                 'user_id' => $user?->id,
                 'customer_name' => $customerName,
                 'total_price' => (float)($totals['grand_total'] ?? 0),
-                'status' => Order::STATUS_PENDING,
+                'status' => $customerData['status'] ?? $initialStatus,
+                'delivery_type' => $customerData['delivery_type'] ?? Order::DELIVERY_TYPE_DELIVERY,
+                'branch_id' => $customerData['branch_id'] ?? null,
                 'address' => $customerData['address'] ?? '',
                 'phone' => $customerData['phone'] ?? '',
-                'payment_method' => 'whatsapp_checkout',
+                'payment_method' => $paymentMethod,
+                'payment_proof_image' => $customerData['payment_proof_image'] ?? null,
+                'instapay_reference' => $customerData['instapay_reference'] ?? null,
                 'notes' => $customerData['notes'] ?? null,
                 'currency' => $currency,
                 'exchange_rate' => $exchangeRate,
@@ -74,6 +85,10 @@ class OrderService
                         'price' => $item['price'],
                         'total_price' => $item['total'],
                         'quantity' => $item['quantity'],
+                        'portion_type' => $item['portion_type'] ?? 'piece',
+                        'portion_label' => $item['portion_label'] ?? null,
+                        'custom_amount' => $item['custom_amount'] ?? null,
+                        'notes' => $item['notes'] ?? null,
                     ]);
 
                     // Deduct stock
@@ -126,7 +141,7 @@ class OrderService
 
             if ($status === Order::STATUS_CONFIRMED) {
                 $updateData['confirmed_at'] = now();
-            } elseif ($status === Order::STATUS_SHIPPED) {
+            } elseif (in_array($status, [Order::STATUS_SHIPPED, Order::STATUS_ON_THE_WAY, Order::STATUS_READY_FOR_PICKUP])) {
                 $updateData['shipped_at'] = now();
             } elseif ($status === Order::STATUS_DELIVERED) {
                 $updateData['delivered_at'] = now();
@@ -188,14 +203,24 @@ class OrderService
      */
     public function generateOrderNumber(): string
     {
-        $prefix = 'RGL-' . date('Ymd') . '-';
-        $random = strtoupper(Str::random(4));
-        $number = $prefix . $random;
-
-        while (Order::where('order_number', $number)->exists()) {
+        $prefix = 'TWH-' . date('Ymd') . '-';
+        do {
             $number = $prefix . strtoupper(Str::random(4));
-        }
+        } while (Order::where('order_number', $number)->exists());
 
         return $number;
+    }
+
+    /**
+     * Generate unique public order ID (e.g. TWH-20260926-XXXX)
+     */
+    public function generatePublicOrderId(): string
+    {
+        $prefix = 'TWH-' . date('Ymd') . '-';
+        do {
+            $candidate = $prefix . strtoupper(Str::random(4));
+        } while (Order::where('public_order_id', $candidate)->exists());
+
+        return $candidate;
     }
 }

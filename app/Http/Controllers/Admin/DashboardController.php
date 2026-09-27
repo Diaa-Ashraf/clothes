@@ -17,7 +17,8 @@ class DashboardController extends Controller
         $metrics = $this->analyticsRepo->getDashboardMetrics();
         $topProducts = $this->analyticsRepo->getTopProducts(5);
         $whatsappChart = $this->analyticsRepo->getWhatsappClicksChart(7);
+        $branchStats = $this->analyticsRepo->getBranchPerformance();
 
-        return view('admin.index', compact('metrics', 'topProducts', 'whatsappChart'));
+        return view('admin.index', compact('metrics', 'topProducts', 'whatsappChart', 'branchStats'));
     }
 }

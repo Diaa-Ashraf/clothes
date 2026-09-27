@@ -5,15 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
 use App\Models\Category;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Http\Request;
-use PhpParser\Node\Stmt\Catch_;
 use Illuminate\Support\Facades\Storage;
-use App\Helpers\StorageHelper;
-
-
-
+use Illuminate\Support\Str;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class CategoryController extends Controller
 {
@@ -25,11 +20,10 @@ class CategoryController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): \Illuminate\View\View
+    public function index(): View
     {
         $categories = Category::query()
-            ->select(['id', 'slug', 'image', 'created_at'])
-            ->with(['translations'])
+            ->select(['id', 'name', 'slug', 'image', 'created_at'])
             ->withCount('products')
             ->latest()
             ->paginate(15);
@@ -40,23 +34,22 @@ class CategoryController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(): View
     {
-
         return view('admin.category.create');
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreCategoryRequest $request)
+    public function store(StoreCategoryRequest $request): RedirectResponse
     {
         $data = $request->safe()->except('image');
 
         if (empty($data['slug'])) {
-            $data['slug'] = \Illuminate\Support\Str::slug($request->input('en.name') ?? $request->input('ar.name') ?? 'category-' . time());
+            $data['slug'] = Str::slug($request->input('name') ?? 'category-' . time());
         } else {
-            $data['slug'] = \Illuminate\Support\Str::slug($data['slug']);
+            $data['slug'] = Str::slug($data['slug']);
         }
 
         if ($request->hasFile('image')) {
@@ -65,7 +58,7 @@ class CategoryController extends Controller
 
         Category::create($data);
 
-        return redirect()->route('categories.index')->with('success', __('Category created successfully!'));
+        return redirect()->route('admin.categories.index')->with('success', __('تم إنشاء القسم بنجاح!'));
     }
 
     /**
@@ -76,22 +69,20 @@ class CategoryController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Category $category)
-
+    public function edit(Category $category): View
     {
-
         return view('admin.category.edit', compact('category'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateCategoryRequest $request, Category $category)
+    public function update(UpdateCategoryRequest $request, Category $category): RedirectResponse
     {
         $data = $request->safe()->except('image');
 
         if (!empty($data['slug'])) {
-            $data['slug'] = \Illuminate\Support\Str::slug($data['slug']);
+            $data['slug'] = Str::slug($data['slug']);
         }
 
         if ($request->hasFile('image')) {
@@ -103,19 +94,19 @@ class CategoryController extends Controller
 
         $category->update($data);
 
-        return redirect()->route('categories.index')->with('success', __('Category updated successfully!'));
+        return redirect()->route('admin.categories.index')->with('success', __('تم تحديث القسم بنجاح!'));
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Category $category)
+    public function destroy(Category $category): RedirectResponse
     {
-
-       $category->translations()->delete();
-        Storage::delete($category->image);
+        if ($category->image) {
+            Storage::disk('public')->delete($category->image);
+        }
 
         $category->delete();
-        return redirect()->route('categories.index')->with('success', __('Category deleted successfully!'));
+        return redirect()->route('admin.categories.index')->with('success', __('تم حذف القسم بنجاح!'));
     }
 }

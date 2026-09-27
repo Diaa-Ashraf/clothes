@@ -36,12 +36,9 @@ class UpdateProductRequest extends FormRequest
     {
         return [
             'category_id' => 'required|exists:categories,id',
-            'ar.name' => 'required|string|max:255',
-            'en.name' => 'nullable|string|max:255',
-            'ar.description' => 'nullable|string',
-            'en.description' => 'nullable|string',
-            'ar.keywords' => 'nullable',
-            'en.keywords' => 'nullable',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'keywords' => 'nullable',
             'price' => 'required|numeric|min:0',
             'discount_price' => 'nullable|numeric|min:0|lt:price',
             'stock_quantity' => 'required|integer|min:0',
@@ -50,6 +47,8 @@ class UpdateProductRequest extends FormRequest
             'slug' => 'nullable|string|max:255',
             'featured' => 'nullable',
             'is_active' => 'nullable',
+            'is_weighted' => 'nullable',
+            'unit_type' => 'nullable|string|in:kg,piece,gram,liter',
         ];
     }
 
@@ -61,8 +60,8 @@ class UpdateProductRequest extends FormRequest
         return [
             'category_id.required' => 'يرجى اختيار القسم أو التصنيف للمنتج.',
             'category_id.exists' => 'التصنيف المختار غير موجود.',
-            'ar.name.required' => 'يرجى إدخال اسم المنتج باللغة العربية.',
-            'ar.name.max' => 'اسم المنتج طويل جداً (الحد الأقصى 255 حرف).',
+            'name.required' => 'يرجى إدخال اسم المنتج.',
+            'name.max' => 'اسم المنتج طويل جداً (الحد الأقصى 255 حرف).',
             'price.required' => 'يرجى تحديد سعر المنتج.',
             'price.numeric' => 'يجب أن يكون السعر رقماً صحيحاً أو عشرياً.',
             'price.min' => 'لا يمكن أن يكون السعر أقل من صفر.',

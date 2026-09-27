@@ -22,9 +22,14 @@ class SettingController extends Controller
         $groupedSettings = [
             'general' => $this->settingsService->getGroup('general'),
             'contact' => $this->settingsService->getGroup('contact'),
+            'payments' => $this->settingsService->getGroup('payments'),
+            'shipping' => $this->settingsService->getGroup('shipping'),
+            'announcements' => $this->settingsService->getGroup('announcements'),
             'social' => $this->settingsService->getGroup('social'),
+            'seo' => $this->settingsService->getGroup('seo'),
+            'policies' => $this->settingsService->getGroup('policies'),
             'features' => $this->settingsService->getGroup('features'),
-            'checkout' => $this->settingsService->getGroup('checkout'),
+            'magazine' => $this->settingsService->getGroup('magazine'),
         ];
 
         return view('admin.settings.index', compact('settings', 'groupedSettings'));
@@ -56,12 +61,23 @@ class SettingController extends Controller
             $this->settingsService->set('site_favicon', $faviconPath, 'general', 'image');
         }
 
+        // Handle OG Image upload (social sharing card)
+        if ($request->hasFile('og_image')) {
+            $oldOgImage = Setting::where('key', 'og_image')->value('value');
+            if ($oldOgImage && Storage::disk('public')->exists($oldOgImage)) {
+                Storage::disk('public')->delete($oldOgImage);
+            }
+
+            $ogPath = $request->file('og_image')->store('settings', 'public');
+            $this->settingsService->set('og_image', $ogPath, 'seo', 'image');
+        }
+
         foreach ($inputSettings as $key => $value) {
             $this->settingsService->set($key, $value);
         }
 
         $this->settingsService->clearCache();
 
-        return redirect()->back()->with('success', __('تم حفظ وتحديث الإعدادات بنجاح.'));
+        return redirect()->back()->with('success', __('تم حفظ وتحديث جميع إعدادات المتجر بنجاح.'));
     }
 }

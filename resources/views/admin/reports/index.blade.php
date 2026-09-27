@@ -1,161 +1,327 @@
 @extends('layouts.admin')
 
-@section('title', __('التقارير الشاملة ومؤشرات الأداء'))
+@section('title', __('التقارير الشاملة وتحليلات أداء الفروع والمبيعات'))
 
 @section('content')
-<div class="space-y-6 sm:space-y-8">
+<div class="space-y-6 sm:space-y-8" x-data="{ viewMode: 'chart', activeBranchTab: 'all' }">
 
     {{-- 1. Top Header Bar & Period Filter --}}
-    <div class="bg-white border border-[#EADBCC] rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="bg-white border border-orange-100 rounded-3xl p-6 sm:p-8 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-            <div class="flex items-center gap-2 mb-1">
-                <span class="text-xs font-bold text-[#C5A059] uppercase tracking-wider">📊 Analytics & Performance Reports</span>
+            <div class="flex items-center gap-2 mb-1.5">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-gradient-to-r from-red-600 to-orange-500 text-white shadow-xs">
+                    <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                    <span>لوحة التقارير المالية ومبيعات فروع العامرية</span>
+                </span>
             </div>
-            <h1 class="font-cinzel text-2xl sm:text-3xl font-bold text-[#18181B]">
-                {{ __('التقارير الشاملة وتحليلات الأداء') }}
+            <h1 class="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
+                {{ __('التقارير المالية وتحليلات أداء الفروع') }}
             </h1>
-            <p class="text-xs sm:text-sm text-[#71717A] mt-1">
-                {{ __('تقارير دقيقة ومحدثة حول المبيعات، إيرادات المتجر، تحويلات واتساب، وحركة المخزون.') }}
+            <p class="text-xs sm:text-sm text-gray-500 font-medium mt-1">
+                {{ __('إيرادات كل فرع، مبيعات اليوم، حركة الطلبات، ونشاط مندوبي التوصيل ومجلة العروض.') }}
             </p>
         </div>
 
-        {{-- Period Filters (Cached per day/period for high performance) --}}
-        <div class="flex items-center gap-1.5 bg-[#F8F6F2] border border-[#EADBCC] p-1.5 rounded-2xl shrink-0 overflow-x-auto no-scrollbar">
+        {{-- Period Filters --}}
+        <div class="flex items-center gap-1.5 bg-canvas-base border border-orange-200 p-1.5 rounded-2xl shrink-0 overflow-x-auto no-scrollbar shadow-xs">
             <a href="{{ route('admin.reports.index', ['period' => 'today']) }}" 
-               class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap {{ $period === 'today' ? 'bg-[#C5A059] text-white shadow-xs' : 'text-[#71717A] hover:text-[#18181B]' }}">
+               class="px-4 py-2 rounded-xl text-xs font-black transition-all whitespace-nowrap {{ $period === 'today' ? 'bg-red-600 text-white shadow-sm' : 'text-gray-600 hover:text-gray-900 hover:bg-white' }}">
                 {{ __('اليوم') }}
             </a>
             <a href="{{ route('admin.reports.index', ['period' => 'week']) }}" 
-               class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap {{ $period === 'week' ? 'bg-[#C5A059] text-white shadow-xs' : 'text-[#71717A] hover:text-[#18181B]' }}">
+               class="px-4 py-2 rounded-xl text-xs font-black transition-all whitespace-nowrap {{ $period === 'week' ? 'bg-red-600 text-white shadow-sm' : 'text-gray-600 hover:text-gray-900 hover:bg-white' }}">
                 {{ __('هذا الأسبوع') }}
             </a>
             <a href="{{ route('admin.reports.index', ['period' => 'month']) }}" 
-               class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap {{ $period === 'month' ? 'bg-[#C5A059] text-white shadow-xs' : 'text-[#71717A] hover:text-[#18181B]' }}">
+               class="px-4 py-2 rounded-xl text-xs font-black transition-all whitespace-nowrap {{ $period === 'month' ? 'bg-red-600 text-white shadow-sm' : 'text-gray-600 hover:text-gray-900 hover:bg-white' }}">
                 {{ __('هذا الشهر') }}
             </a>
             <a href="{{ route('admin.reports.index', ['period' => 'year']) }}" 
-               class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap {{ $period === 'year' ? 'bg-[#C5A059] text-white shadow-xs' : 'text-[#71717A] hover:text-[#18181B]' }}">
+               class="px-4 py-2 rounded-xl text-xs font-black transition-all whitespace-nowrap {{ $period === 'year' ? 'bg-red-600 text-white shadow-sm' : 'text-gray-600 hover:text-gray-900 hover:bg-white' }}">
                 {{ __('هذا العام') }}
             </a>
             <a href="{{ route('admin.reports.index', ['period' => 'all']) }}" 
-               class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap {{ $period === 'all' ? 'bg-[#C5A059] text-white shadow-xs' : 'text-[#71717A] hover:text-[#18181B]' }}">
+               class="px-4 py-2 rounded-xl text-xs font-black transition-all whitespace-nowrap {{ $period === 'all' ? 'bg-red-600 text-white shadow-sm' : 'text-gray-600 hover:text-gray-900 hover:bg-white' }}">
                 {{ __('الكل') }}
             </a>
         </div>
     </div>
 
-    {{-- 2. Four Master KPI Metric Cards --}}
+    {{-- 2. Master KPI Summary Metric Cards --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         
         <!-- Total Sales Revenue -->
-        <div class="bg-white border border-[#EADBCC] rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+        <div class="bg-white border border-orange-100 rounded-3xl p-5 sm:p-6 shadow-xs flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-3">
-                <span class="text-xs font-bold text-[#71717A]">{{ __('إجمالي المبيعات المحققة') }}</span>
-                <div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center text-lg">
+                <span class="text-xs font-bold text-gray-500">{{ __('إجمالي المبيعات المحققة') }}</span>
+                <div class="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center text-lg shadow-xs">
                     💰
                 </div>
             </div>
             <div>
-                <div class="text-2xl sm:text-3xl font-black text-[#18181B] font-cinzel">
-                    ${{ number_format($reports['total_sales'], 2) }}
+                <div class="text-2xl sm:text-3xl font-black text-gray-900 font-sans">
+                    {{ number_format($reports['total_sales'], 2) }} ج.م
                 </div>
-                <div class="mt-2 text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg inline-flex items-center gap-1 font-bold">
+                <div class="mt-2 text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-xl inline-flex items-center gap-1 font-bold">
                     <span>✓</span>
-                    <span>{{ __('الطلبات المؤكدة وغير الملغاة') }}</span>
+                    <span>{{ __('الطلبات المعتمدة وغير الملغاة') }}</span>
                 </div>
             </div>
         </div>
 
-        <!-- Total Orders & Fulfillment Rate -->
-        <div class="bg-white border border-[#EADBCC] rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+        <!-- Total Orders Count -->
+        <div class="bg-white border border-orange-100 rounded-3xl p-5 sm:p-6 shadow-xs flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-3">
-                <span class="text-xs font-bold text-[#71717A]">{{ __('عدد الطلبات المسجلة') }}</span>
-                <div class="w-10 h-10 rounded-xl bg-[#F8F6F2] border border-[#EADBCC] text-[#C5A059] flex items-center justify-center text-lg">
+                <span class="text-xs font-bold text-gray-500">{{ __('عدد الطلبات المسجلة') }}</span>
+                <div class="w-11 h-11 rounded-2xl bg-orange-50 border border-orange-200 text-orange-600 flex items-center justify-center text-lg shadow-xs">
                     📦
                 </div>
             </div>
             <div>
-                <div class="text-2xl sm:text-3xl font-black text-[#18181B] font-cinzel">
-                    {{ number_format($reports['total_orders']) }}
+                <div class="text-2xl sm:text-3xl font-black text-gray-900 font-sans">
+                    {{ number_format($reports['total_orders']) }} طلب
                 </div>
-                <div class="mt-2 text-[11px] text-[#71717A] flex items-center justify-between font-medium">
-                    <span>{{ __('المسلّمة:') }} <strong class="text-emerald-700">{{ $reports['delivered_orders'] }}</strong></span>
-                    <span>{{ __('الملغاة:') }} <strong class="text-rose-700">{{ $reports['cancelled_orders'] }}</strong></span>
+                <div class="mt-2 text-[11px] text-gray-600 flex items-center justify-between font-bold bg-canvas-base px-2.5 py-1 rounded-xl border border-orange-100">
+                    <span>{{ __('مسلّمة:') }} <strong class="text-emerald-700">{{ $reports['delivered_orders'] }}</strong></span>
+                    <span>•</span>
+                    <span>{{ __('ملغاة:') }} <strong class="text-rose-600">{{ $reports['cancelled_orders'] }}</strong></span>
                 </div>
             </div>
         </div>
 
         <!-- Average Order Value (AOV) -->
-        <div class="bg-white border border-[#EADBCC] rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+        <div class="bg-white border border-orange-100 rounded-3xl p-5 sm:p-6 shadow-xs flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-3">
-                <span class="text-xs font-bold text-[#71717A]">{{ __('متوسط قيمة الطلب (AOV)') }}</span>
-                <div class="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center text-lg">
-                    📈
+                <span class="text-xs font-bold text-gray-500">{{ __('متوسط قيمة الطلب (AOV)') }}</span>
+                <div class="w-11 h-11 rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center text-lg shadow-xs">
+                    📊
                 </div>
             </div>
             <div>
-                <div class="text-2xl sm:text-3xl font-black text-[#C5A059] font-cinzel">
-                    ${{ number_format($reports['avg_order_value'], 2) }}
+                <div class="text-2xl sm:text-3xl font-black text-red-600 font-sans">
+                    {{ number_format($reports['avg_order_value'], 2) }} ج.م
                 </div>
-                <div class="mt-2 text-[11px] text-[#71717A] font-medium">
+                <div class="mt-2 text-[11px] text-gray-500 font-medium">
                     <span>{{ __('معدل الإنفاق لكل زبون في الفترة') }}</span>
                 </div>
             </div>
         </div>
 
-        <!-- WhatsApp Checkout Conversion -->
-        <div class="bg-white border border-[#EADBCC] rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+        <!-- WhatsApp Funnel Conversion -->
+        <div class="bg-white border border-orange-100 rounded-3xl p-5 sm:p-6 shadow-xs flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-3">
-                <span class="text-xs font-bold text-[#71717A]">{{ __('معدل تحويل واتساب') }}</span>
-                <div class="w-10 h-10 rounded-xl bg-[#25D366]/10 border border-[#25D366]/30 text-[#25D366] flex items-center justify-center text-lg">
+                <span class="text-xs font-bold text-gray-500">{{ __('معدل إتمام طلبات واتساب') }}</span>
+                <div class="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center text-lg shadow-xs">
                     💬
                 </div>
             </div>
             <div>
-                <div class="text-2xl sm:text-3xl font-black text-[#18181B] font-cinzel">
+                <div class="text-2xl sm:text-3xl font-black text-emerald-700 font-sans">
                     {{ $reports['whatsapp']['conversion_rate'] }}%
                 </div>
-                <div class="mt-2 text-[11px] text-[#71717A] flex items-center justify-between font-medium">
-                    <span>{{ __('نقرات الإتمام:') }} <strong class="text-[#18181B]">{{ $reports['whatsapp']['checkout'] }}</strong></span>
-                    <span>{{ __('استفسارات:') }} <strong class="text-[#18181B]">{{ $reports['whatsapp']['inquiry'] }}</strong></span>
+                <div class="mt-2 text-[11px] text-gray-500 flex items-center justify-between font-medium">
+                    <span>{{ __('نقرات إتمام:') }} <strong class="text-gray-900">{{ $reports['whatsapp']['checkout'] }}</strong></span>
+                    <span>{{ __('استفسار:') }} <strong class="text-gray-900">{{ $reports['whatsapp']['inquiry'] }}</strong></span>
                 </div>
             </div>
         </div>
 
     </div>
 
-    {{-- 3. Visual Charts & Sales Trend Grid --}}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" x-data="{ viewMode: 'chart' }">
+    {{-- 3. BRAND NEW: Detailed Branch Performance Breakdown (فروع ألبان وسوبرماركت التوحيد بالعامرية) --}}
+    <div class="bg-white border border-orange-100 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
+        
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-orange-100 pb-5">
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="text-xs font-black text-red-600 uppercase tracking-wider">🏢 أداء الفروع الأربعة بالعامرية</span>
+                </div>
+                <h2 class="text-xl sm:text-2xl font-black text-gray-900">
+                    {{ __('تقرير مبيعات وإيرادات كل فرع') }}
+                </h2>
+                <p class="text-xs text-gray-500 font-medium mt-1">
+                    {{ __('متابعة دقيقة لمبيعات اليوم وإجمالي إيرادات الفترة لكل فرع من فروع العامرية.') }}
+                </p>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <span class="px-3.5 py-1.5 rounded-xl bg-orange-50 border border-orange-200 text-orange-800 text-xs font-black">
+                    {{ count($reports['branch_metrics'] ?? []) }} فروع مسجلة
+                </span>
+            </div>
+        </div>
+
+        {{-- 4 Master Branch Cards Grid --}}
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+            @forelse($reports['branch_metrics'] ?? [] as $index => $bm)
+                <div class="p-5 rounded-3xl border transition-all flex flex-col justify-between space-y-4 relative overflow-hidden {{ $index === 0 && $bm['total_revenue'] > 0 ? 'bg-gradient-to-b from-orange-50/70 to-white border-orange-300 ring-2 ring-orange-400/20 shadow-sm' : 'bg-canvas-base/40 border-orange-100 hover:border-orange-200 hover:bg-white shadow-2xs' }}">
+                    
+                    @if($index === 0 && $bm['total_revenue'] > 0)
+                        <div class="absolute top-3 end-3">
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-orange-500 text-white uppercase tracking-wider shadow-2xs">
+                                🥇 الأعلى مبيعاً
+                            </span>
+                        </div>
+                    @endif
+
+                    <div>
+                        <!-- Branch Title & Address -->
+                        <div class="flex items-center gap-2.5 mb-2">
+                            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-red-600 to-orange-500 text-white flex items-center justify-center text-base font-black shadow-xs shrink-0">
+                                🏬
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <h4 class="text-sm font-black text-gray-900 truncate" title="{{ $bm['name'] }}">
+                                    {{ $bm['name'] }}
+                                </h4>
+                                <span class="text-[10px] text-gray-500 block truncate">{{ $bm['phone'] ?: 'بدون هاتف' }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Today Sales Highlight Pill -->
+                        <div class="p-3 rounded-2xl bg-white border border-orange-100 shadow-2xs mb-3 space-y-1">
+                            <div class="flex justify-between items-center text-[11px]">
+                                <span class="text-gray-500 font-bold">مبيعات الفرع اليوم:</span>
+                                <span class="font-black text-emerald-700 font-sans text-sm">{{ number_format($bm['today_revenue'], 2) }} ج.م</span>
+                            </div>
+                            <div class="flex justify-between items-center text-[10px] text-gray-400">
+                                <span>طلبات اليوم:</span>
+                                <span class="font-bold text-gray-700">{{ $bm['today_orders'] }} طلب</span>
+                            </div>
+                        </div>
+
+                        <!-- Period Sales & Total Orders -->
+                        <div class="space-y-2 text-xs">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-500 font-medium">مبيعات الفترة ({{ $period }}):</span>
+                                <span class="font-black text-gray-900 font-sans text-sm">{{ number_format($bm['total_revenue'], 2) }} ج.م</span>
+                            </div>
+
+                            <div class="flex justify-between items-center text-[11px]">
+                                <span class="text-gray-500">إجمالي الطلبات:</span>
+                                <span class="font-bold text-gray-800">{{ $bm['total_orders'] }} (مسلّم: {{ $bm['delivered_count'] }})</span>
+                            </div>
+
+                            <div class="flex justify-between items-center text-[11px]">
+                                <span class="text-gray-500">توصيل / استلام فرع:</span>
+                                <span class="font-bold text-gray-700">{{ $bm['delivery_orders'] }} 🛵 / {{ $bm['pickup_orders'] }} 🛍️</span>
+                            </div>
+
+                            <div class="flex justify-between items-center text-[11px]">
+                                <span class="text-gray-500">متوسط الطلب (AOV):</span>
+                                <span class="font-bold text-red-600 font-sans">{{ number_format($bm['avg_order_value'], 2) }} ج.م</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Revenue Share Progress Bar -->
+                    <div class="pt-3 border-t border-orange-100/70 space-y-1.5">
+                        <div class="flex justify-between items-center text-[10px] font-bold">
+                            <span class="text-gray-500">الحصة من مبيعات المتجر:</span>
+                            <span class="text-red-700 font-sans">{{ $bm['sales_share'] }}%</span>
+                        </div>
+                        <div class="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-red-600 to-orange-500 rounded-full transition-all duration-500"
+                                 style="width: {{ min(100, max(4, $bm['sales_share'])) }}%"></div>
+                        </div>
+                    </div>
+
+                </div>
+            @empty
+                <div class="col-span-4 p-8 text-center text-gray-500">
+                    لا توجد بيانات فروع مسجلة حالياً.
+                </div>
+            @endforelse
+        </div>
+
+        {{-- Detailed Branches Table --}}
+        <div class="border border-orange-100 rounded-2xl overflow-hidden">
+            <div class="bg-canvas-base px-5 py-3 border-b border-orange-100 flex items-center justify-between">
+                <span class="text-xs font-black text-gray-900">جدول مقارنة أداء الفروع التفصيلي</span>
+                <span class="text-[11px] text-gray-500 font-medium">محدّث لحظياً</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-start text-xs">
+                    <thead class="bg-white text-gray-500 uppercase text-[11px] border-b border-orange-100">
+                        <tr>
+                            <th class="py-3 px-5 text-start font-bold">الفرع</th>
+                            <th class="py-3 px-4 text-start font-bold">مبيعات اليوم</th>
+                            <th class="py-3 px-4 text-start font-bold">مبيعات الفترة</th>
+                            <th class="py-3 px-4 text-start font-bold">الطلبات الكلية</th>
+                            <th class="py-3 px-4 text-start font-bold">الطلبات المسلّمة</th>
+                            <th class="py-3 px-4 text-start font-bold">متوسط الطلب</th>
+                            <th class="py-3 px-5 text-start font-bold">الحصة من المبيعات</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-orange-100">
+                        @foreach($reports['branch_metrics'] ?? [] as $bm)
+                            <tr class="hover:bg-orange-50/30 transition-colors">
+                                <td class="py-3.5 px-5 font-black text-gray-900 flex items-center gap-2">
+                                    <span class="text-sm">🏬</span>
+                                    <span>{{ $bm['name'] }}</span>
+                                </td>
+                                <td class="py-3.5 px-4 font-black text-emerald-700 font-sans">
+                                    {{ number_format($bm['today_revenue'], 2) }} ج.م
+                                </td>
+                                <td class="py-3.5 px-4 font-black text-gray-900 font-sans">
+                                    {{ number_format($bm['total_revenue'], 2) }} ج.م
+                                </td>
+                                <td class="py-3.5 px-4 font-bold text-gray-700">
+                                    {{ $bm['total_orders'] }} طلب
+                                </td>
+                                <td class="py-3.5 px-4">
+                                    <span class="px-2 py-0.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold">
+                                        {{ $bm['delivered_count'] }} طلب
+                                    </span>
+                                </td>
+                                <td class="py-3.5 px-4 font-bold text-red-600 font-sans">
+                                    {{ number_format($bm['avg_order_value'], 2) }} ج.م
+                                </td>
+                                <td class="py-3.5 px-5 font-bold text-gray-800">
+                                    <span class="px-2.5 py-1 rounded-full bg-orange-50 border border-orange-200 text-orange-800 text-[11px] font-black">
+                                        {{ $bm['sales_share'] }}%
+                                    </span>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    {{-- 4. Visual Charts & Sales Trend Grid --}}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {{-- Revenue & Orders Trend (Interactive Chart + Detailed Table) --}}
-        <div class="lg:col-span-2 bg-white border border-[#EADBCC] rounded-2xl p-5 sm:p-6 shadow-sm space-y-5 flex flex-col justify-between">
+        <div class="lg:col-span-2 bg-white border border-orange-100 rounded-3xl p-6 sm:p-8 shadow-xs space-y-5 flex flex-col justify-between">
             <div>
                 {{-- Chart Header with Switcher --}}
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#EADBCC] pb-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-orange-100 pb-4">
                     <div class="flex items-center gap-2.5">
-                        <div class="w-9 h-9 rounded-xl bg-[#F8F6F2] border border-[#EADBCC] text-[#C5A059] flex items-center justify-center text-base shrink-0">
+                        <div class="w-10 h-10 rounded-2xl bg-orange-50 border border-orange-200 text-red-600 flex items-center justify-center text-lg shrink-0 shadow-xs">
                             📈
                         </div>
                         <div>
-                            <h3 class="font-bold text-[#18181B] text-base leading-tight">{{ __('حركة المبيعات والطلبات اليومية') }}</h3>
-                            <p class="text-[11px] text-[#71717A] mt-0.5">{{ __('متابعة نمو الإيرادات وحجم الطلبات على مدار الأيام') }}</p>
+                            <h3 class="font-black text-gray-900 text-base leading-tight">{{ __('حركة المبيعات والطلبات اليومية') }}</h3>
+                            <p class="text-[11px] text-gray-500 font-medium mt-0.5">{{ __('متابعة نمو الإيرادات وحجم الطلبات على مدار الأيام') }}</p>
                         </div>
                     </div>
 
                     <div class="flex items-center gap-2">
-                        {{-- Quick View Toggle --}}
-                        <div class="flex items-center bg-[#F8F6F2] border border-[#EADBCC] p-1 rounded-xl text-xs font-semibold">
+                        <div class="flex items-center bg-canvas-base border border-orange-200 p-1 rounded-xl text-xs font-black">
                             <button type="button" 
                                     @click="viewMode = 'chart'"
-                                    :class="viewMode === 'chart' ? 'bg-[#C5A059] text-white shadow-xs' : 'text-[#71717A] hover:text-[#18181B]'"
+                                    :class="viewMode === 'chart' ? 'bg-red-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900'"
                                     class="px-3 py-1 rounded-lg transition-all cursor-pointer">
-                                📊 {{ __('رسم بياني') }}
+                                {{ __('رسم بياني') }}
                             </button>
                             <button type="button" 
                                     @click="viewMode = 'table'"
-                                    :class="viewMode === 'table' ? 'bg-[#C5A059] text-white shadow-xs' : 'text-[#71717A] hover:text-[#18181B]'"
+                                    :class="viewMode === 'table' ? 'bg-red-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900'"
                                     class="px-3 py-1 rounded-lg transition-all cursor-pointer">
-                                📋 {{ __('جدول تفصيلي') }}
+                                {{ __('جدول تفصيلي') }}
                             </button>
                         </div>
                     </div>
@@ -165,29 +331,27 @@
                 @php
                     $trendRevenueTotal = array_sum(array_column($reports['daily_trend'] ?? [], 'daily_revenue'));
                     $trendOrdersTotal = array_sum(array_column($reports['daily_trend'] ?? [], 'orders_count'));
-                    $trendDaysCount = count($reports['daily_trend'] ?? []);
-                    $activeDaysCount = count(array_filter($reports['daily_trend'] ?? [], fn($d) => ($d['daily_revenue'] > 0 || $d['orders_count'] > 0)));
                 @endphp
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3 my-4">
-                    <div class="p-2.5 sm:p-3 bg-[#FAF8F5] border border-[#EADBCC] rounded-xl flex items-center gap-3">
-                        <span class="text-base sm:text-lg shrink-0">💵</span>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 my-4">
+                    <div class="p-3 bg-canvas-base border border-orange-100 rounded-2xl flex items-center gap-3">
+                        <span class="text-xl">💰</span>
                         <div class="min-w-0">
-                            <span class="text-[10px] sm:text-[11px] text-[#71717A] block truncate">{{ __('إجمالي إيراد الفترة:') }}</span>
-                            <span class="text-xs sm:text-sm font-black text-[#18181B] font-cinzel truncate block">${{ number_format($trendRevenueTotal, 2) }}</span>
+                            <span class="text-[10px] text-gray-500 font-bold block">{{ __('إجمالي إيراد الفترة:') }}</span>
+                            <span class="text-xs sm:text-sm font-black text-gray-900 font-sans block truncate">{{ number_format($trendRevenueTotal, 2) }} ج.م</span>
                         </div>
                     </div>
-                    <div class="p-2.5 sm:p-3 bg-[#FAF8F5] border border-[#EADBCC] rounded-xl flex items-center gap-3">
-                        <span class="text-base sm:text-lg shrink-0">📦</span>
+                    <div class="p-3 bg-canvas-base border border-orange-100 rounded-2xl flex items-center gap-3">
+                        <span class="text-xl">📦</span>
                         <div class="min-w-0">
-                            <span class="text-[10px] sm:text-[11px] text-[#71717A] block truncate">{{ __('إجمالي طلبات الفترة:') }}</span>
-                            <span class="text-xs sm:text-sm font-black text-[#18181B] font-cinzel truncate block">{{ number_format($trendOrdersTotal) }} {{ __('طلب') }}</span>
+                            <span class="text-[10px] text-gray-500 font-bold block">{{ __('إجمالي الطلبات:') }}</span>
+                            <span class="text-xs sm:text-sm font-black text-gray-900 font-sans block truncate">{{ number_format($trendOrdersTotal) }} {{ __('طلب') }}</span>
                         </div>
                     </div>
-                    <div class="col-span-2 sm:col-span-1 p-2.5 sm:p-3 bg-[#FAF8F5] border border-[#EADBCC] rounded-xl flex items-center gap-3">
-                        <span class="text-base sm:text-lg shrink-0">📅</span>
+                    <div class="col-span-2 sm:col-span-1 p-3 bg-canvas-base border border-orange-100 rounded-2xl flex items-center gap-3">
+                        <span class="text-xl">🏪</span>
                         <div class="min-w-0">
-                            <span class="text-[10px] sm:text-[11px] text-[#71717A] block truncate">{{ __('الأيام ذات النشاط:') }}</span>
-                            <span class="text-xs sm:text-sm font-bold text-[#C5A059] truncate block">{{ $activeDaysCount }} / {{ $trendDaysCount }} {{ __('يوم') }}</span>
+                            <span class="text-[10px] text-gray-500 font-bold block">{{ __('المبيعات حسب الفروع:') }}</span>
+                            <span class="text-xs sm:text-sm font-black text-red-600 block truncate">{{ count($reports['branch_metrics'] ?? []) }} فروع</span>
                         </div>
                     </div>
                 </div>
@@ -198,236 +362,196 @@
                 </div>
 
                 {{-- View 2: Detailed Day-by-Day Table --}}
-                <div x-show="viewMode === 'table'" x-cloak style="display: none;" class="pt-2">
-                    <div class="border border-[#EADBCC] rounded-xl overflow-hidden max-h-80 overflow-y-auto admin-scrollbar">
-                        <table class="w-full text-right text-xs">
-                            <thead class="bg-[#FAF8F5] text-[#71717A] border-b border-[#EADBCC] sticky top-0 z-10 font-bold">
-                                <tr>
-                                    <th class="p-3">{{ __('التاريخ') }}</th>
-                                    <th class="p-3 text-center">{{ __('عدد الطلبات') }}</th>
-                                    <th class="p-3 text-end">{{ __('الإيراد المحقق') }}</th>
-                                    <th class="p-3 text-end">{{ __('متوسط الطلب') }}</th>
+                <div x-show="viewMode === 'table'" class="overflow-x-auto max-h-80 overflow-y-auto border border-orange-100 rounded-2xl">
+                    <table class="w-full text-start text-xs">
+                        <thead class="bg-canvas-base text-gray-500 sticky top-0 uppercase text-[11px] border-b border-orange-100">
+                            <tr>
+                                <th class="py-2.5 px-4 text-start font-bold">{{ __('التاريخ') }}</th>
+                                <th class="py-2.5 px-4 text-center font-bold">{{ __('عدد الطلبات') }}</th>
+                                <th class="py-2.5 px-4 text-end font-bold">{{ __('المبيعات اليومية') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-orange-100">
+                            @foreach(array_reverse($reports['daily_trend'] ?? []) as $day)
+                                <tr class="hover:bg-orange-50/30 transition-colors">
+                                    <td class="py-2.5 px-4 font-bold text-gray-900 font-sans">
+                                        {{ $day['date'] }}
+                                    </td>
+                                    <td class="py-2.5 px-4 text-center">
+                                        <span class="px-2 py-0.5 rounded-full {{ $day['orders_count'] > 0 ? 'bg-orange-100 text-orange-800 font-bold' : 'text-gray-400' }}">
+                                            {{ $day['orders_count'] }}
+                                        </span>
+                                    </td>
+                                    <td class="py-2.5 px-4 text-end font-black text-gray-900 font-sans">
+                                        {{ number_format($day['daily_revenue'], 2) }} ج.م
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100">
-                                @forelse(array_reverse($reports['daily_trend']) as $row)
-                                    @php
-                                        $rowAvg = $row['orders_count'] > 0 ? ($row['daily_revenue'] / $row['orders_count']) : 0;
-                                        $hasActivity = $row['orders_count'] > 0 || $row['daily_revenue'] > 0;
-                                    @endphp
-                                    <tr class="hover:bg-[#FAF8F5]/60 transition-colors {{ $hasActivity ? 'font-semibold' : 'text-gray-400' }}">
-                                        <td class="p-3 flex items-center gap-2">
-                                            <span class="w-2 h-2 rounded-full {{ $hasActivity ? 'bg-emerald-500' : 'bg-gray-300' }}"></span>
-                                            <span>{{ \Carbon\Carbon::parse($row['date'])->translatedFormat('l, d M Y') }}</span>
-                                        </td>
-                                        <td class="p-3 text-center">
-                                            @if($row['orders_count'] > 0)
-                                                <span class="px-2.5 py-0.5 rounded-full bg-[#18181B] text-white text-[11px] font-bold">
-                                                    {{ $row['orders_count'] }}
-                                                </span>
-                                            @else
-                                                <span class="text-gray-300">-</span>
-                                            @endif
-                                        </td>
-                                        <td class="p-3 text-end font-cinzel text-sm {{ $row['daily_revenue'] > 0 ? 'text-[#C5A059] font-bold' : 'text-gray-400' }}">
-                                            ${{ number_format($row['daily_revenue'], 2) }}
-                                        </td>
-                                        <td class="p-3 text-end font-cinzel text-xs text-[#71717A]">
-                                            ${{ number_format($rowAvg, 2) }}
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="4" class="p-8 text-center text-[#71717A]">
-                                            {{ __('لا توجد سجلات مبيعات في هذا النطاق.') }}
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
-            </div>
 
-            <div class="pt-3 border-t border-[#EADBCC] flex items-center justify-between text-xs text-[#71717A]">
-                <span class="flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <span>{{ __('البيانات تستثني الطلبات الملغاة لضمان دقة الإيراد') }}</span>
-                </span>
-                <span class="font-bold text-[#18181B]">{{ $trendDaysCount }} {{ __('يوماً في النطاق') }}</span>
             </div>
         </div>
 
-        {{-- Order Status Breakdown & Funnel --}}
-        <div class="bg-white border border-[#EADBCC] rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col justify-between">
+        {{-- Order Status Donut Breakdown --}}
+        <div class="bg-white border border-orange-100 rounded-3xl p-6 sm:p-8 shadow-xs flex flex-col justify-between space-y-4">
             <div>
-                <div class="flex items-center justify-between border-b border-[#EADBCC] pb-3 mb-4">
-                    <h3 class="font-bold text-[#18181B] text-base flex items-center gap-2">
-                        <span>📊</span>
-                        <span>{{ __('حالات الطلبات ونسب التنفيذ') }}</span>
-                    </h3>
+                <div class="flex items-center gap-2.5 border-b border-orange-100 pb-4">
+                    <div class="w-10 h-10 rounded-2xl bg-orange-50 border border-orange-200 text-orange-600 flex items-center justify-center text-lg shadow-xs">
+                        🎯
+                    </div>
+                    <div>
+                        <h3 class="font-black text-gray-900 text-base leading-tight">{{ __('توزيع حالات الطلبات') }}</h3>
+                        <p class="text-[11px] text-gray-500 font-medium mt-0.5">{{ __('مراحل الطلبات المسجلة خلال الفترة') }}</p>
+                    </div>
                 </div>
 
-                <div class="space-y-3">
+                <div class="relative w-full h-52 my-3">
+                    <canvas id="orderStatusChart" class="w-full h-full"></canvas>
+                </div>
+
+                {{-- Status Pills list --}}
+                <div class="space-y-2 pt-2 border-t border-orange-100 text-xs">
                     @php
-                        $statuses = [
-                            'pending' => ['label' => 'قيد الانتظار', 'color' => 'bg-amber-500', 'textColor' => 'text-amber-700', 'badge' => 'bg-amber-50 text-amber-700 border-amber-200'],
-                            'confirmed' => ['label' => 'مؤكدة وجارية', 'color' => 'bg-sky-500', 'textColor' => 'text-sky-700', 'badge' => 'bg-sky-50 text-sky-700 border-sky-200'],
-                            'delivered' => ['label' => 'تم التسليم بنجاح', 'color' => 'bg-emerald-500', 'textColor' => 'text-emerald-700', 'badge' => 'bg-emerald-50 text-emerald-700 border-emerald-200'],
-                            'cancelled' => ['label' => 'ملغاة', 'color' => 'bg-rose-500', 'textColor' => 'text-rose-700', 'badge' => 'bg-rose-50 text-rose-700 border-rose-200'],
+                        $statusMeta = [
+                            'delivered' => ['label' => 'تم التسليم', 'color' => 'bg-emerald-500', 'textColor' => 'text-emerald-700'],
+                            'confirmed' => ['label' => 'تم التأكيد', 'color' => 'bg-blue-500', 'textColor' => 'text-blue-700'],
+                            'processing' => ['label' => 'قيد التجهيز', 'color' => 'bg-amber-500', 'textColor' => 'text-amber-700'],
+                            'pending' => ['label' => 'قيد الانتظار', 'color' => 'bg-orange-500', 'textColor' => 'text-orange-700'],
+                            'cancelled' => ['label' => 'ملغي', 'color' => 'bg-rose-500', 'textColor' => 'text-rose-700'],
                         ];
                     @endphp
 
-                    @foreach($statuses as $stKey => $stMeta)
+                    @foreach($statusMeta as $sKey => $sVal)
                         @php
-                            $stData = $reports['orders_by_status'][$stKey] ?? null;
-                            $count = $stData['count'] ?? 0;
-                            $amount = (float)($stData['total_amount'] ?? 0.0);
-                            $percent = $reports['total_orders'] > 0 ? round(($count / $reports['total_orders']) * 100) : 0;
+                            $count = $reports['orders_by_status'][$sKey]['count'] ?? 0;
+                            $amt = $reports['orders_by_status'][$sKey]['total_amount'] ?? 0;
                         @endphp
-                        <div class="p-3 rounded-xl border border-[#EADBCC]/60 bg-[#FAF8F5]/60 hover:bg-[#FAF8F5] transition-colors space-y-2">
-                            <div class="flex items-center justify-between text-xs font-bold">
-                                <span class="flex items-center gap-2">
-                                    <span class="w-2.5 h-2.5 rounded-full {{ $stMeta['color'] }}"></span>
-                                    <span>{{ $stMeta['label'] }}</span>
-                                </span>
-                                <div class="flex items-center gap-2">
-                                    <span class="font-cinzel text-xs text-[#71717A]">${{ number_format($amount, 2) }}</span>
-                                    <span class="font-mono text-xs px-2 py-0.5 rounded-md bg-white border border-gray-200 text-[#18181B]">{{ $count }} ({{ $percent }}%)</span>
-                                </div>
+                        <div class="flex items-center justify-between text-xs py-1">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full {{ $sVal['color'] }}"></span>
+                                <span class="font-bold text-gray-700">{{ $sVal['label'] }}:</span>
                             </div>
-                            <div class="w-full bg-gray-200/80 h-2 rounded-full overflow-hidden">
-                                <div class="{{ $stMeta['color'] }} h-full rounded-full transition-all duration-700" style="width: {{ $percent }}%;"></div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-black text-gray-900">{{ $count }} طلب</span>
+                                <span class="text-[11px] text-gray-400 font-sans">({{ number_format($amt, 1) }} ج.م)</span>
                             </div>
                         </div>
                     @endforeach
-                </div>
-            </div>
-
-            {{-- Abandoned Carts Mini Card --}}
-            <div class="mt-5 p-4 rounded-xl bg-rose-50/70 border border-rose-200 text-xs space-y-2">
-                <div class="flex items-center justify-between font-bold text-rose-800">
-                    <span class="flex items-center gap-1.5">
-                        <span>🛒</span>
-                        <span>{{ __('السلات المتروكة') }}</span>
-                    </span>
-                    <span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[11px] font-bold">
-                        {{ $reports['abandoned']['total'] }} {{ __('سلة') }}
-                    </span>
-                </div>
-                <div class="flex items-center justify-between text-[11px] text-rose-700 font-medium pt-1 border-t border-rose-200/60">
-                    <span>{{ __('مستردة بنجاح:') }} <strong class="text-emerald-700">{{ $reports['abandoned']['recovered'] }}</strong></span>
-                    <span>{{ __('مبالغ معلقة:') }} <strong class="font-cinzel font-bold">${{ number_format($reports['abandoned']['unrecovered_amount'], 2) }}</strong></span>
                 </div>
             </div>
         </div>
 
     </div>
 
-    {{-- 4. Top Selling Products & Inventory Alerts Grid --}}
+    {{-- 5. Bottom Grid: Top Selling Products & Stock Alerts --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
-        {{-- Top Selling Products --}}
-        <div class="bg-white border border-[#EADBCC] rounded-2xl shadow-sm overflow-hidden flex flex-col justify-between">
-            <div>
-                <div class="p-4 sm:p-5 border-b border-[#EADBCC] flex items-center justify-between bg-[#FAF8F5]">
-                    <h3 class="font-bold text-[#18181B] text-base flex items-center gap-2">
-                        <span>👑</span>
-                        <span>{{ __('المنتجات الأكثر مبيعاً وتحقيقاً للإيراد') }}</span>
-                    </h3>
-                    <a href="{{ route('admin.products.index') }}" class="text-xs text-[#C5A059] font-bold hover:underline">
-                        {{ __('عرض المنتجات') }} &larr;
-                    </a>
+
+        <!-- Top Selling Products -->
+        <div class="bg-white border border-orange-100 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
+            <div class="flex items-center justify-between border-b border-orange-100 pb-4">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-2xl bg-red-50 border border-red-200 text-red-600 flex items-center justify-center text-lg shadow-xs">
+                        🥛
+                    </div>
+                    <div>
+                        <h3 class="font-black text-gray-900 text-base leading-tight">{{ __('أكثر المنتجات طلباً ومبيعاً') }}</h3>
+                        <p class="text-[11px] text-gray-500 font-medium mt-0.5">{{ __('المنتجات الأعلى مبيعاً في فروع التوحيد') }}</p>
+                    </div>
                 </div>
 
-                <div class="divide-y divide-gray-100">
-                    @forelse($reports['top_products'] as $item)
-                        <div class="p-3.5 sm:p-4 flex items-center justify-between gap-3 hover:bg-[#FAF8F5]/50 transition-colors">
-                            <div class="flex items-center gap-3 min-w-0">
-                                <div class="w-11 h-11 rounded-xl bg-[#F8F6F2] border border-[#EADBCC] p-1 shrink-0 overflow-hidden flex items-center justify-center">
-                                    @if($item['image'])
-                                        <img src="{{ $item['image'] }}" alt="{{ $item['name'] }}" class="w-full h-full object-cover rounded-lg">
-                                    @else
-                                        <span>💎</span>
-                                    @endif
-                                </div>
-                                <div class="min-w-0">
-                                    <h4 class="font-bold text-xs sm:text-sm text-[#18181B] truncate">{{ $item['name'] }}</h4>
-                                    <span class="text-[11px] text-[#71717A]">{{ __('الكمية المباعة:') }} <strong class="text-[#18181B]">{{ $item['total_sold'] }}</strong></span>
-                                </div>
-                            </div>
-
-                            <div class="text-end shrink-0">
-                                <span class="text-sm font-black text-[#C5A059] font-cinzel block leading-tight">
-                                    ${{ number_format($item['total_revenue'], 2) }}
-                                </span>
-                                <span class="text-[10px] text-gray-400">{{ __('إجمالي المبيعات') }}</span>
-                            </div>
-                        </div>
-                    @empty
-                        <div class="p-8 text-center text-xs text-[#71717A]">
-                            {{ __('لا توجد مبيعات منتجات مسجلة حتى الآن.') }}
-                        </div>
-                    @endforelse
-                </div>
-            </div>
-            
-            <div class="p-3.5 bg-[#FAF8F5] border-t border-[#EADBCC] text-end">
-                <a href="{{ route('admin.products.index') }}" class="text-xs font-bold text-[#C5A059] hover:underline">
-                    {{ __('إدارة المنتجات الكاملة') }} &rarr;
+                <a href="{{ route('admin.products.index') }}" class="text-xs text-red-600 font-bold hover:underline">
+                    {{ __('عرض الكتالوج ←') }}
                 </a>
+            </div>
+
+            <div class="space-y-3">
+                @forelse($reports['top_products'] ?? [] as $index => $prod)
+                    <div class="flex items-center justify-between p-3.5 rounded-2xl bg-canvas-base/50 border border-orange-100 hover:border-orange-200 transition-all">
+                        <div class="flex items-center gap-3">
+                            <span class="w-7 h-7 rounded-xl bg-orange-100 text-orange-900 flex items-center justify-center font-black text-xs">
+                                {{ $index + 1 }}
+                            </span>
+                            <div class="w-11 h-11 rounded-xl bg-white border border-orange-100 p-1 flex items-center justify-center overflow-hidden">
+                                @if(!empty($prod['image']))
+                                    <img src="{{ $prod['image'] }}" alt="" class="w-full h-full object-cover rounded-lg">
+                                @else
+                                    <span class="text-lg">🥛</span>
+                                @endif
+                            </div>
+                            <div>
+                                <h5 class="font-black text-xs text-gray-900">{{ $prod['name'] }}</h5>
+                                <span class="text-[11px] text-gray-500">تم بيع: <strong class="text-gray-800">{{ $prod['total_sold'] }}</strong> وحدة</span>
+                            </div>
+                        </div>
+
+                        <div class="text-end">
+                            <span class="font-black text-red-600 font-sans text-xs block">
+                                {{ number_format($prod['total_revenue'], 2) }} ج.م
+                            </span>
+                            <span class="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md font-bold">إيراد محقق</span>
+                        </div>
+                    </div>
+                @empty
+                    <div class="py-8 text-center text-gray-500 text-xs font-medium">
+                        {{ __('لا توجد مبيعات مسجلة حتى الآن.') }}
+                    </div>
+                @endforelse
             </div>
         </div>
 
-        {{-- Inventory & Low Stock Alerts --}}
-        <div class="bg-white border border-[#EADBCC] rounded-2xl shadow-sm overflow-hidden flex flex-col justify-between">
-            <div>
-                <div class="p-4 sm:p-5 border-b border-[#EADBCC] flex items-center justify-between bg-[#FAF8F5]">
-                    <h3 class="font-bold text-[#18181B] text-base flex items-center gap-2">
-                        <span>⚠️</span>
-                        <span>{{ __('تنبيهات المخزون والكميات المنخفضة') }}</span>
-                    </h3>
-                    <span class="text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-full">
-                        {{ $reports['stock_metrics']['out_of_stock'] }} {{ __('نفدت بالكامل') }}
-                    </span>
+        <!-- Inventory Alerts & Abandoned Carts -->
+        <div class="bg-white border border-orange-100 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4 flex flex-col justify-between">
+            <div class="space-y-4">
+                <div class="flex items-center justify-between border-b border-orange-100 pb-4">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center text-lg shadow-xs">
+                            ⚠️
+                        </div>
+                        <div>
+                            <h3 class="font-black text-gray-900 text-base leading-tight">{{ __('تنبيهات المخزون والسلات') }}</h3>
+                            <p class="text-[11px] text-gray-500 font-medium mt-0.5">{{ __('متابعة الأصناف منخفضة الكمية وفرص الاسترداد') }}</p>
+                        </div>
+                    </div>
+
+                    <a href="{{ route('admin.abandoned-carts.index') }}" class="text-xs text-red-600 font-bold hover:underline">
+                        {{ __('السلات المتروكة ←') }}
+                    </a>
                 </div>
 
-                <div class="divide-y divide-gray-100">
-                    @forelse($reports['low_stock_products'] as $prod)
-                        <div class="p-3.5 sm:p-4 flex items-center justify-between gap-3 hover:bg-[#FAF8F5]/50 transition-colors">
-                            <div class="flex items-center gap-3 min-w-0">
-                                <div class="w-11 h-11 rounded-xl bg-[#F8F6F2] border border-[#EADBCC] p-1 shrink-0 overflow-hidden flex items-center justify-center">
-                                    @if($prod->image_url)
-                                        <img src="{{ $prod->image_url }}" alt="{{ $prod->name }}" class="w-full h-full object-cover rounded-lg">
-                                    @else
-                                        <span>📦</span>
-                                    @endif
-                                </div>
-                                <div class="min-w-0">
-                                    <h4 class="font-bold text-xs sm:text-sm text-[#18181B] truncate">{{ $prod->name }}</h4>
-                                    <span class="text-[11px] text-[#71717A]">{{ __('السعر:') }} <strong>${{ number_format($prod->price, 2) }}</strong></span>
-                                </div>
-                            </div>
+                <!-- Stock Alerts Strip -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="p-4 rounded-2xl bg-rose-50/70 border border-rose-200 space-y-1">
+                        <span class="text-[11px] font-bold text-rose-800">أصناف نفدت تماماً:</span>
+                        <div class="text-2xl font-black text-rose-700 font-sans">
+                            {{ $reports['stock_metrics']['out_of_stock'] }} صنف
+                        </div>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-1">
+                        <span class="text-[11px] font-bold text-amber-800">سلات قابلة للاسترداد:</span>
+                        <div class="text-2xl font-black text-amber-700 font-sans">
+                            {{ $reports['abandoned']['total'] - $reports['abandoned']['recovered'] }} سلة
+                        </div>
+                    </div>
+                </div>
 
-                            <div class="text-end shrink-0">
-                                <span class="px-2.5 py-1 rounded-lg text-xs font-bold {{ $prod->available_stock <= 2 ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700' }}">
-                                    {{ $prod->available_stock }} {{ __('قطع متبقية') }}
-                                </span>
-                            </div>
+                <!-- Low Stock Products List -->
+                <div class="space-y-2">
+                    <span class="text-xs font-black text-gray-700 block">أصناف أوشكت على النفاد (5 قطع أو أقل):</span>
+                    @forelse($reports['low_stock_products'] ?? [] as $low)
+                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-canvas-base border border-orange-100 text-xs">
+                            <span class="font-bold text-gray-800">{{ $low->name }}</span>
+                            <span class="px-2 py-0.5 rounded-lg bg-rose-100 text-rose-800 font-black text-[11px]">
+                                المتبقي: {{ $low->stock_quantity ?? $low->quantity }} قطع
+                            </span>
                         </div>
                     @empty
-                        <div class="p-8 text-center text-xs text-[#71717A]">
-                            {{ __('المخزون بحالة ممتازة ولا توجد منتجات منخفضة الكمية.') }}
+                        <div class="p-3 text-center text-xs text-emerald-700 font-bold bg-emerald-50 rounded-xl border border-emerald-200">
+                            ✓ جميع الأصناف بالمخزون بحالة ممتازة وكافية.
                         </div>
                     @endforelse
                 </div>
-            </div>
-
-            <div class="p-4 bg-[#FAF8F5] border-t border-[#EADBCC] flex items-center justify-between text-xs text-[#71717A]">
-                <span>{{ __('إجمالي المنتجات في المتجر:') }} <strong class="text-[#18181B]">{{ $reports['stock_metrics']['total_products'] }}</strong></span>
-                <a href="{{ route('admin.products.index') }}" class="font-bold text-[#C5A059] hover:underline">
-                    {{ __('إدارة المخزون') }} &rarr;
-                </a>
             </div>
         </div>
 
@@ -436,144 +560,110 @@
 </div>
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const trendData = @json($reports['daily_trend'] ?? []);
-        const labels = trendData.map(d => {
-            const parts = d.date.split('-');
-            return parts.length === 3 ? `${parts[1]}/${parts[2]}` : d.date;
-        });
-        const revenueData = trendData.map(d => parseFloat(d.daily_revenue || 0));
-        const ordersData = trendData.map(d => parseInt(d.orders_count || 0));
+    document.addEventListener('DOMContentLoaded', function () {
+        // 1. Daily Sales & Orders Area Chart
+        const dailyTrendData = @json($reports['daily_trend'] ?? []);
+        const labels = dailyTrendData.map(d => d.date);
+        const revenueData = dailyTrendData.map(d => d.daily_revenue);
+        const ordersData = dailyTrendData.map(d => d.orders_count);
 
-        const ctx = document.getElementById('salesTrendChart');
-        if (ctx) {
-            const chartCtx = ctx.getContext('2d');
-            
-            // Create luxury gold gradient
-            const goldGradient = chartCtx.createLinearGradient(0, 0, 0, 300);
-            goldGradient.addColorStop(0, 'rgba(197, 160, 89, 0.45)');
-            goldGradient.addColorStop(1, 'rgba(197, 160, 89, 0.02)');
-
-            new Chart(chartCtx, {
+        const ctxTrend = document.getElementById('salesTrendChart');
+        if (ctxTrend) {
+            new Chart(ctxTrend.getContext('2d'), {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [
                         {
-                            label: '{{ __("الإيراد اليومي ($)") }}',
+                            label: 'إجمالي المبيعات (ج.م)',
                             data: revenueData,
-                            borderColor: '#C5A059',
-                            backgroundColor: goldGradient,
-                            borderWidth: 2.5,
-                            fill: true,
+                            borderColor: '#DC2626',
+                            backgroundColor: 'rgba(220, 38, 38, 0.08)',
+                            borderWidth: 3,
                             tension: 0.35,
-                            pointBackgroundColor: '#18181B',
-                            pointBorderColor: '#C5A059',
-                            pointBorderWidth: 2,
-                            pointRadius: 3.5,
+                            fill: true,
+                            pointBackgroundColor: '#DC2626',
+                            pointRadius: 4,
                             pointHoverRadius: 6,
-                            yAxisID: 'yRevenue',
+                            yAxisID: 'y'
                         },
                         {
-                            label: '{{ __("عدد الطلبات") }}',
+                            label: 'عدد الطلبات',
                             data: ordersData,
-                            borderColor: '#18181B',
+                            borderColor: '#F97316',
                             backgroundColor: 'transparent',
-                            borderWidth: 1.8,
-                            borderDash: [4, 4],
-                            pointBackgroundColor: '#18181B',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            tension: 0.35,
+                            pointBackgroundColor: '#F97316',
                             pointRadius: 3,
-                            tension: 0.3,
-                            yAxisID: 'yOrders',
+                            yAxisID: 'y1'
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    interaction: {
-                        mode: 'index',
-                        intersect: false,
-                    },
+                    interaction: { mode: 'index', intersect: false },
                     plugins: {
-                        legend: {
-                            position: 'top',
-                            align: 'end',
-                            labels: {
-                                boxWidth: 12,
-                                boxHeight: 12,
-                                font: {
-                                    family: "'Readex Pro', sans-serif",
-                                    size: 11,
-                                    weight: 'bold'
-                                },
-                                color: '#18181B'
-                            }
-                        },
+                        legend: { position: 'top', rtl: true, labels: { font: { family: 'Cairo', size: 11, weight: 'bold' } } },
                         tooltip: {
                             rtl: true,
-                            backgroundColor: '#18181B',
-                            titleFont: { family: "'Readex Pro', sans-serif", size: 12, weight: 'bold' },
-                            bodyFont: { family: "'Readex Pro', sans-serif", size: 11 },
-                            padding: 10,
-                            cornerRadius: 10,
-                            callbacks: {
-                                label: function(context) {
-                                    if (context.datasetIndex === 0) {
-                                        return ` الإيراد: $${context.parsed.y.toFixed(2)}`;
-                                    }
-                                    return ` الطلبات: ${context.parsed.y} طلب`;
-                                }
-                            }
+                            titleFont: { family: 'Cairo', weight: 'bold' },
+                            bodyFont: { family: 'Cairo' }
                         }
                     },
                     scales: {
-                        x: {
-                            grid: {
-                                display: false,
-                                drawBorder: false
-                            },
-                            ticks: {
-                                font: { family: "'Plus Jakarta Sans', sans-serif", size: 10 },
-                                color: '#71717A',
-                                maxRotation: 0,
-                                autoSkip: true,
-                                maxTicksLimit: 12
-                            }
-                        },
-                        yRevenue: {
+                        x: { grid: { display: false }, ticks: { font: { family: 'Cairo', size: 10 } } },
+                        y: {
                             type: 'linear',
+                            display: true,
                             position: 'right',
-                            grid: {
-                                color: 'rgba(234, 219, 204, 0.45)',
-                                drawBorder: false
-                            },
-                            ticks: {
-                                font: { family: "'Plus Jakarta Sans', sans-serif", size: 10 },
-                                color: '#C5A059',
-                                callback: function(value) {
-                                    return '$' + value;
-                                }
-                            }
+                            ticks: { font: { family: 'Cairo', size: 10 } },
+                            grid: { color: '#F3F4F6' }
                         },
-                        yOrders: {
+                        y1: {
                             type: 'linear',
+                            display: true,
                             position: 'left',
-                            grid: {
-                                display: false
-                            },
-                            ticks: {
-                                stepSize: 1,
-                                font: { family: "'Plus Jakarta Sans', sans-serif", size: 10 },
-                                color: '#71717A',
-                                callback: function(value) {
-                                    return value + ' ط';
-                                }
-                            }
+                            grid: { drawOnChartArea: false },
+                            ticks: { precision: 0, font: { family: 'Cairo', size: 10 } }
                         }
                     }
+                }
+            });
+        }
+
+        // 2. Order Status Doughnut Chart
+        const ordersByStatus = @json($reports['orders_by_status'] ?? []);
+        const statusKeys = ['delivered', 'confirmed', 'processing', 'pending', 'cancelled'];
+        const statusLabels = ['تم التسليم', 'تم التأكيد', 'قيد التجهيز', 'قيد الانتظار', 'ملغي'];
+        const statusColors = ['#10B981', '#3B82F6', '#F59E0B', '#F97316', '#EF4444'];
+        const statusValues = statusKeys.map(k => ordersByStatus[k] ? ordersByStatus[k].count : 0);
+
+        const ctxStatus = document.getElementById('orderStatusChart');
+        if (ctxStatus) {
+            new Chart(ctxStatus.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: statusLabels,
+                    datasets: [{
+                        data: statusValues,
+                        backgroundColor: statusColors,
+                        borderWidth: 2,
+                        borderColor: '#ffffff',
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    cutout: '70%'
                 }
             });
         }

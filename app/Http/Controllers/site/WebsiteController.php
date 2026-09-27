@@ -17,22 +17,19 @@ class WebsiteController extends Controller
     ) {}
 
     /**
-     * Homepage with 7 structured luxury sections
+     * Homepage with structured sections
      */
     public function index(): View
     {
-        $locale = app()->getLocale();
-
         // 1. Hero banners (cached 1 hour)
         $banners = \Illuminate\Support\Facades\Cache::remember('homepage_banners', 3600, function () {
             return Banner::where('status', true)->orderBy('position', 'asc')->orderBy('id', 'desc')->get();
         });
 
         // 2. Categories with active products count (cached 30 minutes)
-        $categories = \Illuminate\Support\Facades\Cache::remember('site_homepage_categories_' . $locale, 1800, function () {
+        $categories = \Illuminate\Support\Facades\Cache::remember('site_homepage_categories', 1800, function () {
             return Category::query()
-                ->select(['id', 'slug', 'image'])
-                ->with(['translations'])
+                ->select(['id', 'name', 'slug', 'image'])
                 ->withCount('activeProducts')
                 ->get();
         });
@@ -44,9 +41,9 @@ class WebsiteController extends Controller
         $dealsProducts = $this->productRepo->getDailyDeals(16);
 
         // Fallback to Deals relation if deals table has items
-        $deals = \Illuminate\Support\Facades\Cache::remember('homepage_deals_list_' . $locale, 1800, function () {
+        $deals = \Illuminate\Support\Facades\Cache::remember('homepage_deals_list', 1800, function () {
             return Deal::query()
-                ->with(['product.translations', 'product.category.translations'])
+                ->with(['product.category'])
                 ->active()
                 ->ordered()
                 ->take(16)
@@ -66,9 +63,9 @@ class WebsiteController extends Controller
         }
 
         // Bundles (عروض البكجات - cached 30 minutes)
-        $bundles = \Illuminate\Support\Facades\Cache::remember('homepage_bundles_' . $locale, 1800, function () {
+        $bundles = \Illuminate\Support\Facades\Cache::remember('homepage_bundles', 1800, function () {
             return Bundle::query()
-                ->with(['products.translations'])
+                ->with(['products'])
                 ->active()
                 ->ordered()
                 ->take(4)
@@ -90,7 +87,7 @@ class WebsiteController extends Controller
 
     public function getcategory(): View
     {
-        $categories = Category::with('translations')->withCount('activeProducts')->get();
+        $categories = Category::withCount('activeProducts')->get();
         return view('site.categories', compact('categories'));
     }
 }

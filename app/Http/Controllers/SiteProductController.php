@@ -35,7 +35,7 @@ class SiteProductController extends Controller
             'sort' => $request->input('sort', 'latest'),
         ];
 
-        $bundlesQuery = \App\Models\Bundle::with(['products.translations'])->active();
+        $bundlesQuery = \App\Models\Bundle::with(['products'])->active();
         
         if (!empty($filters['search'])) {
             $bundlesQuery->where('name', 'like', '%' . trim($filters['search']) . '%');
@@ -50,11 +50,9 @@ class SiteProductController extends Controller
         $bundles = $bundlesQuery->ordered()->get();
         $products = $this->productRepo->getFiltered($filters, 16);
         
-        $locale = app()->getLocale();
-        $categories = \Illuminate\Support\Facades\Cache::remember('site_all_categories_' . $locale, 1800, function () {
+        $categories = \Illuminate\Support\Facades\Cache::remember('site_all_categories', 1800, function () {
             return Category::query()
-                ->select(['id', 'slug', 'image'])
-                ->with('translations')
+                ->select(['id', 'name', 'slug', 'image'])
                 ->withCount('activeProducts')
                 ->get();
         });
@@ -84,7 +82,7 @@ class SiteProductController extends Controller
     {
         $filters = ['category_id' => $id];
         $products = $this->productRepo->getFiltered($filters, 12);
-        $categories = Category::with('translations')->withCount('activeProducts')->get();
+        $categories = Category::withCount('activeProducts')->get();
         $currentCategory = Category::findOrFail($id);
 
         return view('site.shop_grid', compact('products', 'categories', 'filters', 'currentCategory'));
@@ -108,7 +106,7 @@ class SiteProductController extends Controller
                 'url' => route('product.details', $product->slug ?? $product->id),
                 'image_url' => $product->image_url,
                 'price_usd' => $priceUsd,
-                'formatted_price_usd' => '$' . number_format($priceUsd, 2),
+                'formatted_price_usd' => number_format($priceUsd, 2) . ' ج.م',
             ];
         }
 

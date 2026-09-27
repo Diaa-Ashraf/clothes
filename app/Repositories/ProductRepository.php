@@ -14,6 +14,7 @@ class ProductRepository
      */
     protected array $selectColumns = [
         'id',
+        'name',
         'category_id',
         'image',
         'price',
@@ -32,11 +33,10 @@ class ProductRepository
      */
     public function getFeatured(int $limit = 8): Collection
     {
-        $locale = app()->getLocale();
-        return Cache::remember("homepage_featured_products_{$locale}_{$limit}", 3600, function () use ($limit) {
+        return Cache::remember("homepage_featured_products_{$limit}", 3600, function () use ($limit) {
             return Product::query()
                 ->select($this->selectColumns)
-                ->with(['translations', 'category.translations'])
+                ->with(['category'])
                 ->featured()
                 ->inStock()
                 ->ordered()
@@ -50,11 +50,10 @@ class ProductRepository
      */
     public function getLatest(int $limit = 12): Collection
     {
-        $locale = app()->getLocale();
-        return Cache::remember("homepage_latest_products_{$locale}_{$limit}", 1800, function () use ($limit) {
+        return Cache::remember("homepage_latest_products_{$limit}", 1800, function () use ($limit) {
             return Product::query()
                 ->select($this->selectColumns)
-                ->with(['translations', 'category.translations'])
+                ->with(['category'])
                 ->active()
                 ->inStock()
                 ->latest()
@@ -68,11 +67,10 @@ class ProductRepository
      */
     public function getBestSellers(int $limit = 8): Collection
     {
-        $locale = app()->getLocale();
-        return Cache::remember("homepage_bestsellers_{$locale}_{$limit}", 1800, function () use ($limit) {
+        return Cache::remember("homepage_bestsellers_{$limit}", 1800, function () use ($limit) {
             return Product::query()
                 ->select($this->selectColumns)
-                ->with(['translations', 'category.translations'])
+                ->with(['category'])
                 ->withCount('orderItems')
                 ->active()
                 ->inStock()
@@ -88,11 +86,10 @@ class ProductRepository
      */
     public function getDailyDeals(int $limit = 8): Collection
     {
-        $locale = app()->getLocale();
-        return Cache::remember("homepage_daily_deals_{$locale}_{$limit}", 1800, function () use ($limit) {
+        return Cache::remember("homepage_daily_deals_{$limit}", 1800, function () use ($limit) {
             return Product::query()
                 ->select($this->selectColumns)
-                ->with(['translations', 'category.translations', 'deals'])
+                ->with(['category', 'deals'])
                 ->active()
                 ->inStock()
                 ->where(function ($q) {
@@ -115,7 +112,7 @@ class ProductRepository
     {
         $query = Product::query()
             ->select($this->selectColumns)
-            ->with(['translations', 'category.translations', 'deals'])
+            ->with(['category', 'deals'])
             ->active();
 
         // Filter by Category (Single ID or Array of IDs)
@@ -139,7 +136,7 @@ class ProductRepository
             $query->inStock();
         }
 
-        // Filter by Price Range (USD base)
+        // Filter by Price Range
         if (isset($filters['min_price']) && is_numeric($filters['min_price'])) {
             $query->where(function ($q) use ($filters) {
                 $q->where('price', '>=', (float)$filters['min_price'])
@@ -160,10 +157,13 @@ class ProductRepository
             });
         }
 
-        // Search in translations
+        // Search in products
         if (!empty($filters['search'])) {
             $searchTerm = trim($filters['search']);
-            $query->whereTranslationLike('name', "%{$searchTerm}%");
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('name', 'LIKE', "%{$searchTerm}%")
+                  ->orWhere('description', 'LIKE', "%{$searchTerm}%");
+            });
         }
 
         // Filter by Discount only (Products with direct discount_price OR active deals)
@@ -199,7 +199,7 @@ class ProductRepository
     public function findProductOrFail(int|string $identifier): Product
     {
         $query = Product::query()
-            ->with(['translations', 'category.translations', 'reviews.user'])
+            ->with(['category', 'reviews.user'])
             ->active();
 
         if (is_numeric($identifier)) {

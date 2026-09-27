@@ -35,9 +35,8 @@ class AppServiceProvider extends ServiceProvider
 
         // Share global categories with site header and layouts
         view()->composer(['layouts.site-sections.header', 'layouts.site'], function ($view) {
-            $siteNavCategories = \Illuminate\Support\Facades\Cache::remember('site_nav_categories_' . app()->getLocale(), 1800, function () {
-                return \App\Models\Category::with(['translations'])
-                    ->withCount('activeProducts')
+            $siteNavCategories = \Illuminate\Support\Facades\Cache::remember('site_nav_categories', 1800, function () {
+                return \App\Models\Category::withCount('activeProducts')
                     ->get();
             });
             $view->with('siteNavCategories', $siteNavCategories);

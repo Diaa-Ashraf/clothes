@@ -79,3 +79,35 @@ if (!function_exists('get_site_favicon')) {
         return asset('storage/' . ltrim($favicon, '/'));
     }
 }
+
+if (!function_exists('get_og_image')) {
+    /**
+     * Get social share image (OG Image) URL with fallback
+     */
+    function get_og_image(): ?string
+    {
+        $ogImage = settings('og_image');
+        if (empty($ogImage)) {
+            return asset('assets/site/img/og-cover.png');
+        }
+
+        if (str_starts_with($ogImage, 'http://') || str_starts_with($ogImage, 'https://') || str_starts_with($ogImage, '//')) {
+            return $ogImage;
+        }
+
+        if (str_starts_with($ogImage, '/storage/') || str_starts_with($ogImage, 'storage/')) {
+            return asset(ltrim($ogImage, '/'));
+        }
+
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($ogImage)) {
+            return \Illuminate\Support\Facades\Storage::url($ogImage);
+        }
+
+        if (file_exists(public_path($ogImage))) {
+            return asset($ogImage);
+        }
+
+        return asset('storage/' . ltrim($ogImage, '/'));
+    }
+}
+

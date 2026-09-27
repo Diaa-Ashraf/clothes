@@ -19,10 +19,15 @@ class CartService
     }
 
     /**
-     * Add single product to cart
+     * Add single product to cart with support for custom portions, weights, and slicing notes
      */
-    public function addProduct(int $productId, int $quantity = 1): array
-    {
+    public function addProduct(
+        int $productId, 
+        int $quantity = 1, 
+        ?string $portionType = 'piece', 
+        ?float $customAmount = null, 
+        ?string $notes = null
+    ): array {
         $product = Product::active()->inStock()->find($productId);
 
         if (!$product) {
@@ -32,46 +37,79 @@ class CartService
             ];
         }
 
+        $portionType = $portionType ?: 'piece';
+        $basePrice = (float)$product->final_price;
+        $portionLabel = '';
+        $unitPrice = $basePrice;
+
+        // Calculate price and label according to portion type or custom amount
+        if ($portionType === '125g') {
+            $unitPrice = round($basePrice * 0.125, 2);
+            $portionLabel = 'ثمن كيلو (125 جم)';
+        } elseif ($portionType === '250g') {
+            $unitPrice = round($basePrice * 0.25, 2);
+            $portionLabel = 'ربع كيلو (250 جم)';
+        } elseif ($portionType === '500g') {
+            $unitPrice = round($basePrice * 0.5, 2);
+            $portionLabel = 'نصف كيلو (500 جم)';
+        } elseif ($portionType === '1000g' || $portionType === '1kg') {
+            $unitPrice = $basePrice;
+            $portionLabel = 'كيلو كامل (1000 جم)';
+        } elseif ($portionType === 'custom_price' && $customAmount && $customAmount > 0) {
+            $unitPrice = (float)$customAmount;
+            $approxGrams = $basePrice > 0 ? round(($customAmount / $basePrice) * 1000) : 0;
+            $portionLabel = "بمبلغ {$customAmount} ج.م (حوالي {$approxGrams} جم)";
+        } else {
+            $portionType = 'piece';
+            $portionLabel = $product->is_weighted ? '1 كيلو' : 'قطعة / عبوة';
+        }
+
         $cart = $this->getItems();
-        $key = 'product_' . $productId;
+        
+        // Generate distinct key per portion & notes to allow ordering both 1/4 kg and 1/2 kg of same product
+        $suffix = $portionType !== 'piece' ? '_' . $portionType : '';
+        if ($portionType === 'custom_price') {
+            $suffix .= '_' . (int)$customAmount;
+        }
+        if (!empty($notes)) {
+            $suffix .= '_' . md5(trim($notes));
+        }
+
+        $key = 'product_' . $productId . $suffix;
         $currentQty = isset($cart[$key]) ? (int)$cart[$key]['quantity'] : 0;
         $newQty = $currentQty + $quantity;
 
-        // If product stock is 5 or less, allow only 1 piece max per customer
-        if ($product->available_stock <= 5 && $newQty > 1) {
+        // Stock checks for regular piece products
+        if ($portionType === 'piece' && $product->available_stock <= 5 && $newQty > 1) {
             return [
                 'success' => false,
                 'message' => __('عذراً، هذا المنتج ذو كمية محدودة في المخزون (5 قطع أو أقل)، الحد الأقصى المسموح به هو قطعة واحدة فقط.'),
             ];
         }
 
-        if ($newQty > $product->available_stock) {
-            return [
-                'success' => false,
-                'message' => __('الكمية المتاحة في المخزون هي :count فقط', ['count' => $product->available_stock]),
-            ];
-        }
-
-        $price = (float)$product->final_price;
-
         $cart[$key] = [
             'type' => 'product',
             'id' => $product->id,
             'name' => $product->name,
-            'price' => $price,
+            'price' => $unitPrice,
             'original_price' => (float)$product->price,
             'image' => $product->image_url,
             'quantity' => $newQty,
+            'portion_type' => $portionType,
+            'portion_label' => $portionLabel,
+            'custom_amount' => $customAmount,
+            'notes' => $notes ? trim($notes) : null,
+            'is_weighted' => (bool)$product->is_weighted,
             'available_stock' => (int)$product->available_stock,
             'is_limited_stock' => $product->available_stock <= 5,
-            'total' => $price * $newQty,
+            'total' => $unitPrice * $newQty,
         ];
 
         Session::put($this->sessionKey, $cart);
 
         return [
             'success' => true,
-            'message' => __('تمت إضافة المنتج إلى السلة بنجاح.'),
+            'message' => __('تمت إضافة :name (:portion) إلى السلة بنجاح.', ['name' => $product->name, 'portion' => $portionLabel]),
             'cart_count' => $this->getCount(),
             'item' => $cart[$key],
         ];
@@ -228,9 +266,9 @@ class CartService
                 'available_stock' => $stock,
                 'is_limited_stock' => $isLimitedStock,
                 'price_usd' => $priceUsd,
-                'formatted_price_usd' => '$' . number_format($priceUsd, 2),
+                'formatted_price_usd' => number_format($priceUsd, 2) . ' ج.م',
                 'total_usd' => $totalUsd,
-                'formatted_total_usd' => '$' . number_format($totalUsd, 2),
+                'formatted_total_usd' => number_format($totalUsd, 2) . ' ج.م',
             ];
         }
 
@@ -282,27 +320,50 @@ class CartService
     }
 
     /**
-     * Calculate financial totals: subtotal, tax, grand total
+     * Calculate delivery fee based on delivery type and subtotal
      */
-    public function getTotals(): array
+    public function getDeliveryFee(?string $deliveryType = 'delivery', float $subtotal = 0.0): float
+    {
+        if ($deliveryType === 'pickup') {
+            return 0.0;
+        }
+
+        $freeThreshold = (float) settings('free_delivery_threshold', 0.0);
+        if ($freeThreshold > 0 && $subtotal >= $freeThreshold) {
+            return 0.0;
+        }
+
+        return (float) settings('delivery_fee', 15.0);
+    }
+
+    /**
+     * Calculate financial totals: subtotal, tax, delivery fee, grand total
+     */
+    public function getTotals(?string $deliveryType = 'delivery'): array
     {
         $subtotal = 0.0;
         foreach ($this->getItems() as $item) {
             $subtotal += (float)($item['total'] ?? 0);
         }
-    
 
         $taxRate = (float) settings('tax_rate', 0); // Configurable, default 0%
         $taxAmount = $subtotal * ($taxRate / 100);
-        $grandTotal = $subtotal + $taxAmount;
+        $deliveryFee = $this->getDeliveryFee($deliveryType, $subtotal);
+        $freeThreshold = (float) settings('free_delivery_threshold', 0.0);
+        $grandTotal = $subtotal + $taxAmount + $deliveryFee;
 
         return [
             'subtotal' => $subtotal,
             'tax_rate' => $taxRate,
             'tax_amount' => $taxAmount,
+            'delivery_fee' => $deliveryFee,
+            'free_delivery_threshold' => $freeThreshold,
+            'is_free_delivery' => ($deliveryType === 'pickup') || ($freeThreshold > 0 && $subtotal >= $freeThreshold),
+            'delivery_type' => $deliveryType,
             'grand_total' => $grandTotal,
             'formatted_subtotal' => format_currency($subtotal),
             'formatted_tax' => format_currency($taxAmount),
+            'formatted_delivery_fee' => $deliveryFee > 0 ? format_currency($deliveryFee) : __('مجاناً'),
             'formatted_total' => format_currency($grandTotal),
         ];
     }

@@ -23,7 +23,7 @@ class DealController extends Controller
      */
     public function create()
     {
-        $products = Product::with('translations')->get();
+        $products = Product::all();
         return view('admin.deals.create', compact('products'));
     }
 
@@ -58,7 +58,7 @@ class DealController extends Controller
      */
     public function edit(Deal $deal)
     {
-        $products = Product::with('translations')->get();
+        $products = Product::all();
         return view('admin.deals.edit', compact('deal', 'products'));
     }
 

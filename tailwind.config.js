@@ -13,47 +13,86 @@ export default {
     theme: {
         extend: {
             colors: {
+                // Al-Tawheed Signature Signboard Palette (أحمر اليافطة الناري والبرتقالي الساطع)
+                primary: {
+                    50: '#FEF2F2',
+                    100: '#FEE2E2',
+                    200: '#FECACA',
+                    300: '#FCA5A5',
+                    400: '#F87171',
+                    500: '#EF4444',
+                    600: '#DC2626',
+                    700: '#B91C1C',
+                    800: '#991B1B',
+                    900: '#7F1D1D',
+                    DEFAULT: '#DC2626', // أحمر التوحيد الناري من اليافطة
+                    dark: '#991B1B',
+                    light: '#EF4444',
+                },
+                // Electric Amber / Orange Accent (برتقالي اليافطة المضيء "ماركت وألبان")
+                accent: {
+                    50: '#FFF7ED',
+                    100: '#FFEDD5',
+                    200: '#FED7AA',
+                    300: '#FDBA74',
+                    400: '#FB923C',
+                    500: '#F97316',
+                    600: '#EA580C',
+                    700: '#C2410C',
+                    DEFAULT: '#F97316', // برتقالي اليافطة الصريح
+                },
+                // Warm Cream Backgrounds (درجات القشطة والزبادي والكانفاس المريح)
                 canvas: {
-                    base: '#F8F9FA',      // Luminous warm canvas
-                    subtle: '#F4F5F7',
+                    base: '#FBF9F5',
+                    subtle: '#F4EFE6',
+                    dark: '#EAE2D5',
                 },
                 surface: {
-                    base: '#F8F6F2',      // Warm Alabaster / Bone
-                    card: '#FFFFFF',      // Pure Crisp White
-                    pedestal: '#F8F9FA',  // Soft Warm Pedestal for watches
-                    hover: '#EFEAE4',     // Subtle Hover
-                    border: '#E5E7EB',    // Border tone
-                    champagne: '#EADBCC', // Warm Champagne Border
+                    card: '#FFFFFF',
+                    base: '#FFFFFF',
+                    hover: '#F9F7F2',
+                    border: '#EDE7DC',
+                    subtle: '#F6F3EC',
+                    champagne: '#E5DDCF',
                 },
+                // Deep Charcoal Typography for maximum legibility
+                charcoal: {
+                    heading: '#111827',
+                    DEFAULT: '#1F2937',
+                    secondary: '#4B5563',
+                    muted: '#6B7280',
+                    light: '#9CA3AF',
+                },
+                // Legacy compatibility tokens
                 gold: {
-                    champagne: '#C5A059', // Primary Satin Champagne Gold
-                    satin: '#B38E44',     // Rich Satin Gold
-                    bronze: '#8C7355',    // Warm Bronze
-                    dark: '#7A5E2E',
-                    DEFAULT: '#C5A059',
+                    champagne: '#D97706',
+                    satin: '#B45309',
+                    bronze: '#92400E',
+                    dark: '#78350F',
+                    DEFAULT: '#D97706',
                 },
                 obsidian: {
-                    DEFAULT: '#18181B',   // Obsidian Espresso Headings & Key text
-                    secondary: '#52525B', // Clean readable subtext
-                    muted: '#71717A',     // Specs and details
+                    DEFAULT: '#111827',
+                    secondary: '#4B5563',
+                    muted: '#6B7280',
                 },
                 espresso: {
-                    main: '#18181B',
-                    secondary: '#52525B',
-                    muted: '#71717A',
+                    main: '#111827',
+                    secondary: '#4B5563',
+                    muted: '#6B7280',
                 },
                 emerald: {
-                    wa: '#25D366',        // WhatsApp official green
+                    wa: '#25D366',
                 },
                 rose: {
-                    promo: '#E11D48',     // Discount red
+                    promo: '#DC2626',
                 },
             },
             fontFamily: {
-                sans: ['"Plus Jakarta Sans"', '"Readex Pro"', ...defaultTheme.fontFamily.sans],
-                royal: ['Cinzel', 'serif'],
-                arabic: ['"Readex Pro"', 'sans-serif'],
-                display: ['Cinzel', 'serif'],
+                sans: ['Cairo', 'Alexandria', 'Readex Pro', ...defaultTheme.fontFamily.sans],
+                arabic: ['Cairo', 'Alexandria', 'Readex Pro', 'sans-serif'],
+                display: ['Cairo', 'Alexandria', 'sans-serif'],
+                royal: ['Cairo', 'serif'],
             },
             borderRadius: {
                 'card': '1rem',
@@ -61,10 +100,12 @@ export default {
                 'pill': '9999px',
             },
             boxShadow: {
+                'card-soft': '0 2px 12px -2px rgba(115, 14, 31, 0.05), 0 4px 16px -2px rgba(0, 0, 0, 0.04)',
+                'card-hover': '0 12px 28px -4px rgba(115, 14, 31, 0.10), 0 8px 16px -4px rgba(0, 0, 0, 0.06)',
+                'maroon-glow': '0 4px 20px -2px rgba(115, 14, 31, 0.35)',
+                'amber-glow': '0 4px 20px -2px rgba(217, 119, 6, 0.35)',
                 'card-luxury': '0 4px 20px rgba(0, 0, 0, 0.04)',
-                'card-hover': '0 10px 30px rgba(0, 0, 0, 0.08)',
-                'gold-subtle': '0 4px 16px rgba(197, 160, 89, 0.18)',
-                'gold-glow': '0 0 20px rgba(197, 160, 89, 0.25)',
+                'gold-subtle': '0 4px 16px rgba(217, 119, 6, 0.18)',
             },
             keyframes: {
                 'marquee-scroll': {
@@ -73,16 +114,28 @@ export default {
                 },
                 'pulse-subtle': {
                     '0%, 100%': { transform: 'scale(1)', opacity: '1' },
-                    '50%': { transform: 'scale(1.05)', opacity: '0.9' },
+                    '50%': { transform: 'scale(1.05)', opacity: '0.92' },
+                },
+                'float': {
+                    '0%, 100%': { transform: 'translateY(0px)' },
+                    '50%': { transform: 'translateY(-6px)' },
+                },
+                'glow-pulse': {
+                    '0%, 100%': { boxShadow: '0 0 15px rgba(220, 38, 38, 0.4)' },
+                    '50%': { boxShadow: '0 0 25px rgba(249, 115, 22, 0.8)' },
+                },
+                'shimmer': {
+                    '100%': { transform: 'translateX(100%)' },
                 }
             },
             animation: {
                 'marquee': 'marquee-scroll 25s linear infinite',
                 'pulse-subtle': 'pulse-subtle 2s infinite ease-in-out',
+                'float': 'float 3s ease-in-out infinite',
+                'glow': 'glow-pulse 2s infinite ease-in-out',
             },
         },
     },
 
     plugins: [forms],
 };
-

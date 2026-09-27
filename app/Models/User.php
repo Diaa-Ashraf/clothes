@@ -21,6 +21,8 @@ class User extends Authenticatable
         'avatar',
         'phone',
         'address',
+        'addresses',
+        'default_address',
         'is_active',
         'preferred_currency',
     ];
@@ -34,6 +36,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'is_active' => 'boolean',
+        'addresses' => 'array',
     ];
 
     public function orders(): HasMany

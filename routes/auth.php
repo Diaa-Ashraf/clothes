@@ -12,15 +12,16 @@ use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
-    Route::get('register', [RegisteredUserController::class, 'create'])
+    Route::get('register', [\App\Http\Controllers\Storefront\AuthController::class, 'showRegister'])
                 ->name('register');
 
-    Route::post('register', [RegisteredUserController::class, 'store']);
+    Route::post('register', [\App\Http\Controllers\Storefront\AuthController::class, 'register'])
+                ->middleware('throttle:6,1');
 
-    Route::get('login', [AuthenticatedSessionController::class, 'create'])
+    Route::get('login', [\App\Http\Controllers\Storefront\AuthController::class, 'showLogin'])
                 ->name('login');
 
-    Route::post('login', [AuthenticatedSessionController::class, 'store'])
+    Route::post('login', [\App\Http\Controllers\Storefront\AuthController::class, 'login'])
                 ->middleware('throttle:login');
 
     // Google OAuth Routes
@@ -61,6 +62,6 @@ Route::middleware('auth')->group(function () {
 
     Route::put('password', [PasswordController::class, 'update'])->name('password.update');
 
-    Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
+    Route::post('logout', [\App\Http\Controllers\Storefront\AuthController::class, 'logout'])
                 ->name('logout');
 });

@@ -103,11 +103,11 @@ class Bundle extends Model
 
     public function getFormattedBundlePriceAttribute(): string
     {
-        return '$' . number_format($this->bundle_price, 2);
+        return number_format($this->bundle_price, 2) . ' ج.م';
     }
 
     public function getFormattedOriginalTotalAttribute(): string
     {
-        return '$' . number_format($this->original_total, 2);
+        return number_format($this->original_total, 2) . ' ج.م';
     }
 }

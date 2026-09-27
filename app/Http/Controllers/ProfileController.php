@@ -21,13 +21,13 @@ class ProfileController extends Controller
 
         // Eager load customer orders with their items and products
         $orders = $user->orders()
-            ->with(['orderItems.product.translations'])
+            ->with(['orderItems.product'])
             ->latest()
             ->paginate(8);
 
         // Load wishlist items for quick portal access
         $wishlistItems = $user->wishlistItems()
-            ->with(['product.translations', 'product.category.translations'])
+            ->with(['product.category'])
             ->latest()
             ->take(8)
             ->get();

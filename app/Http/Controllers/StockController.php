@@ -18,7 +18,7 @@ class StockController extends Controller
     public function index(): \Illuminate\View\View
     {
         $stocks = Stock::query()
-            ->with(['product.translations'])
+            ->with(['product'])
             ->latest()
             ->paginate(15);
 

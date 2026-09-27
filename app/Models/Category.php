@@ -4,27 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Astrotomic\Translatable\Contracts\Translatable as TranslatableContract;
-use Astrotomic\Translatable\Translatable;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Category extends Model implements TranslatableContract
+class Category extends Model
 {
-    use Translatable, HasFactory;
-
-    public string $translationForeignKey = 'category_id';
-    public array $translatedAttributes = ['name', 'description'];
-    public string $translationModel = CategoryTranslation::class;
-
-    protected static function booted(): void
-    {
-        static::deleting(function (Category $category) {
-            $category->translations()->delete();
-        });
-    }
+    use HasFactory;
 
     protected $fillable = [
+        'name',
+        'description',
         'slug',
         'image',
     ];
@@ -56,5 +45,15 @@ class Category extends Model implements TranslatableContract
     public function activeProducts(): HasMany
     {
         return $this->hasMany(Product::class)->where('is_active', true);
+    }
+
+    public function scopeActive(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    {
+        return $query;
+    }
+
+    public function scopeOrdered(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    {
+        return $query->orderBy('id', 'asc');
     }
 }

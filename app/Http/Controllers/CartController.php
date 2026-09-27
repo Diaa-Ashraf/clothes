@@ -35,7 +35,11 @@ class CartController extends Controller
     public function addtocart(Request $request, int $id): JsonResponse
     {
         $quantity = max(1, (int)$request->input('quantity', 1));
-        $result = $this->cartService->addProduct($id, $quantity);
+        $portionType = $request->input('portion_type', 'piece');
+        $customAmount = $request->filled('custom_amount') ? (float)$request->input('custom_amount') : null;
+        $notes = $request->input('notes');
+
+        $result = $this->cartService->addProduct($id, $quantity, $portionType, $customAmount, $notes);
 
         // Update abandoned cart tracker
         $this->abandonedCartService->recordSnapshot(
@@ -119,7 +123,7 @@ class CartController extends Controller
             'tax_amount' => $taxAmount,
             'grand_total' => $grandTotal,
             'subtotal_usd' => $subtotalUsd,
-            'formatted_subtotal_usd' => '$' . number_format($subtotalUsd, 2),
+            'formatted_subtotal_usd' => number_format($subtotalUsd, 2) . ' ج.م',
             'formatted_subtotal' => format_currency($subtotalUsd),
             'formatted_tax' => format_currency($taxAmount),
             'formatted_total' => format_currency($grandTotal),

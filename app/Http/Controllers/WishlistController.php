@@ -16,7 +16,7 @@ class WishlistController extends Controller
             return view('site.wishlist', compact('wishlistItems'));
         }
 
-        $wishlistItems = auth()->user()->wishlistItems()->with(['product.translations', 'product.category.translations', 'product.deals'])->get();
+        $wishlistItems = auth()->user()->wishlistItems()->with(['product.category', 'product.deals'])->get();
         return view('site.wishlist', compact('wishlistItems'));
     }
     
