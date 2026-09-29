@@ -25,5 +25,12 @@ class CategoryObserver
             Cache::forget('site_homepage_categories_' . $locale);
             Cache::forget('site_all_categories_' . $locale);
         }
+
+        // Storefront home and category cache keys
+        Cache::forget('storefront_home_categories');
+        Cache::forget('storefront_sidebar_categories');
+        for ($i = 1; $i <= 10; $i++) {
+            Cache::forget('storefront_all_categories_page_' . $i);
+        }
     }
 }

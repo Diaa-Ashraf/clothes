@@ -42,7 +42,11 @@ class CartController extends Controller
     public function add(Request $request, int $id): JsonResponse
     {
         $quantity = max(1, (int)$request->input('quantity', 1));
-        $result = $this->cartService->addProduct($id, $quantity);
+        $portionType = $request->input('portion_type', 'piece');
+        $customAmount = $request->filled('custom_amount') ? (float)$request->input('custom_amount') : null;
+        $notes = $request->input('notes');
+
+        $result = $this->cartService->addProduct($id, $quantity, $portionType, $customAmount, $notes);
 
         if ($result['success']) {
             $this->abandonedCartService->recordSnapshot(
@@ -143,15 +147,60 @@ class CartController extends Controller
     }
 
     /**
-     * Get live cart payload for drawer or dynamic updates.
+     * Apply a discount coupon to the cart.
      */
-    public function getPayload(Request $request): JsonResponse
+    public function applyCoupon(Request $request, \App\Services\CouponService $couponService): JsonResponse
     {
-        $deliveryType = $request->query('delivery_type', 'delivery');
+        $code = (string)$request->input('coupon_code', '');
+        
+        if (empty($code)) {
+            return response()->json([
+                'success' => false,
+                'message' => __('يرجى إدخال كود الكوبون.'),
+            ], 422);
+        }
+
+        $totals = $this->cartService->getTotals();
+        $subtotal = (float)$totals['subtotal'];
+
+        if ($subtotal <= 0) {
+            return response()->json([
+                'success' => false,
+                'message' => __('السلة فارغة، لا يمكن تطبيق الكوبون.'),
+            ], 422);
+        }
+
+        $result = $couponService->validateCoupon($code, $subtotal);
+
+        if (!$result['valid']) {
+            return response()->json([
+                'success' => false,
+                'message' => $result['message'],
+            ], 422);
+        }
+
+        $this->cartService->applyCoupon($code, (float)$result['discount']);
+        $newTotals = $this->cartService->getTotals();
+
         return response()->json([
-            'items' => $this->cartService->getDetailedItems(),
-            'totals' => $this->cartService->getTotals($deliveryType),
-            'count' => $this->cartService->getCount(),
+            'success' => true,
+            'message' => $result['message'],
+            'discount' => $result['discount'],
+            'totals' => $newTotals,
+        ]);
+    }
+
+    /**
+     * Remove the currently applied coupon.
+     */
+    public function removeCoupon(): JsonResponse
+    {
+        $this->cartService->removeCoupon();
+
+        return response()->json([
+            'success' => true,
+            'message' => __('تم إلغاء تفعيل الكوبون بنجاح.'),
+            'totals' => $this->cartService->getTotals(),
         ]);
     }
 }

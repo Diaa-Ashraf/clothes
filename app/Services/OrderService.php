@@ -70,6 +70,8 @@ class OrderService
                 'address' => $customerData['address'] ?? '',
                 'phone' => $customerData['phone'] ?? '',
                 'payment_method' => $paymentMethod,
+                'coupon_code' => $customerData['coupon_code'] ?? ($totals['coupon_code'] ?? null),
+                'discount_amount' => (float)($customerData['discount_amount'] ?? ($totals['discount_amount'] ?? 0)),
                 'payment_proof_image' => $customerData['payment_proof_image'] ?? null,
                 'instapay_reference' => $customerData['instapay_reference'] ?? null,
                 'notes' => $customerData['notes'] ?? null,
@@ -121,12 +123,65 @@ class OrderService
     }
 
     /**
-     * Update order status with corresponding timestamp and automatic stock synchronization
+     * Allowed order status transitions (State Machine)
+     */
+    public const ALLOWED_TRANSITIONS = [
+        Order::STATUS_PENDING => [
+            Order::STATUS_CONFIRMED,
+            Order::STATUS_PROCESSING,
+            Order::STATUS_CANCELLED,
+        ],
+        Order::STATUS_UNDER_REVIEW => [
+            Order::STATUS_CONFIRMED,
+            Order::STATUS_CANCELLED,
+        ],
+        Order::STATUS_CONFIRMED => [
+            Order::STATUS_PROCESSING,
+            Order::STATUS_READY_FOR_PICKUP,
+            Order::STATUS_ON_THE_WAY,
+            Order::STATUS_SHIPPED,
+            Order::STATUS_CANCELLED,
+        ],
+        Order::STATUS_PROCESSING => [
+            Order::STATUS_READY_FOR_PICKUP,
+            Order::STATUS_ON_THE_WAY,
+            Order::STATUS_SHIPPED,
+            Order::STATUS_CANCELLED,
+        ],
+        Order::STATUS_READY_FOR_PICKUP => [
+            Order::STATUS_DELIVERED,
+            Order::STATUS_CANCELLED,
+        ],
+        Order::STATUS_ON_THE_WAY => [
+            Order::STATUS_DELIVERED,
+            Order::STATUS_CANCELLED,
+        ],
+        Order::STATUS_SHIPPED => [
+            Order::STATUS_DELIVERED,
+            Order::STATUS_CANCELLED,
+        ],
+        Order::STATUS_DELIVERED => [], // Terminal state
+        Order::STATUS_CANCELLED => [
+            Order::STATUS_PENDING,
+            Order::STATUS_PROCESSING,
+        ], // Reactivation
+    ];
+
+    /**
+     * Update order status with state machine validation, corresponding timestamp and automatic stock synchronization
      */
     public function updateStatus(Order $order, string $status, ?string $reason = null): Order
     {
-        return DB::transaction(function () use ($order, $status, $reason) {
-            $oldStatus = $order->status;
+        $oldStatus = $order->status;
+
+        if ($oldStatus !== $status) {
+            $allowed = self::ALLOWED_TRANSITIONS[$oldStatus] ?? [];
+            if (!in_array($status, $allowed)) {
+                throw new Exception("لا يمكن تحويل حالة الطلب من '{$oldStatus}' إلى '{$status}'.");
+            }
+        }
+
+        return DB::transaction(function () use ($order, $status, $reason, $oldStatus) {
 
             // 1. If moving TO cancelled from an active status -> restore reserved stock
             if ($oldStatus !== Order::STATUS_CANCELLED && $status === Order::STATUS_CANCELLED) {
@@ -151,6 +206,17 @@ class OrderService
             }
 
             $order->update($updateData);
+
+            // Trigger email notification to customer if email is available
+            try {
+                $recipientEmail = $order->user?->email;
+                if ($recipientEmail) {
+                    \Illuminate\Support\Facades\Mail::to($recipientEmail)->queue(new \App\Mail\OrderStatusChanged($order));
+                }
+            } catch (\Throwable $e) {
+                // Log and continue without breaking the transaction
+                \Illuminate\Support\Facades\Log::warning("Failed to queue order status email: " . $e->getMessage());
+            }
 
             return $order;
         });

@@ -87,7 +87,19 @@ class CheckoutController extends Controller
             // 3. Mark abandoned cart recovered
             $this->abandonedCartService->markRecoveredForUserOrSession($user);
 
-            // 4. Clear shopping cart
+            // 4. Record coupon usage if applied
+            if (!empty($totals['coupon_code'])) {
+                app(\App\Services\CouponService::class)->recordUsage(
+                    $totals['coupon_code'],
+                    $user?->id,
+                    $order->id,
+                    $order->phone,
+                    (float)($totals['discount_amount'] ?? 0)
+                );
+                $this->cartService->removeCoupon();
+            }
+
+            // 5. Clear shopping cart
             $this->cartService->clear();
 
             if ($request->expectsJson() || $request->ajax()) {

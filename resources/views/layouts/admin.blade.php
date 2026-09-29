@@ -209,6 +209,17 @@
                     <span x-show="!sidebarCollapsed" x-transition.opacity.duration.200ms class="truncate">عروض التوفير المجمعة (Bundles)</span>
                 </a>
 
+                {{-- 8. Coupons & Promo Codes --}}
+                <a href="{{ route('admin.coupons.index') }}" 
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('admin.coupons.*') ? 'bg-gradient-to-r from-red-600 to-orange-500 text-white shadow-md shadow-red-500/20' : 'text-gray-700 hover:bg-orange-50 hover:text-red-700' }}"
+                   :class="sidebarCollapsed ? 'justify-center px-2' : ''"
+                   title="كوبونات وقسائم الخصم">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
+                    </svg>
+                    <span x-show="!sidebarCollapsed" x-transition.opacity.duration.200ms class="truncate">كوبونات وقسائم الخصم</span>
+                </a>
+
                 {{-- 8. Comprehensive Reports & Performance --}}
                 <a href="{{ route('admin.reports.index') }}" 
                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all {{ request()->routeIs('admin.reports.*') ? 'bg-gradient-to-r from-red-600 to-orange-500 text-white shadow-md shadow-red-500/20' : 'text-gray-700 hover:bg-orange-50 hover:text-red-700' }}"

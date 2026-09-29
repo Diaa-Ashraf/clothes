@@ -11,10 +11,16 @@
  selectedBranch: '{{ old('branch_id', $branches->first()?->id ?? 1) }}',
  branchesData: {{ json_encode($branches->keyBy('id')) }},
  submitting: false,
- deliveryFee: {{ $totals['delivery_fee'] }},
- subtotal: {{ $totals['subtotal'] }},
+ deliveryFee: {{ (float)$totals['delivery_fee'] }},
+ subtotal: {{ (float)$totals['subtotal'] }},
+ discountAmount: {{ (float)($totals['discount_amount'] ?? 0) }},
+ couponCode: '{{ $totals['coupon_code'] ?? '' }}',
+ get discountedSubtotal() {
+     return Math.max(0, this.subtotal - this.discountAmount);
+ },
  get grandTotal() {
- return this.deliveryType === 'pickup' ? this.subtotal : (this.subtotal + this.deliveryFee);
+     let fee = this.deliveryType === 'pickup' ? 0 : this.deliveryFee;
+     return this.discountedSubtotal + fee;
  }
  }">
  
@@ -357,6 +363,13 @@
  <span>المجموع الفرعي</span>
  <span class="font-bold text-charcoal tabular-nums">{{ $totals['formatted_subtotal'] }}</span>
  </div>
+
+ @if(!empty($totals['coupon_code']) && ($totals['discount_amount'] ?? 0) > 0)
+ <div class="flex items-center justify-between text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-xl border border-emerald-200 text-xs font-bold">
+ <span>خصم الكوبون ({{ $totals['coupon_code'] }})</span>
+ <span class="tabular-nums">- {{ $totals['formatted_discount'] }}</span>
+ </div>
+ @endif
 
  <div class="flex items-center justify-between text-charcoal-muted">
  <span>رسوم التوصيل</span>

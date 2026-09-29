@@ -130,33 +130,53 @@
                  }
              }">
             
-            <!-- Right: Product Image with Clean Display -->
-            <div class="relative bg-gradient-to-b from-orange-50/40 to-red-50/20 rounded-3xl p-6 flex items-center justify-center border border-orange-100 overflow-hidden group min-h-[320px] sm:min-h-[420px]">
-                @if($hasDiscount)
-                    <div class="absolute top-4 right-4 z-10">
-                        <span class="px-3.5 py-1 rounded-full text-xs font-black bg-gradient-to-r from-red-600 to-orange-500 text-white shadow-md">
-                            خصم {{ $discountPercent }}%
-                        </span>
-                    </div>
-                @endif
+            <!-- Right: Product Image with Clean Display and Gallery Thumbnails -->
+            <div class="space-y-4"
+                 x-data="{
+                     activeImage: '{{ $product->image_url ?? asset('assets/site/img/product/product-1.jpg') }}'
+                 }">
+                <div class="relative bg-gradient-to-b from-orange-50/40 to-red-50/20 rounded-3xl p-6 flex items-center justify-center border border-orange-100 overflow-hidden group min-h-[320px] sm:min-h-[420px]">
+                    @if($hasDiscount)
+                        <div class="absolute top-4 right-4 z-10">
+                            <span class="px-3.5 py-1 rounded-full text-xs font-black bg-gradient-to-r from-red-600 to-orange-500 text-white shadow-md">
+                                خصم {{ $discountPercent }}%
+                            </span>
+                        </div>
+                    @endif
 
-                @if($isWeighted)
-                    <div class="absolute top-4 left-4 z-10">
-                        <span class="px-3 py-1 rounded-full text-[11px] font-black bg-amber-100 text-amber-900 border border-amber-300 shadow-xs">
-                            يباع بالوزن والطلب الحر
-                        </span>
-                    </div>
-                @endif
+                    @if($isWeighted)
+                        <div class="absolute top-4 left-4 z-10">
+                            <span class="px-3 py-1 rounded-full text-[11px] font-black bg-amber-100 text-amber-900 border border-amber-300 shadow-xs">
+                                يباع بالوزن والطلب الحر
+                            </span>
+                        </div>
+                    @endif
 
-                @if($product->image_url)
-                    <img src="{{ $product->image_url }}" 
+                    <img :src="activeImage" 
                          alt="{{ $product->name }}" 
                          class="max-w-full max-h-[380px] object-contain transition-transform duration-500 group-hover:scale-105">
-                @else
-                    <div class="w-20 h-20 rounded-3xl bg-white/80 text-orange-400 flex items-center justify-center">
-                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                        </svg>
+                </div>
+
+                <!-- Multiple Images Thumbnails (if any) -->
+                @if($product->images->isNotEmpty())
+                    <div class="flex items-center gap-3 overflow-x-auto pb-2">
+                        @if($product->image_url)
+                            <button type="button" 
+                                    @click="activeImage = '{{ $product->image_url }}'"
+                                    :class="activeImage === '{{ $product->image_url }}' ? 'ring-2 ring-red-600 border-transparent' : 'border-gray-200 hover:border-orange-300'"
+                                    class="w-16 h-16 rounded-2xl bg-white border p-1 shrink-0 overflow-hidden transition-all cursor-pointer">
+                                <img src="{{ $product->image_url }}" alt="{{ $product->name }}" class="w-full h-full object-contain">
+                            </button>
+                        @endif
+
+                        @foreach($product->images as $galleryImg)
+                            <button type="button" 
+                                    @click="activeImage = '{{ $galleryImg->image_url }}'"
+                                    :class="activeImage === '{{ $galleryImg->image_url }}' ? 'ring-2 ring-red-600 border-transparent' : 'border-gray-200 hover:border-orange-300'"
+                                    class="w-16 h-16 rounded-2xl bg-white border p-1 shrink-0 overflow-hidden transition-all cursor-pointer">
+                                <img src="{{ $galleryImg->image_url }}" alt="{{ $product->name }}" class="w-full h-full object-contain">
+                            </button>
+                        @endforeach
                     </div>
                 @endif
             </div>
@@ -377,6 +397,165 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+        </div>
+
+        <!-- Customer Reviews & Ratings Section -->
+        <div class="bg-white rounded-3xl p-6 sm:p-10 border-2 border-orange-100 shadow-sm space-y-6"
+             x-data="{
+                 rating: 5,
+                 comment: '',
+                 submitting: false,
+                 submitReview() {
+                     this.submitting = true;
+                     fetch('{{ route('reviews.store') }}', {
+                         method: 'POST',
+                         headers: {
+                             'Content-Type': 'application/json',
+                             'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                             'Accept': 'application/json'
+                         },
+                         body: JSON.stringify({
+                             product_id: {{ $product->id }},
+                             rating: this.rating,
+                             comment: this.comment
+                         })
+                     })
+                     .then(res => res.json())
+                     .then(data => {
+                         this.submitting = false;
+                         if (data.success) {
+                             toastr.success(data.message || 'تم إرسال تقييمك بنجاح');
+                             this.comment = '';
+                             setTimeout(() => location.reload(), 1200);
+                         } else {
+                             toastr.error(data.message || 'تعذر إرسال التقييم');
+                         }
+                     })
+                     .catch(() => {
+                         this.submitting = false;
+                         toastr.error('حدث خطأ أثناء إرسال التقييم');
+                     });
+                 }
+             }">
+            
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-orange-100 pb-4">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-black text-gray-900">تقييمات وآراء العملاء</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">آراء المتسوقين حول جودة هذا المنتج من ألبان وسوبرماركت التوحيد</p>
+                </div>
+                
+                @php
+                    $reviewsCount = $product->reviews->count();
+                    $avgRating = $reviewsCount > 0 ? round($product->reviews->avg('rating'), 1) : 0;
+                @endphp
+
+                <div class="flex items-center gap-3 bg-orange-50 px-4 py-2 rounded-2xl border border-orange-200 shrink-0">
+                    <div class="text-2xl font-black text-red-600 tabular-nums">{{ $avgRating > 0 ? $avgRating : 'جديد' }}</div>
+                    <div class="text-xs">
+                        <div class="flex text-amber-400">
+                            @for($i = 1; $i <= 5; $i++)
+                                <svg class="w-4 h-4 {{ $i <= round($avgRating) ? 'fill-current' : 'text-gray-300' }}" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                </svg>
+                            @endfor
+                        </div>
+                        <span class="text-[11px] text-gray-500 font-bold">({{ $reviewsCount }} تقييم)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reviews List & Submission Form -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                <!-- Left: List of Reviews -->
+                <div class="lg:col-span-7 space-y-4">
+                    @if($product->reviews->isNotEmpty())
+                        <div class="divide-y divide-gray-100">
+                            @foreach($product->reviews as $review)
+                                <div class="py-3.5 first:pt-0 last:pb-0 space-y-1.5">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-red-600 to-orange-500 text-white font-black text-xs flex items-center justify-center">
+                                                {{ mb_substr($review->user?->name ?? 'ع', 0, 1) }}
+                                            </div>
+                                            <span class="font-black text-xs text-gray-900">{{ $review->user?->name ?? 'عميل موثق' }}</span>
+                                        </div>
+                                        <span class="text-[10px] text-gray-400 font-medium">{{ $review->created_at?->diffForHumans() }}</span>
+                                    </div>
+                                    
+                                    <div class="flex text-amber-400">
+                                        @for($i = 1; $i <= 5; $i++)
+                                            <svg class="w-3.5 h-3.5 {{ $i <= (int)$review->rating ? 'fill-current' : 'text-gray-200' }}" viewBox="0 0 20 20">
+                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                            </svg>
+                                        @endfor
+                                    </div>
+
+                                    @if($review->comment)
+                                        <p class="text-xs text-gray-600 leading-relaxed bg-gray-50/70 p-2.5 rounded-xl border border-gray-100">
+                                            {{ $review->comment }}
+                                        </p>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="text-center py-8 bg-gray-50 rounded-2xl border border-gray-100 space-y-2">
+                            <span class="text-2xl">⭐</span>
+                            <p class="text-xs font-bold text-gray-700">كن أول من يقيّم هذا المنتج!</p>
+                            <p class="text-[11px] text-gray-500">رأيك يهمنا ويساعد الآخرين على اتخاذ القرار الأفضل.</p>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Right: Submit Review Form -->
+                <div class="lg:col-span-5 bg-gray-50/70 rounded-2xl p-5 border border-orange-100 space-y-4">
+                    <h3 class="font-black text-xs sm:text-sm text-gray-900">أضف تقييمك وتجربتك</h3>
+
+                    @auth
+                        <form @submit.prevent="submitReview()" class="space-y-3">
+                            <div>
+                                <label class="font-bold text-[11px] text-gray-700 block mb-1">التقييم بالنجوم:</label>
+                                <div class="flex items-center gap-1.5">
+                                    <template x-for="star in [1, 2, 3, 4, 5]" :key="star">
+                                        <button type="button" 
+                                                @click="rating = star" 
+                                                class="text-2xl transition-transform hover:scale-110 cursor-pointer"
+                                                :class="star <= rating ? 'text-amber-400' : 'text-gray-300'">
+                                            ★
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="reviewComment" class="font-bold text-[11px] text-gray-700 block mb-1">تعليقك (اختياري):</label>
+                                <textarea id="reviewComment" 
+                                          x-model="comment" 
+                                          rows="3" 
+                                          placeholder="ما رأيك في جودة المنتج، الطعم، والتغليف؟"
+                                          class="w-full bg-white border border-gray-200 rounded-xl p-2.5 text-xs text-gray-900 outline-none focus:border-red-500 transition-colors"></textarea>
+                            </div>
+
+                            <button type="submit" 
+                                    :disabled="submitting"
+                                    class="w-full py-2.5 px-4 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-black transition-all disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5 shadow-sm">
+                                <span x-show="!submitting">إرسال التقييم</span>
+                                <span x-show="submitting">جاري الإرسال...</span>
+                            </button>
+                        </form>
+                    @else
+                        <div class="text-center py-4 space-y-2">
+                            <p class="text-xs text-gray-600 font-bold">يرجى تسجيل الدخول أولاً لتتمكن من إضافة تقييمك للمنتج.</p>
+                            <a href="{{ route('login') }}" class="inline-block py-2 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-black text-xs transition-colors">
+                                تسجيل الدخول
+                            </a>
+                        </div>
+                    @endauth
+                </div>
+
             </div>
 
         </div>

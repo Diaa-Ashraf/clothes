@@ -108,6 +108,64 @@
          changeDeliveryType(type) {
              this.deliveryType = type;
              this.fetchTotals();
+         },
+
+         couponCodeInput: '',
+         couponApplying: false,
+
+         applyCoupon() {
+             if (!this.couponCodeInput.trim()) {
+                 toastr.warning('يرجى كتابة كود الكوبون أولاً');
+                 return;
+             }
+             this.couponApplying = true;
+             fetch('{{ route('cart.apply-coupon') }}', {
+                 method: 'POST',
+                 headers: {
+                     'Content-Type': 'application/json',
+                     'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                     'Accept': 'application/json'
+                 },
+                 body: JSON.stringify({ coupon_code: this.couponCodeInput.trim() })
+             })
+             .then(res => res.json())
+             .then(data => {
+                 this.couponApplying = false;
+                 if (data.success) {
+                     this.totals = data.totals;
+                     this.couponCodeInput = '';
+                     toastr.success(data.message || 'تم تفعيل كود الخصم بنجاح');
+                 } else {
+                     toastr.error(data.message || 'كوبون الخصم غير صالح');
+                 }
+             })
+             .catch(() => {
+                 this.couponApplying = false;
+                 toastr.error('حدث خطأ أثناء تطبيق الكوبون');
+             });
+         },
+
+         removeCoupon() {
+             this.couponApplying = true;
+             fetch('{{ route('cart.remove-coupon') }}', {
+                 method: 'POST',
+                 headers: {
+                     'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                     'Accept': 'application/json'
+                 }
+             })
+             .then(res => res.json())
+             .then(data => {
+                 this.couponApplying = false;
+                 if (data.success) {
+                     this.totals = data.totals;
+                     toastr.info(data.message || 'تم حذف الكوبون');
+                 }
+             })
+             .catch(() => {
+                 this.couponApplying = false;
+                 toastr.error('حدث خطأ أثناء إزالة الكوبون');
+             });
          }
      }">
     
@@ -291,6 +349,56 @@
                         </div>
                     </div>
 
+                    <!-- Coupon Card -->
+                    <div class="bg-white rounded-3xl p-5 border-2 border-orange-100 shadow-sm space-y-3">
+                        <h3 class="font-black text-xs text-gray-900 flex items-center justify-between">
+                            <span>كود الخصم (كوبون)</span>
+                            <span class="text-[10px] text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full font-bold">وفّر أكثر</span>
+                        </h3>
+
+                        <!-- Coupon Form when NOT applied -->
+                        <template x-if="!totals.has_coupon">
+                            <div class="flex items-center gap-2">
+                                <input type="text" 
+                                       x-model="couponCodeInput" 
+                                       placeholder="أدخل كود الخصم هنا..." 
+                                       class="flex-1 uppercase font-black text-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-red-500 transition-colors"
+                                       @keydown.enter.prevent="applyCoupon()">
+                                <button type="button" 
+                                        @click="applyCoupon()"
+                                        :disabled="couponApplying"
+                                        class="px-4 py-2.5 bg-gray-900 hover:bg-black text-white text-xs font-black rounded-xl transition-all disabled:opacity-50 cursor-pointer shrink-0">
+                                    <span x-show="!couponApplying">تطبيق</span>
+                                    <span x-show="couponApplying">...</span>
+                                </button>
+                            </div>
+                        </template>
+
+                        <!-- Applied Coupon State -->
+                        <template x-if="totals.has_coupon">
+                            <div class="flex items-center justify-between p-3 rounded-2xl bg-emerald-50 border border-emerald-200">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-black">✓</span>
+                                    <div>
+                                        <div class="text-xs font-black text-emerald-900 flex items-center gap-1.5">
+                                            <span>كود:</span>
+                                            <span class="tracking-wider uppercase" x-text="totals.coupon_code"></span>
+                                        </div>
+                                        <div class="text-[10px] text-emerald-700 font-bold">
+                                            خصم: <span x-text="totals.formatted_discount"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" 
+                                        @click="removeCoupon()" 
+                                        class="text-xs text-red-600 hover:text-red-800 font-bold p-1 cursor-pointer"
+                                        title="حذف الكوبون">
+                                    ✕
+                                </button>
+                            </div>
+                        </template>
+                    </div>
+
                     <!-- Financial Summary Box -->
                     <div class="bg-white rounded-3xl p-6 border-2 border-orange-100 shadow-sm space-y-4">
                         <h3 class="font-black text-sm text-gray-900 border-b border-gray-100 pb-3">ملخص الحساب</h3>
@@ -300,6 +408,14 @@
                                 <span>المجموع الفرعي</span>
                                 <span class="font-bold text-gray-900 tabular-nums" x-text="totals.formatted_subtotal"></span>
                             </div>
+
+                            <!-- Discount Row -->
+                            <template x-if="totals.has_coupon && totals.discount_amount > 0">
+                                <div class="flex items-center justify-between text-emerald-600 font-bold bg-emerald-50/70 p-2 rounded-xl border border-emerald-100">
+                                    <span>خصم الكوبون (<span x-text="totals.coupon_code"></span>)</span>
+                                    <span class="tabular-nums">- <span x-text="totals.formatted_discount"></span></span>
+                                </div>
+                            </template>
 
                             <div class="flex items-center justify-between text-gray-600">
                                 <span>رسوم التوصيل</span>

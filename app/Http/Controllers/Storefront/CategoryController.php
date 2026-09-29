@@ -15,13 +15,15 @@ class CategoryController extends Controller
      */
     public function index(): View
     {
-        $categories = Category::select(['id', 'name', 'slug', 'image', 'description'])
-            ->active()
-            ->withCount(['products' => function ($q) {
-                $q->active();
-            }])
-            ->ordered()
-            ->paginate(16);
+        $categories = Cache::remember('storefront_all_categories_page_' . request('page', 1), 1800, function () {
+            return Category::select(['id', 'name', 'slug', 'image', 'description'])
+                ->active()
+                ->withCount(['products' => function ($q) {
+                    $q->active();
+                }])
+                ->ordered()
+                ->paginate(16);
+        });
 
         return view('storefront.categories.index', compact('categories'));
     }
@@ -83,12 +85,14 @@ class CategoryController extends Controller
 
         $products = $query->paginate(16)->withQueryString();
 
-        // Other categories for sidebar
-        $otherCategories = Category::select(['id', 'name', 'slug'])
-            ->active()
-            ->withCount(['products' => fn($q) => $q->active()])
-            ->ordered()
-            ->get();
+        // Other categories for sidebar (cached for 1 hour)
+        $otherCategories = Cache::remember('storefront_sidebar_categories', 3600, function () {
+            return Category::select(['id', 'name', 'slug'])
+                ->active()
+                ->withCount(['products' => fn($q) => $q->active()])
+                ->ordered()
+                ->get();
+        });
 
         return view('storefront.categories.show', compact('category', 'products', 'otherCategories', 'sort'));
     }

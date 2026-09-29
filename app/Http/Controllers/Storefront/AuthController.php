@@ -32,7 +32,7 @@ class AuthController extends Controller
      */
     public function login(LoginRequest $request): RedirectResponse
     {
-        $loginInput = trim($request->input('login'));
+        $loginInput = trim($request->input('login', $request->input('email', '')));
         $password = $request->input('password');
         $remember = $request->boolean('remember');
 
@@ -92,7 +92,7 @@ class AuthController extends Controller
 
         $user = User::create([
             'name' => trim($validated['name']),
-            'phone' => trim($validated['phone']),
+            'phone' => !empty($validated['phone']) ? trim($validated['phone']) : null,
             'email' => strtolower(trim($validated['email'])),
             'password' => Hash::make($validated['password']),
             'address' => $validated['address'] ?? null,

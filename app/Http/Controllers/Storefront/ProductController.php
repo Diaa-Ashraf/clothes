@@ -93,8 +93,8 @@ class ProductController extends Controller
     public function show(int|string $id): View
     {
         $product = is_numeric($id)
-            ? Product::with(['category'])->findOrFail($id)
-            : Product::with(['category'])->where('slug', $id)->firstOrFail();
+            ? Product::with(['category', 'images', 'reviews' => fn($q) => $q->approved()->latest()->with('user:id,name')])->findOrFail($id)
+            : Product::with(['category', 'images', 'reviews' => fn($q) => $q->approved()->latest()->with('user:id,name')])->where('slug', $id)->firstOrFail();
 
         // Related products from the same category
         $relatedProducts = Product::select([

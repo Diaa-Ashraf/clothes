@@ -42,7 +42,7 @@ class CategoryController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreCategoryRequest $request): RedirectResponse
+    public function store(StoreCategoryRequest $request, \App\Services\ImageService $imageService): RedirectResponse
     {
         $data = $request->safe()->except('image');
 
@@ -53,7 +53,7 @@ class CategoryController extends Controller
         }
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('assets/uploads/category', 'public');
+            $data['image'] = $imageService->uploadAsWebp($request->file('image'), 'assets/uploads/category');
         }
 
         Category::create($data);
@@ -77,7 +77,7 @@ class CategoryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateCategoryRequest $request, Category $category): RedirectResponse
+    public function update(UpdateCategoryRequest $request, Category $category, \App\Services\ImageService $imageService): RedirectResponse
     {
         $data = $request->safe()->except('image');
 
@@ -86,10 +86,8 @@ class CategoryController extends Controller
         }
 
         if ($request->hasFile('image')) {
-            if ($category->image) {
-                Storage::disk('public')->delete($category->image);
-            }
-            $data['image'] = $request->file('image')->store('assets/uploads/category', 'public');
+            $imageService->deleteImage($category->image);
+            $data['image'] = $imageService->uploadAsWebp($request->file('image'), 'assets/uploads/category');
         }
 
         $category->update($data);

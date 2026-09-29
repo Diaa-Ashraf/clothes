@@ -25,7 +25,11 @@ class RouteServiceProvider extends ServiceProvider
     public function boot(): void
     {
         RateLimiter::for('login', function (Request $request) {
-            return Limit::perMinute(5)->by($request->input('email') . $request->ip());
+            return Limit::perMinute(5)->by($request->input('email') . '|' . $request->input('phone') . '|' . $request->ip());
+        });
+
+        RateLimiter::for('coupon-apply', function (Request $request) {
+            return Limit::perMinute(5)->by($request->ip());
         });
 
         RateLimiter::for('checkout', function (Request $request) {

@@ -49,6 +49,8 @@ class Order extends Model
         'address',
         'phone',
         'payment_method',
+        'coupon_code',
+        'discount_amount',
         'payment_proof_image',
         'instapay_reference',
         'notes',

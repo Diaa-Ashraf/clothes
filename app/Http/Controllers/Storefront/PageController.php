@@ -103,7 +103,7 @@ class PageController extends Controller
         }
 
         // Active Products
-        $products = \App\Models\Product::select(['id', 'updated_at'])
+        $products = \App\Models\Product::select(['id', 'slug', 'updated_at'])
             ->where('is_active', true)
             ->where('is_available', true)
             ->latest('updated_at')
@@ -112,7 +112,7 @@ class PageController extends Controller
 
         foreach ($products as $prod) {
             $urls[] = [
-                'loc' => route('product.show', $prod->id),
+                'loc' => route('product.show', $prod->slug ?: $prod->id),
                 'lastmod' => $prod->updated_at ? $prod->updated_at->toDateString() : now()->toDateString(),
                 'changefreq' => 'weekly',
                 'priority' => '0.7',

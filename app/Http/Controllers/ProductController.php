@@ -60,12 +60,12 @@ class ProductController extends Controller
         return view('admin.products.create', compact('categories'));
     }
 
-    public function store(StoreProductRequest $request): RedirectResponse
+    public function store(StoreProductRequest $request, \App\Services\ImageService $imageService): RedirectResponse
     {
         $data = $request->validated();
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('products', 'public');
+            $data['image'] = $imageService->uploadAsWebp($request->file('image'), 'products');
         } else {
             $data['image'] = 'default.jpg';
         }
@@ -93,16 +93,14 @@ class ProductController extends Controller
         return view('admin.products.edit', compact('product', 'categories'));
     }
 
-    public function update(UpdateProductRequest $request, int $id): RedirectResponse
+    public function update(UpdateProductRequest $request, int $id, \App\Services\ImageService $imageService): RedirectResponse
     {
         $product = Product::findOrFail($id);
         $data = $request->validated();
 
         if ($request->hasFile('image')) {
-            if ($product->image && Storage::disk('public')->exists($product->image)) {
-                Storage::disk('public')->delete($product->image);
-            }
-            $data['image'] = $request->file('image')->store('products', 'public');
+            $imageService->deleteImage($product->image);
+            $data['image'] = $imageService->uploadAsWebp($request->file('image'), 'products');
         }
 
         $stock = (int)($data['stock_quantity'] ?? $data['quantity'] ?? $product->stock_quantity);

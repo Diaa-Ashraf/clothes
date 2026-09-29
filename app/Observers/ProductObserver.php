@@ -32,5 +32,12 @@ class ProductObserver
             Cache::forget('site_nav_categories_' . $locale);
             Cache::forget('site_homepage_categories_' . $locale);
         }
+
+        // Storefront home and category cache keys
+        Cache::forget('storefront_home_featured_products');
+        Cache::forget('storefront_home_latest_products');
+        Cache::forget('storefront_home_deals');
+        Cache::forget('storefront_home_categories');
+        Cache::forget('storefront_sidebar_categories');
     }
 }

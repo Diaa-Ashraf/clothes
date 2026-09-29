@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Session;
 
 class CartService
 {
-    protected string $sessionKey = 'regalest_cart';
+    protected string $sessionKey = 'tawhid_cart';
 
     /**
      * Get all items currently in cart
@@ -336,8 +336,37 @@ class CartService
         return (float) settings('delivery_fee', 15.0);
     }
 
+    protected string $couponSessionKey = 'tawhid_coupon';
+
     /**
-     * Calculate financial totals: subtotal, tax, delivery fee, grand total
+     * Apply a coupon to cart session
+     */
+    public function applyCoupon(string $code, float $discount): void
+    {
+        Session::put($this->couponSessionKey, [
+            'code' => trim(strtoupper($code)),
+            'discount' => $discount,
+        ]);
+    }
+
+    /**
+     * Get applied coupon data
+     */
+    public function getAppliedCoupon(): ?array
+    {
+        return Session::get($this->couponSessionKey, null);
+    }
+
+    /**
+     * Remove applied coupon from session
+     */
+    public function removeCoupon(): void
+    {
+        Session::forget($this->couponSessionKey);
+    }
+
+    /**
+     * Calculate financial totals: subtotal, discount, tax, delivery fee, grand total
      */
     public function getTotals(?string $deliveryType = 'delivery'): array
     {
@@ -346,22 +375,45 @@ class CartService
             $subtotal += (float)($item['total'] ?? 0);
         }
 
+        $couponData = $this->getAppliedCoupon();
+        $discountAmount = 0.0;
+        $couponCode = null;
+
+        if ($couponData) {
+            $couponCode = $couponData['code'] ?? null;
+            // Validate coupon dynamically against subtotal
+            $couponService = app(CouponService::class);
+            $validation = $couponService->validateCoupon($couponCode, $subtotal, auth()->id());
+            if ($validation['valid']) {
+                $discountAmount = (float)$validation['discount'];
+            } else {
+                $this->removeCoupon();
+                $couponCode = null;
+            }
+        }
+
+        $discountedSubtotal = max(0.0, $subtotal - $discountAmount);
         $taxRate = (float) settings('tax_rate', 0); // Configurable, default 0%
-        $taxAmount = $subtotal * ($taxRate / 100);
-        $deliveryFee = $this->getDeliveryFee($deliveryType, $subtotal);
+        $taxAmount = $discountedSubtotal * ($taxRate / 100);
+        $deliveryFee = $this->getDeliveryFee($deliveryType, $discountedSubtotal);
         $freeThreshold = (float) settings('free_delivery_threshold', 0.0);
-        $grandTotal = $subtotal + $taxAmount + $deliveryFee;
+        $grandTotal = $discountedSubtotal + $taxAmount + $deliveryFee;
 
         return [
             'subtotal' => $subtotal,
+            'discount_amount' => $discountAmount,
+            'coupon_code' => $couponCode,
+            'has_coupon' => !empty($couponCode),
+            'discounted_subtotal' => $discountedSubtotal,
             'tax_rate' => $taxRate,
             'tax_amount' => $taxAmount,
             'delivery_fee' => $deliveryFee,
             'free_delivery_threshold' => $freeThreshold,
-            'is_free_delivery' => ($deliveryType === 'pickup') || ($freeThreshold > 0 && $subtotal >= $freeThreshold),
+            'is_free_delivery' => ($deliveryType === 'pickup') || ($freeThreshold > 0 && $discountedSubtotal >= $freeThreshold),
             'delivery_type' => $deliveryType,
             'grand_total' => $grandTotal,
             'formatted_subtotal' => format_currency($subtotal),
+            'formatted_discount' => format_currency($discountAmount),
             'formatted_tax' => format_currency($taxAmount),
             'formatted_delivery_fee' => $deliveryFee > 0 ? format_currency($deliveryFee) : __('مجاناً'),
             'formatted_total' => format_currency($grandTotal),

@@ -36,9 +36,4 @@ class Review extends Model
     {
         return $query->where('approved', true);
     }
-
-    public function scopeWithRating($query)
-    {
-        return $query->withAvg('rating');
-    }
 }

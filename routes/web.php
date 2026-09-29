@@ -43,10 +43,10 @@ Route::get('change-language/{lang}', function ($lang) {
     return redirect()->back();
 })->name('change.language');
 
-// Change Currency Route (USD / SYP)
+// Change Currency Route (EGP / USD)
 Route::get('change-currency/{currency}', function ($currency) {
-    if (in_array($currency, ['USD', 'SYP'])) {
-        session()->put('currency', $currency);
+    if (in_array(strtoupper($currency), ['EGP', 'USD'])) {
+        session()->put('currency', strtoupper($currency));
     }
     return redirect()->back();
 })->name('change.currency');
@@ -72,9 +72,11 @@ Route::middleware('auth')->prefix('account')->group(function () {
     Route::post('/orders/{id}/reorder', [\App\Http\Controllers\Storefront\OrderController::class, 'reorder'])->name('account.orders.reorder');
 });
 
-// Legacy Profile Alias
+// Legacy Profile Routes
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [\App\Http\Controllers\Storefront\AccountController::class, 'profile'])->name('profile.edit');
+    Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [\App\Http\Controllers\ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 // Storefront Routes (Phase 3)
@@ -90,7 +92,7 @@ Route::get('/site/products', [\App\Http\Controllers\Storefront\ProductController
 Route::get('/product/shop', [\App\Http\Controllers\Storefront\ProductController::class, 'shop'])->name('product.shop');
 Route::get('/shop', [\App\Http\Controllers\Storefront\ProductController::class, 'shop'])->name('shop');
 Route::get('/products/details/{id}', [\App\Http\Controllers\Storefront\ProductController::class, 'show'])->name('product.details');
-Route::get('/product/{id}', [\App\Http\Controllers\Storefront\ProductController::class, 'show'])->name('product.show');
+Route::get('/product/{slug}', [\App\Http\Controllers\Storefront\ProductController::class, 'show'])->name('product.show');
 Route::get('/filter-products', [\App\Http\Controllers\Storefront\ProductController::class, 'shop'])->name('filter.products');
 
 // Search & Live Autocomplete
@@ -107,6 +109,8 @@ Route::post('bundle/add-to-cart', [\App\Http\Controllers\Storefront\CartControll
 Route::post('update-cart-quantity', [\App\Http\Controllers\Storefront\CartController::class, 'updateQuantity'])->name('update.cart.quantity');
 Route::post('remove-from-cart', [\App\Http\Controllers\Storefront\CartController::class, 'removeItem'])->name('removefromcart');
 Route::post('clear-cart', [\App\Http\Controllers\Storefront\CartController::class, 'clearCart'])->name('clearcart');
+Route::post('cart/apply-coupon', [\App\Http\Controllers\Storefront\CartController::class, 'applyCoupon'])->middleware('throttle:coupon-apply')->name('cart.apply-coupon');
+Route::post('cart/remove-coupon', [\App\Http\Controllers\Storefront\CartController::class, 'removeCoupon'])->name('cart.remove-coupon');
 
 // Wishlist Routes
 Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
@@ -115,6 +119,9 @@ Route::post('/wishlist/add/{id}', [WishlistController::class, 'add'])->name('wis
 Route::post('/wishlist/remove/{id}', [WishlistController::class, 'remove'])->name('wishlist.remove');
 Route::post('/wishlist/clear', [WishlistController::class, 'clear'])->name('wishlist.clear');
 Route::get('/wishlist/count', [WishlistController::class, 'count'])->name('wishlist.count');
+
+// Product Reviews
+Route::post('/reviews', [\App\Http\Controllers\Storefront\ReviewController::class, 'store'])->middleware('auth')->name('reviews.store');
 
 // Checkout Flow (Phase 4)
 Route::get('checkout', [\App\Http\Controllers\Storefront\CheckoutController::class, 'index'])->name('checkout.index');
@@ -199,6 +206,16 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     // Single Deals & Discounts
     Route::resource('/deals', \App\Http\Controllers\Admin\DealController::class);
     Route::get('/deals-admin', [\App\Http\Controllers\Admin\DealController::class, 'index'])->name('admin.deals.index');
+
+    // Coupons & Vouchers Management
+    Route::resource('/coupons', \App\Http\Controllers\Admin\CouponController::class)->names([
+        'index' => 'admin.coupons.index',
+        'create' => 'admin.coupons.create',
+        'store' => 'admin.coupons.store',
+        'edit' => 'admin.coupons.edit',
+        'update' => 'admin.coupons.update',
+        'destroy' => 'admin.coupons.destroy',
+    ]);
 
     // Weekly Offers Magazine Campaigns (Phase 7 - Unified System)
     Route::patch('/magazines/{magazine}/toggle-active', [\App\Http\Controllers\Admin\MagazineController::class, 'toggleActive'])->name('admin.magazines.toggle-active');
