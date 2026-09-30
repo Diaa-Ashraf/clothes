@@ -10,15 +10,9 @@ class AdminUserSeeder extends Seeder
 {
     public function run(): void
     {
-        $adminPassword = env('ADMIN_INITIAL_PASSWORD');
-        $isGenerated = false;
+        $adminPassword = env('ADMIN_INITIAL_PASSWORD', '12345678');
 
-        if (empty($adminPassword)) {
-            $adminPassword = \Illuminate\Support\Str::password(16);
-            $isGenerated = true;
-        }
-
-        $admin = User::firstOrCreate(
+        $admin = User::updateOrCreate(
             ['email' => 'admin@altawheed.com'],
             [
                 'name' => 'مدير ألبان التوحيد',
@@ -40,11 +34,6 @@ class AdminUserSeeder extends Seeder
                 'password' => Hash::make($adminPassword),
             ]);
             $oldAdmin->syncRoles(['super_admin']);
-        }
-
-        if ($isGenerated) {
-            $this->command?->warn("Generated Super Admin Password: {$adminPassword}");
-            $this->command?->info("Please change this password immediately upon first login!");
         }
     }
 }
