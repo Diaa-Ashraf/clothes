@@ -35,14 +35,31 @@ class AbandonedCartService
     }
 
     /**
+     * Mark cart as recovered for user or current session
+     */
+    public function markRecoveredForUserOrSession(?User $user = null, ?string $sessionId = null): void
+    {
+        $id = $sessionId ?? Session::getId();
+
+        $query = AbandonedCart::where('is_recovered', false);
+
+        if ($user?->id) {
+            $query->where(function ($q) use ($user, $id) {
+                $q->where('user_id', $user->id)
+                  ->orWhere('session_id', $id);
+            });
+        } else {
+            $query->where('session_id', $id);
+        }
+
+        $query->update(['is_recovered' => true]);
+    }
+
+    /**
      * Mark cart as recovered once an order is placed
      */
     public function markAsRecovered(?string $sessionId = null): void
     {
-        $id = $sessionId ?? Session::getId();
-
-        AbandonedCart::where('session_id', $id)
-            ->where('is_recovered', false)
-            ->update(['is_recovered' => true]);
+        $this->markRecoveredForUserOrSession(null, $sessionId);
     }
 }
