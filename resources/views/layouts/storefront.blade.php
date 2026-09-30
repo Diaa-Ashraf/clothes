@@ -3,57 +3,57 @@
 <html lang="ar" dir="rtl">
 
 <head>
- <meta charset="UTF-8">
- <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <meta http-equiv="X-UA-Compatible" content="ie=edge">
- <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
- <title>@yield('title', settings('site_name', 'Ø£Ù„Ø¨Ø§Ù† ÙˆØ³ÙˆØ¨Ø±Ù…Ø§Ø±ÙƒØª Ø§Ù„ØªÙˆØ­ÙŠØ¯')) | Ø§Ù„Ø¹Ø§Ù…Ø±ÙŠØ© - Ø§Ù„Ø¥Ø³ÙƒÙ†Ø¯Ø±ÙŠØ©</title>
- <meta name="description" content="@yield('meta_description', 'Ø£Ù„Ø¨Ø§Ù† ÙˆØ³ÙˆØ¨Ø±Ù…Ø§Ø±ÙƒØª Ø§Ù„ØªÙˆØ­ÙŠØ¯ ÙÙŠ Ø§Ù„Ø¹Ø§Ù…Ø±ÙŠØ©ØŒ Ø§Ù„Ø¥Ø³ÙƒÙ†Ø¯Ø±ÙŠØ©. Ø£Ø¬ÙˆØ¯ Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„Ø£Ù„Ø¨Ø§Ù† ÙˆØ§Ù„Ø£Ø¬Ø¨Ø§Ù† Ø§Ù„Ø·Ø¨ÙŠØ¹ÙŠØ© ÙˆØ§Ù„Ø³Ù„Ø¹ Ø§Ù„ØºØ°Ø§Ø¦ÙŠØ© ÙˆØ®Ø¯Ù…Ø© ØªÙˆØµÙŠÙ„ ÙÙˆØ±ÙŠØ©.')">
- <meta name="keywords" content="@yield('meta_keywords', 'Ø£Ù„Ø¨Ø§Ù† Ø§Ù„ØªÙˆØ­ÙŠØ¯, Ø³ÙˆØ¨Ø±Ù…Ø§Ø±ÙƒØª Ø§Ù„ØªÙˆØ­ÙŠØ¯, Ø¬Ø¨Ù† Ø¨Ù„Ø¯ÙŠ, Ø£Ù„Ø¨Ø§Ù† Ø§Ù„Ø¹Ø§Ù…Ø±ÙŠØ©, ØªÙˆØµÙŠÙ„ Ø·Ù„Ø¨Ø§Øª Ø§Ù„Ø¹Ø§Ù…Ø±ÙŠØ©, Ø³ÙˆØ¨Ø±Ù…Ø§Ø±ÙƒØª Ø§Ù„Ø¥Ø³ÙƒÙ†Ø¯Ø±ÙŠØ©, ÙƒÙŠÙ†Ø¬ Ù…Ø±ÙŠÙˆØ·')">
- <link rel="canonical" href="{{ url()->current() }}" />
+    <title>@yield('title', settings('site_name', 'ألبان وسوبرماركت التوحيد')) | العامرية - الإسكندرية</title>
+    <meta name="description" content="@yield('meta_description', 'ألبان وسوبرماركت التوحيد في العامرية، الإسكندرية. أجود منتجات الألبان والأجبان الطبيعية والسلع الغذائية وخدمة توصيل فورية.')">
+    <meta name="keywords" content="@yield('meta_keywords', 'ألبان التوحيد, سوبرماركت التوحيد, جبن بلدي, ألبان العامرية, توصيل طلبات العامرية, سوبرماركت الإسكندرية, كينج مريوط')">
+    <link rel="canonical" href="{{ url()->current() }}" />
 
- <!-- Open Graph / Facebook -->
- <meta property="og:type" content="website" />
- <meta property="og:locale" content="ar_EG" />
- <meta property="og:site_name" content="Ø£Ù„Ø¨Ø§Ù† ÙˆØ³ÙˆØ¨Ø±Ù…Ø§Ø±ÙƒØª Ø§Ù„ØªÙˆØ­ÙŠØ¯" />
- <meta property="og:url" content="{{ url()->current() }}" />
- <meta property="og:title" content="@yield('title', settings('site_name', 'Ø£Ù„Ø¨Ø§Ù† ÙˆØ³ÙˆØ¨Ø±Ù…Ø§Ø±ÙƒØª Ø§Ù„ØªÙˆØ­ÙŠØ¯')) | Ø§Ù„Ø¹Ø§Ù…Ø±ÙŠØ© - Ø§Ù„Ø¥Ø³ÙƒÙ†Ø¯Ø±ÙŠØ©" />
- <meta property="og:description" content="@yield('meta_description', 'Ø£Ù„Ø¨Ø§Ù† ÙˆØ³ÙˆØ¨Ø±Ù…Ø§Ø±ÙƒØª Ø§Ù„ØªÙˆØ­ÙŠØ¯ ÙÙŠ Ø§Ù„Ø¹Ø§Ù…Ø±ÙŠØ©ØŒ Ø§Ù„Ø¥Ø³ÙƒÙ†Ø¯Ø±ÙŠØ©. Ø£Ø¬ÙˆØ¯ Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„Ø£Ù„Ø¨Ø§Ù† ÙˆØ§Ù„Ø£Ø¬Ø¨Ø§Ù† Ø§Ù„Ø·Ø¨ÙŠØ¹ÙŠØ© ÙˆØ§Ù„Ø³Ù„Ø¹ Ø§Ù„ØºØ°Ø§Ø¦ÙŠØ© ÙˆØ®Ø¯Ù…Ø© ØªÙˆØµÙŠÙ„ ÙÙˆØ±ÙŠØ©.')" />
- <meta property="og:image" content="@yield('og_image', asset('assets/site/img/og-cover.png'))" />
+    <!-- Open Graph / Facebook / WhatsApp -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ar_EG" />
+    <meta property="og:site_name" content="ألبان وسوبرماركت التوحيد" />
+    <meta property="og:url" content="{{ url()->current() }}" />
+    <meta property="og:title" content="@yield('title', settings('site_name', 'ألبان وسوبرماركت التوحيد')) | العامرية - الإسكندرية" />
+    <meta property="og:description" content="@yield('meta_description', 'ألبان وسوبرماركت التوحيد في العامرية، الإسكندرية. أجود منتجات الألبان والأجبان الطبيعية والسلع الغذائية والعروض الحصرية.')" />
+    <meta property="og:image" content="@yield('og_image', asset('assets/site/img/og-cover.png'))" />
 
- <!-- Twitter Card -->
- <meta name="twitter:card" content="summary_large_image" />
- <meta name="twitter:title" content="@yield('title', settings('site_name', 'Ø£Ù„Ø¨Ø§Ù† ÙˆØ³ÙˆØ¨Ø±Ù…Ø§Ø±ÙƒØª Ø§Ù„ØªÙˆØ­ÙŠØ¯')) | Ø§Ù„Ø¹Ø§Ù…Ø±ÙŠØ©" />
- <meta name="twitter:description" content="@yield('meta_description', 'Ø£Ù„Ø¨Ø§Ù† ÙˆØ³ÙˆØ¨Ø±Ù…Ø§Ø±ÙƒØª Ø§Ù„ØªÙˆØ­ÙŠØ¯ ÙÙŠ Ø§Ù„Ø¹Ø§Ù…Ø±ÙŠØ©ØŒ Ø§Ù„Ø¥Ø³ÙƒÙ†Ø¯Ø±ÙŠØ©.')" />
- <meta name="twitter:image" content="@yield('og_image', asset('assets/site/img/og-cover.png'))" />
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@yield('title', settings('site_name', 'ألبان وسوبرماركت التوحيد')) | العامرية" />
+    <meta name="twitter:description" content="@yield('meta_description', 'ألبان وسوبرماركت التوحيد في العامرية، الإسكندرية.')" />
+    <meta name="twitter:image" content="@yield('og_image', asset('assets/site/img/og-cover.png'))" />
 
- @yield('meta')
+    @yield('meta')
 
- <!-- Global Schema.org JSON-LD (GroceryStore / LocalBusiness) -->
- <script type="application/ld+json">
- {
- "@context": "https://schema.org",
- "@type": "GroceryStore",
- "name": "Ø£Ù„Ø¨Ø§Ù† ÙˆØ³ÙˆØ¨Ø±Ù…Ø§Ø±ÙƒØª Ø§Ù„ØªÙˆØ­ÙŠØ¯",
- "image": "{{ asset('assets/site/img/og-cover.png') }}",
- "telephone": "{{ settings('store_phone', '01000000000') }}",
- "address": {
- "@type": "PostalAddress",
- "streetAddress": "Ø´Ø§Ø±Ø¹ Ø§Ù„Ù…Ø³ØªØ´ÙÙ‰ - Ø¨Ø¬ÙˆØ§Ø± Ø§Ù„Ø¥Ø³Ø¹Ø§Ù",
- "addressLocality": "Ø§Ù„Ø¹Ø§Ù…Ø±ÙŠØ©",
- "addressRegion": "Ø§Ù„Ø¥Ø³ÙƒÙ†Ø¯Ø±ÙŠØ©",
- "addressCountry": "EG"
- },
- "priceRange": "EGP",
- "currenciesAccepted": "EGP",
- "paymentAccepted": "Cash, InstaPay",
- "openingHours": "Mo-Su 08:00-00:00",
- "url": "{{ url('/') }}"
- }
- </script>
+    <!-- Global Schema.org JSON-LD (GroceryStore / LocalBusiness) -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "GroceryStore",
+        "name": "ألبان وسوبرماركت التوحيد",
+        "image": "{{ asset('assets/site/img/og-cover.png') }}",
+        "telephone": "{{ settings('store_phone', '01000000000') }}",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "شارع المستشفى - بجوار الإسعاف",
+            "addressLocality": "العامرية",
+            "addressRegion": "الإسكندرية",
+            "addressCountry": "EG"
+        },
+        "priceRange": "EGP",
+        "currenciesAccepted": "EGP",
+        "paymentAccepted": "Cash, InstaPay",
+        "openingHours": "Mo-Su 08:00-00:00",
+        "url": "{{ url('/') }}"
+    }
+    </script>
 
- @php
+    @php
  $siteFavicon = get_site_favicon();
  @endphp
  @if($siteFavicon)

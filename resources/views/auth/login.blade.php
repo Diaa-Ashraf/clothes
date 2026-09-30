@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>تسجيل الدخول | ألبان وسوبرماركت التوحيد بالعامرية</title>
+    <meta name="description" content="تسجيل الدخول إلى لوحة تحكم ألبان وسوبرماركت التوحيد بالعامرية، الإسكندرية.">
+    
+    <!-- Open Graph / Facebook / WhatsApp -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ar_EG" />
+    <meta property="og:site_name" content="ألبان وسوبرماركت التوحيد" />
+    <meta property="og:url" content="{{ url()->current() }}" />
+    <meta property="og:title" content="تسجيل الدخول | ألبان وسوبرماركت التوحيد" />
+    <meta property="og:description" content="بوابة الدخول إلى لوحة التحكم ومتجر ألبان وسوبرماركت التوحيد - العامرية، الإسكندرية." />
+    <meta property="og:image" content="{{ asset('assets/site/img/og-cover.png') }}" />
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
