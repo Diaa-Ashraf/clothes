@@ -9,7 +9,7 @@ class UpdateCouponRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return auth()->check() && (auth()->user()->role === 'admin' || auth()->user()->hasRole('admin'));
+        return true;
     }
 
     public function rules(): array

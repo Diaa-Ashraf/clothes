@@ -28,7 +28,7 @@ class UpdateBundleRequest extends FormRequest
             'description' => 'nullable|string|max:1000',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'bundle_price' => 'required|numeric|min:0.01',
-            'products' => 'required|array|min:2|max:5',
+            'products' => 'required|array|min:1',
             'products.*.id' => 'required|exists:products,id',
             'products.*.quantity' => 'required|integer|min:1',
             'is_active' => 'boolean',

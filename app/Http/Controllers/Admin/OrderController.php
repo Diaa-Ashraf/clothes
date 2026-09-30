@@ -25,7 +25,7 @@ class OrderController extends Controller
     {
         $branches = Branch::ordered()->get();
         $products = Product::query()
-            ->select(['id', 'name', 'price', 'quantity', 'stock_quantity', 'image', 'is_available', 'portion_unit'])
+            ->select(['id', 'name', 'price', 'quantity', 'stock_quantity', 'image', 'is_available', 'unit_type', 'is_weighted'])
             ->where('is_available', true)
             ->orderBy('name', 'ASC')
             ->get();

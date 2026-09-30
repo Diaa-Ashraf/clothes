@@ -81,20 +81,26 @@
             
             <!-- Brand & Sidebar Toggle -->
             <div class="h-20 flex items-center justify-between px-4 sm:px-6 border-b border-orange-100 bg-canvas-base/50">
-                <div class="flex items-center gap-3 overflow-hidden">
-                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-red-700 via-red-600 to-orange-500 text-white flex items-center justify-center font-black text-xl shadow-md shrink-0 border border-orange-200">
-                        ت
-                    </div>
+                <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 overflow-hidden group">
+                    @if(get_site_logo())
+                        <div class="w-10 h-10 rounded-2xl bg-white p-1 flex items-center justify-center shadow-md shrink-0 border border-orange-200 overflow-hidden group-hover:scale-105 transition-transform">
+                            <img src="{{ get_site_logo() }}" alt="{{ settings('site_name', 'ألبان التوحيد') }}" class="w-full h-full object-contain">
+                        </div>
+                    @else
+                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-red-700 via-red-600 to-orange-500 text-white flex items-center justify-center font-black text-xl shadow-md shrink-0 border border-orange-200">
+                            🥛
+                        </div>
+                    @endif
                     <div x-show="!sidebarCollapsed" x-transition.opacity.duration.200ms class="min-w-0">
                         <div class="flex items-center gap-1.5">
                             <h1 class="font-black text-sm text-red-600 leading-tight truncate">
-                                ألبان التوحيد
+                                {{ settings('site_name', 'ألبان التوحيد') }}
                             </h1>
                             <span class="px-1.5 py-0.2 rounded text-[8px] font-black bg-orange-500 text-white uppercase tracking-wider">ماركت</span>
                         </div>
                         <span class="text-[10px] text-gray-500 block truncate font-bold">لوحة الإدارة والتحكم</span>
                     </div>
-                </div>
+                </a>
 
                 <!-- Desktop Collapse Button inside Sidebar Header -->
                 <button type="button" 

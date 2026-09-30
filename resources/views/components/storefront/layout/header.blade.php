@@ -30,18 +30,24 @@
             <!-- Brand Logo & Supermarket Name -->
             <div class="flex items-center gap-3">
                 <a href="{{ route('site.home') }}" class="flex items-center gap-3 group">
-                    <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-red-700 via-red-600 to-orange-500 text-white flex items-center justify-center shadow-lg shadow-red-500/25 group-hover:scale-105 transition-all duration-300 border-2 border-orange-200">
-                        <span class="text-2xl font-black font-sans">ت</span>
-                    </div>
+                    @if(get_site_logo())
+                        <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-white p-1 flex items-center justify-center shadow-lg shadow-red-500/10 group-hover:scale-105 transition-all duration-300 border-2 border-orange-200 overflow-hidden shrink-0">
+                            <img src="{{ get_site_logo() }}" alt="{{ settings('site_name', 'ألبان التوحيد') }}" class="w-full h-full object-contain">
+                        </div>
+                    @else
+                        <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-red-700 via-red-600 to-orange-500 text-white flex items-center justify-center shadow-lg shadow-red-500/25 group-hover:scale-105 transition-all duration-300 border-2 border-orange-200 shrink-0">
+                            <span class="text-2xl font-black font-sans">🥛</span>
+                        </div>
+                    @endif
                     <div class="flex flex-col">
                         <div class="flex items-center gap-1.5">
                             <span class="text-xl sm:text-2xl font-black text-red-600 tracking-tight font-sans">
-                                ألبان التوحيد
+                                {{ settings('site_name', 'ألبان التوحيد') }}
                             </span>
                             <span class="px-1.5 py-0.5 rounded text-[9px] font-black bg-orange-500 text-white uppercase tracking-wider">ماركت</span>
                         </div>
                         <span class="text-[11px] text-gray-500 font-bold">
-                            ماركت وألبان بلدية • 4 فروع بالعامرية
+                            {{ settings('site_slogan', 'ماركت وألبان بلدية • 4 فروع بالعامرية') }}
                         </span>
                     </div>
                 </a>

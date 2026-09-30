@@ -87,7 +87,7 @@
                                 </div>
                             </td>
                             <td class="py-4 px-4">
-                                <span class="px-2.5 py-1 rounded-lg bg-orange-50 border border-orange-200 text-[11px] font-bold text-orange-800">
+                                <span class="inline-block px-3 py-1 rounded-xl bg-orange-50 border border-orange-200 text-[11px] font-bold text-orange-800 whitespace-nowrap shadow-2xs">
                                     {{ $product->category?->name ?? 'غير مصنف' }}
                                 </span>
                             </td>

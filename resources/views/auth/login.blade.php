@@ -92,12 +92,18 @@
             {{-- Top Header --}}
             <div class="flex items-center justify-between mb-6">
                 <a href="{{ route('site.home') }}" class="flex items-center gap-3 group">
-                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-red-700 via-red-600 to-orange-500 text-white flex items-center justify-center font-black text-xl shadow-md border border-orange-200">
-                        ت
-                    </div>
+                    @if(get_site_logo())
+                        <div class="w-10 h-10 rounded-2xl bg-white p-1 flex items-center justify-center shadow-md border border-orange-200 overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
+                            <img src="{{ get_site_logo() }}" alt="{{ settings('site_name', 'ألبان التوحيد') }}" class="w-full h-full object-contain">
+                        </div>
+                    @else
+                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-red-700 via-red-600 to-orange-500 text-white flex items-center justify-center font-black text-xl shadow-md border border-orange-200 shrink-0">
+                            🥛
+                        </div>
+                    @endif
                     <div class="flex flex-col">
                         <div class="flex items-center gap-1.5">
-                            <span class="text-base font-black text-red-600">ألبان التوحيد</span>
+                            <span class="text-base font-black text-red-600">{{ settings('site_name', 'ألبان التوحيد') }}</span>
                             <span class="px-1.5 py-0.2 rounded text-[8px] font-black bg-orange-500 text-white uppercase">ماركت</span>
                         </div>
                         <span class="text-[10px] text-gray-400 font-bold">العامرية • الإسكندرية</span>
