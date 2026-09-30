@@ -53,6 +53,11 @@ class OrderService
 
             // Determine initial status based on payment method
             $paymentMethod = $customerData['payment_method'] ?? Order::PAYMENT_METHOD_CASH;
+            if ($paymentMethod === 'cash' || $paymentMethod === 'cod') {
+                $paymentMethod = (($customerData['delivery_type'] ?? '') === Order::DELIVERY_TYPE_PICKUP)
+                    ? Order::PAYMENT_METHOD_BRANCH
+                    : Order::PAYMENT_METHOD_CASH;
+            }
             $initialStatus = ($paymentMethod === Order::PAYMENT_METHOD_INSTAPAY)
                 ? Order::STATUS_UNDER_REVIEW
                 : Order::STATUS_PENDING;

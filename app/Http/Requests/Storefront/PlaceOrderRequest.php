@@ -35,6 +35,17 @@ class PlaceOrderRequest extends FormRequest
 
             $this->merge(['phone' => $phone]);
         }
+
+        // Normalize payment_method if sent as 'cash' or 'cod'
+        if ($this->has('payment_method')) {
+            $pm = (string) $this->input('payment_method');
+            if ($pm === 'cash' || $pm === 'cod') {
+                $pm = ($this->input('delivery_type') === Order::DELIVERY_TYPE_PICKUP)
+                    ? Order::PAYMENT_METHOD_BRANCH
+                    : Order::PAYMENT_METHOD_CASH;
+            }
+            $this->merge(['payment_method' => $pm]);
+        }
     }
 
     public function rules(): array
@@ -46,7 +57,17 @@ class PlaceOrderRequest extends FormRequest
             'delivery_type' => 'required|in:' . Order::DELIVERY_TYPE_DELIVERY . ',' . Order::DELIVERY_TYPE_PICKUP,
             'branch_id' => 'required|exists:branches,id',
             'address' => 'required_if:delivery_type,' . Order::DELIVERY_TYPE_DELIVERY . '|nullable|string|min:5|max:300',
-            'payment_method' => 'required|in:' . Order::PAYMENT_METHOD_CASH . ',' . Order::PAYMENT_METHOD_INSTAPAY,
+            'payment_method' => [
+                'required',
+                'string',
+                'in:' . implode(',', [
+                    Order::PAYMENT_METHOD_CASH,
+                    Order::PAYMENT_METHOD_INSTAPAY,
+                    Order::PAYMENT_METHOD_BRANCH,
+                    'cash',
+                    'cod',
+                ]),
+            ],
             'payment_proof_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
             'instapay_reference' => 'nullable|string|max:100',
             'notes' => 'nullable|string|max:500',

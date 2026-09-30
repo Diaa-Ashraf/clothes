@@ -64,6 +64,7 @@ class CheckoutFlowTest extends TestCase
         $checkoutData = [
             'name' => 'محمد إبراهيم',
             'phone' => '01012345678',
+            'branch_id' => $this->branch->id,
             'address' => 'العامرية، شارع المركز التجاري',
             'delivery_type' => Order::DELIVERY_TYPE_DELIVERY,
             'payment_method' => Order::PAYMENT_METHOD_CASH,
@@ -104,6 +105,7 @@ class CheckoutFlowTest extends TestCase
         $checkoutData = [
             'name' => 'سارة حسام',
             'phone' => '01122334455',
+            'branch_id' => $this->branch->id,
             'address' => 'العامرية، مساكن العرائس',
             'delivery_type' => Order::DELIVERY_TYPE_DELIVERY,
             'payment_method' => Order::PAYMENT_METHOD_INSTAPAY,
@@ -128,5 +130,32 @@ class CheckoutFlowTest extends TestCase
 
         // Stock should be deducted by 2
         $this->assertEquals(23, $this->product->fresh()->stock_quantity);
+    }
+
+    public function test_complete_checkout_flow_with_simple_cash_string(): void
+    {
+        $this->postJson(route('AddToCart', $this->product->id), [
+            'quantity' => 1,
+            'portion_type' => 'piece',
+        ])->assertOk();
+
+        $checkoutData = [
+            'name' => 'أحمد سمير',
+            'phone' => '01234567890',
+            'branch_id' => $this->branch->id,
+            'delivery_type' => Order::DELIVERY_TYPE_DELIVERY,
+            'payment_method' => 'cash',
+            'address' => 'العامرية بجوار كوبري العامرية',
+        ];
+
+        $response = $this->post(route('checkout.place'), $checkoutData);
+        $response->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('orders', [
+            'customer_name' => 'أحمد سمير',
+            'phone' => '01234567890',
+            'payment_method' => Order::PAYMENT_METHOD_CASH,
+            'status' => Order::STATUS_PENDING,
+        ]);
     }
 }
