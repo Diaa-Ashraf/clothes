@@ -234,35 +234,58 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach($bundles as $bundle)
-                <div class="bg-white rounded-3xl border-2 border-orange-100 hover:border-orange-400 p-6 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between space-y-4 hover:-translate-y-1">
-                    <div class="space-y-3.5">
-                        <div class="flex items-start justify-between gap-3">
-                            <div>
-                                <span class="inline-block px-3 py-1 rounded-full text-xs font-black bg-gradient-to-r from-red-600 to-orange-500 text-white shadow-xs">
-                                    خصم {{ $bundle->discount_percent }}%
-                                </span>
-                                <h3 class="text-base font-black text-gray-900 mt-2">{{ $bundle->name }}</h3>
+                <div class="bg-white rounded-3xl border-2 border-orange-100 hover:border-red-500/50 p-5 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between space-y-4 hover:-translate-y-1">
+                    <div class="space-y-4">
+                        @if($bundle->image_url)
+                            <div class="relative w-full h-44 rounded-2xl overflow-hidden bg-canvas-base border border-orange-100/60 shadow-inner">
+                                <img src="{{ $bundle->image_url }}" alt="{{ $bundle->name }}" class="w-full h-full object-cover object-center">
+                                @if($bundle->discount_percent > 0)
+                                    <span class="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-black bg-gradient-to-r from-red-600 to-rose-500 text-white shadow-md">
+                                        خصم {{ $bundle->discount_percent }}%
+                                    </span>
+                                @endif
                             </div>
-                            @if($bundle->image_url)
-                                <img src="{{ $bundle->image_url }}" alt="{{ $bundle->name }}" class="w-20 h-20 object-contain rounded-2xl bg-orange-50/50 p-1.5 border border-orange-100 shrink-0">
-                            @endif
-                        </div>
+                        @else
+                            <div class="relative w-full rounded-2xl bg-canvas-base border border-orange-100 p-3 shadow-inner">
+                                <div class="flex items-center justify-center gap-2 flex-wrap py-2">
+                                    @foreach($bundle->products->take(4) as $p)
+                                        <div class="w-12 h-12 rounded-xl bg-white p-1 border border-orange-200/80 shadow-2xs flex items-center justify-center overflow-hidden">
+                                            <img src="{{ $p->image_url ?? asset('assets/site/img/product/product-1.jpg') }}" alt="{{ $p->name }}" class="w-full h-full object-cover rounded-lg">
+                                        </div>
+                                        @if(!$loop->last)
+                                            <span class="text-orange-400 font-black text-xs">+</span>
+                                        @endif
+                                    @endforeach
+                                </div>
+                                @if($bundle->discount_percent > 0)
+                                    <span class="absolute top-2 right-2 px-2.5 py-0.5 rounded-full text-[11px] font-black bg-gradient-to-r from-red-600 to-rose-500 text-white shadow-sm">
+                                        خصم {{ $bundle->discount_percent }}%
+                                    </span>
+                                @endif
+                            </div>
+                        @endif
 
-                        <p class="text-xs text-gray-500 leading-relaxed line-clamp-2 font-medium">
-                            {{ $bundle->description ?: 'باقة توفير مميزة تشمل أهم الأصناف الأساسية بأفضل جودة وسعر مخفض.' }}
-                        </p>
+                        <div>
+                            <h3 class="text-base font-black text-gray-900">{{ $bundle->name }}</h3>
+                            <p class="text-xs text-gray-500 leading-relaxed line-clamp-2 font-medium mt-1">
+                                {{ $bundle->description ?: 'باقة توفير مميزة تشمل أهم الأصناف الأساسية بأفضل جودة وسعر مخفض.' }}
+                            </p>
+                        </div>
 
                         <!-- Included items breakdown -->
                         @if($bundle->products->isNotEmpty())
                         <div class="bg-gradient-to-br from-orange-50/60 to-red-50/40 rounded-2xl p-3.5 space-y-2 border border-orange-100">
-                            <span class="text-[11px] font-black text-gray-900 block">محتويات الباقة:</span>
+                            <span class="text-[11px] font-black text-gray-900 block flex items-center gap-1.5">
+                                <span>🛍️</span>
+                                <span>محتويات الباقة:</span>
+                            </span>
                             <ul class="text-xs text-gray-600 space-y-1.5">
-                                @foreach($bundle->products->take(4) as $p)
+                                @foreach($bundle->products as $p)
                                 <li class="flex items-center justify-between text-[11px]">
-                                    <span class="font-medium">• {{ $p->name }}</span>
-                                    @if(isset($p->pivot->quantity) && $p->pivot->quantity > 1)
-                                        <span class="font-black text-orange-600">({{ $p->pivot->quantity }} قطع)</span>
-                                    @endif
+                                    <span class="font-bold text-gray-800">• {{ $p->name }}</span>
+                                    <span class="px-2 py-0.5 rounded-md bg-white border border-orange-200 font-black text-[10px] text-red-600">
+                                        {{ $p->pivot->quantity ?? 1 }}x
+                                    </span>
                                 </li>
                                 @endforeach
                             </ul>
