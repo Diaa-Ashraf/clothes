@@ -19,7 +19,7 @@ class PlaceOrderRequest extends FormRequest
             'phone' => ['required', 'string', 'regex:/^(01)[0-2,5]{1}[0-9]{8}$/'],
             'email' => 'nullable|email|max:150',
             'delivery_type' => 'required|in:' . Order::DELIVERY_TYPE_DELIVERY . ',' . Order::DELIVERY_TYPE_PICKUP,
-            'branch_id' => 'required_if:delivery_type,' . Order::DELIVERY_TYPE_PICKUP . '|nullable|exists:branches,id',
+            'branch_id' => 'required|exists:branches,id',
             'address' => 'required_if:delivery_type,' . Order::DELIVERY_TYPE_DELIVERY . '|nullable|string|min:5|max:300',
             'payment_method' => 'required|in:' . Order::PAYMENT_METHOD_CASH . ',' . Order::PAYMENT_METHOD_INSTAPAY,
             'payment_proof_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
