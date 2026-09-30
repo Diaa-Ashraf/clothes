@@ -19,7 +19,7 @@
  </p>
  </div>
 
-        <a href="{{ route('banners.create') }}" class="px-5 py-3 rounded-2xl bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white text-xs font-black shadow-md shadow-red-500/20 transition-all flex items-center gap-2 shrink-0 cursor-pointer">
+        <a href="{{ route('admin.banners.create') }}" class="px-5 py-3 rounded-2xl bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white text-xs font-black shadow-md shadow-red-500/20 transition-all flex items-center gap-2 shrink-0 cursor-pointer">
             <span>+</span>
             <span>{{ __('إضافة بانر جديد') }}</span>
         </a>
@@ -72,10 +72,10 @@
  </td>
  <td class="py-4 px-6 text-end">
  <div class="flex items-center justify-end gap-2">
- <a href="{{ route('banners.edit', $banner->id) }}" class="px-3 py-1.5 rounded-lg border border-[border-orange-100] bg-[bg-canvas-base] hover:bg-[border-orange-100] text-[#1F2937] font-semibold text-xs transition-colors">
+ <a href="{{ route('admin.banners.edit', $banner->id) }}" class="px-3 py-1.5 rounded-lg border border-[border-orange-100] bg-[bg-canvas-base] hover:bg-[border-orange-100] text-[#1F2937] font-semibold text-xs transition-colors">
  {{ __('تعديل') }}
  </a>
- <form action="{{ route('banners.destroy', $banner->id) }}" method="POST" data-confirm-message="{{ __('هل أنت متأكد من رغبتك في حذف هذا البانر الإعلاني؟') }}">
+ <form action="{{ route('admin.banners.destroy', $banner->id) }}" method="POST" data-confirm-message="{{ __('هل أنت متأكد من رغبتك في حذف هذا البانر الإعلاني؟') }}">
  @csrf
  @method('DELETE')
  <button type="submit" class="px-3 py-1.5 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold text-xs transition-colors">

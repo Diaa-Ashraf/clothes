@@ -234,6 +234,14 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::delete('/bundles-admin/{bundle}', [\App\Http\Controllers\Admin\BundleController::class, 'destroy'])->name('admin.bundles.legacy-destroy');
     Route::put('/bundles-admin/{bundle}', [\App\Http\Controllers\Admin\BundleController::class, 'update'])->name('admin.bundles.legacy-update');
     Route::post('/bundles-admin', [\App\Http\Controllers\Admin\BundleController::class, 'store'])->name('admin.bundles.legacy-store');
+    // Bundles legacy aliases
+    Route::get('/bundles-alias', [\App\Http\Controllers\Admin\BundleController::class, 'index'])->name('bundles.index');
+    Route::get('/bundles-create-alias', [\App\Http\Controllers\Admin\BundleController::class, 'create'])->name('bundles.create');
+    Route::post('/bundles-store-alias', [\App\Http\Controllers\Admin\BundleController::class, 'store'])->name('bundles.store');
+    Route::get('/bundles-show-alias/{bundle}', [\App\Http\Controllers\Admin\BundleController::class, 'show'])->name('bundles.show');
+    Route::get('/bundles-edit-alias/{bundle}', [\App\Http\Controllers\Admin\BundleController::class, 'edit'])->name('bundles.edit');
+    Route::put('/bundles-update-alias/{bundle}', [\App\Http\Controllers\Admin\BundleController::class, 'update'])->name('bundles.update');
+    Route::delete('/bundles-destroy-alias/{bundle}', [\App\Http\Controllers\Admin\BundleController::class, 'destroy'])->name('bundles.destroy');
 
     // Single Deals & Discounts
     Route::resource('/deals', \App\Http\Controllers\Admin\DealController::class)->names([
@@ -246,6 +254,14 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
         'destroy' => 'admin.deals.destroy',
     ]);
     Route::get('/deals-admin', [\App\Http\Controllers\Admin\DealController::class, 'index'])->name('admin.deals.legacy-index');
+    // Deals legacy aliases
+    Route::get('/deals-alias', [\App\Http\Controllers\Admin\DealController::class, 'index'])->name('deals.index');
+    Route::get('/deals-create-alias', [\App\Http\Controllers\Admin\DealController::class, 'create'])->name('deals.create');
+    Route::post('/deals-store-alias', [\App\Http\Controllers\Admin\DealController::class, 'store'])->name('deals.store');
+    Route::get('/deals-show-alias/{deal}', [\App\Http\Controllers\Admin\DealController::class, 'show'])->name('deals.show');
+    Route::get('/deals-edit-alias/{deal}', [\App\Http\Controllers\Admin\DealController::class, 'edit'])->name('deals.edit');
+    Route::put('/deals-update-alias/{deal}', [\App\Http\Controllers\Admin\DealController::class, 'update'])->name('deals.update');
+    Route::delete('/deals-destroy-alias/{deal}', [\App\Http\Controllers\Admin\DealController::class, 'destroy'])->name('deals.destroy');
 
     // Coupons & Vouchers Management
     Route::resource('/coupons', \App\Http\Controllers\Admin\CouponController::class)->names([
@@ -256,6 +272,13 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
         'update' => 'admin.coupons.update',
         'destroy' => 'admin.coupons.destroy',
     ]);
+    // Coupons legacy aliases
+    Route::get('/coupons-alias', [\App\Http\Controllers\Admin\CouponController::class, 'index'])->name('coupons.index');
+    Route::get('/coupons-create-alias', [\App\Http\Controllers\Admin\CouponController::class, 'create'])->name('coupons.create');
+    Route::post('/coupons-store-alias', [\App\Http\Controllers\Admin\CouponController::class, 'store'])->name('coupons.store');
+    Route::get('/coupons-edit-alias/{coupon}', [\App\Http\Controllers\Admin\CouponController::class, 'edit'])->name('coupons.edit');
+    Route::put('/coupons-update-alias/{coupon}', [\App\Http\Controllers\Admin\CouponController::class, 'update'])->name('coupons.update');
+    Route::delete('/coupons-destroy-alias/{coupon}', [\App\Http\Controllers\Admin\CouponController::class, 'destroy'])->name('coupons.destroy');
 
     // Weekly Offers Magazine Campaigns (Phase 7 - Unified System)
     Route::patch('/magazines/{magazine}/toggle-active', [\App\Http\Controllers\Admin\MagazineController::class, 'toggleActive'])->name('admin.magazines.toggle-active');
@@ -280,6 +303,13 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
         'destroy' => 'admin.banners.destroy',
     ]);
     Route::get('/banners-admin', [BannerController::class, 'index'])->name('admin.banners.legacy-index');
+    // Banners legacy aliases
+    Route::get('/banners-alias', [BannerController::class, 'index'])->name('banners.index');
+    Route::get('/banners-create-alias', [BannerController::class, 'create'])->name('banners.create');
+    Route::post('/banners-store-alias', [BannerController::class, 'store'])->name('banners.store');
+    Route::get('/banners-edit-alias/{banner}', [BannerController::class, 'edit'])->name('banners.edit');
+    Route::put('/banners-update-alias/{banner}', [BannerController::class, 'update'])->name('banners.update');
+    Route::delete('/banners-destroy-alias/{banner}', [BannerController::class, 'destroy'])->name('banners.destroy');
 
     // Global Settings
     Route::get('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
@@ -316,6 +346,47 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
         'destroy' => 'admin.users.destroy',
     ]);
     Route::get('/users-admin', [UserController::class, 'index'])->name('admin.users.legacy-index');
+    // Users legacy aliases
+    Route::get('/users-alias', [UserController::class, 'index'])->name('users.index');
+    Route::get('/users-create-alias', [UserController::class, 'create'])->name('users.create');
+    Route::post('/users-store-alias', [UserController::class, 'store'])->name('users.store');
+    Route::get('/users-edit-alias/{user}', [UserController::class, 'edit'])->name('users.edit');
+    Route::put('/users-update-alias/{user}', [UserController::class, 'update'])->name('users.update');
+    // Stocks & Inventory Management
+    Route::resource('/stocks', StockController::class)->names([
+        'index' => 'admin.stocks.index',
+        'create' => 'admin.stocks.create',
+        'store' => 'admin.stocks.store',
+        'show' => 'admin.stocks.show',
+        'edit' => 'admin.stocks.edit',
+        'update' => 'admin.stocks.update',
+        'destroy' => 'admin.stocks.destroy',
+    ]);
+    Route::get('/stocks-alias', [StockController::class, 'index'])->name('stocks.index');
+    Route::get('/stocks-create-alias', [StockController::class, 'create'])->name('stocks.create');
+    Route::post('/stocks-store-alias', [StockController::class, 'store'])->name('stocks.store');
+    Route::get('/stocks-show-alias/{stock}', [StockController::class, 'show'])->name('stocks.show');
+    Route::get('/stocks-edit-alias/{stock}', [StockController::class, 'edit'])->name('stocks.edit');
+    Route::put('/stocks-update-alias/{stock}', [StockController::class, 'update'])->name('stocks.update');
+    Route::delete('/stocks-destroy-alias/{stock}', [StockController::class, 'destroy'])->name('stocks.destroy');
+
+    // Clients Management
+    Route::resource('/clients', ClientController::class)->names([
+        'index' => 'admin.clients.index',
+        'create' => 'admin.clients.create',
+        'store' => 'admin.clients.store',
+        'show' => 'admin.clients.show',
+        'edit' => 'admin.clients.edit',
+        'update' => 'admin.clients.update',
+        'destroy' => 'admin.clients.destroy',
+    ]);
+    Route::get('/clients-alias', [ClientController::class, 'index'])->name('clients.index');
+    Route::get('/clients-create-alias', [ClientController::class, 'create'])->name('clients.create');
+    Route::post('/clients-store-alias', [ClientController::class, 'store'])->name('clients.store');
+    Route::get('/clients-show-alias/{client}', [ClientController::class, 'show'])->name('clients.show');
+    Route::get('/clients-edit-alias/{client}', [ClientController::class, 'edit'])->name('clients.edit');
+    Route::put('/clients-update-alias/{client}', [ClientController::class, 'update'])->name('clients.update');
+    Route::delete('/clients-destroy-alias/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
 });
 
 require __DIR__ . '/auth.php';

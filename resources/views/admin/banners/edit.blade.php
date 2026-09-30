@@ -9,7 +9,7 @@
             <h2 class="text-2xl font-black text-gray-900 tracking-tight">{{ __('تعديل البانر') }} <span class="text-red-600">#{{ $banner->id }}</span></h2>
             <p class="text-xs text-gray-500 font-medium mt-0.5">{{ __('تحديث بيانات وموضع البانر الترويجي') }}</p>
         </div>
-        <a href="{{ route('banners.index') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-orange-200 bg-canvas-base hover:bg-orange-50 text-gray-900 text-xs font-bold transition-colors">
+        <a href="{{ route('admin.banners.index') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-orange-200 bg-canvas-base hover:bg-orange-50 text-gray-900 text-xs font-bold transition-colors">
             <span>&rarr;</span>
             <span>{{ __('العودة للبانرات') }}</span>
         </a>
@@ -27,7 +27,7 @@
     @endif
 
     <div class="bg-white border border-orange-100 rounded-3xl p-6 sm:p-8 shadow-xs">
-        <form action="{{ route('banners.update', $banner->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+        <form action="{{ route('admin.banners.update', $banner->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
             @method('PUT')
             

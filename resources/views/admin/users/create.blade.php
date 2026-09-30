@@ -9,14 +9,14 @@
             <h2 class="text-2xl font-black text-gray-900 tracking-tight">{{ __('إضافة مشرف جديد') }}</h2>
             <p class="text-xs text-gray-500 font-medium mt-0.5">{{ __('إنشاء حساب وصول جديد للوحة تحكم إدارة متجر التوحيد') }}</p>
         </div>
-        <a href="{{ route('users.index') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-orange-200 bg-canvas-base hover:bg-orange-50 text-gray-900 text-xs font-bold transition-colors">
+        <a href="{{ route('admin.users.index') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-orange-200 bg-canvas-base hover:bg-orange-50 text-gray-900 text-xs font-bold transition-colors">
             <span>&rarr;</span>
             <span>{{ __('العودة لقائمة المشرفين') }}</span>
         </a>
     </div>
 
     <div class="bg-white border border-orange-100 rounded-3xl p-6 sm:p-8 shadow-xs">
-        <form action="{{ route('users.store') }}" method="POST" class="space-y-6">
+        <form action="{{ route('admin.users.store') }}" method="POST" class="space-y-6">
             @csrf
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

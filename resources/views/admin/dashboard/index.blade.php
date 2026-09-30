@@ -34,7 +34,7 @@
                 <span>🏷️</span>
                 <span>+ قسم جديد</span>
             </a>
-            <a href="{{ route('deals.create') }}" 
+            <a href="{{ route('admin.deals.create') }}" 
                class="px-4 py-2.5 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
                 <span>🔥</span>
                 <span>+ عرض وتخفيض</span>

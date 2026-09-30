@@ -10,7 +10,7 @@
  <h2 class="text-2xl font-bold text-[#1F2937] tracking-tight">{{ __('إدارة المشرفين والمستخدمين') }}</h2>
  <p class="text-sm text-gray-500 mt-0.5">{{ __('إدارة حسابات المسؤولين والصلاحيات والوصول للوحة التحكم') }}</p>
  </div>
-        <a href="{{ route('users.create') }}" class="px-5 py-3 rounded-2xl bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white text-xs font-black shadow-md shadow-red-500/20 transition-all flex items-center gap-2 shrink-0 cursor-pointer">
+        <a href="{{ route('admin.users.create') }}" class="px-5 py-3 rounded-2xl bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white text-xs font-black shadow-md shadow-red-500/20 transition-all flex items-center gap-2 shrink-0 cursor-pointer">
             <span>+</span>
             <span>{{ __('إنشاء مشرف جديد') }}</span>
         </a>
@@ -59,11 +59,11 @@
  </td>
  <td class="py-4 px-5 text-center">
  <div class="flex items-center justify-center gap-2">
- <a href="{{ route('users.edit', $user->id) }}" class="px-3 py-1.5 rounded-lg border border-[border-orange-100] bg-[bg-canvas-base] hover:bg-[#EDE8DC] text-[#1F2937] font-semibold text-xs transition-colors">
+ <a href="{{ route('admin.users.edit', $user->id) }}" class="px-3 py-1.5 rounded-lg border border-[border-orange-100] bg-[bg-canvas-base] hover:bg-[#EDE8DC] text-[#1F2937] font-semibold text-xs transition-colors">
  {{ __('تعديل') }}
  </a>
  @if(auth()->id() !== $user->id)
- <form action="{{ route('users.destroy', $user->id) }}" method="POST" data-confirm-message="{{ __('هل أنت متأكد من رغبتك في حذف هذا المشرف؟') }}">
+ <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" data-confirm-message="{{ __('هل أنت متأكد من رغبتك في حذف هذا المشرف؟') }}">
  @csrf
  @method('DELETE')
  <button type="submit" class="px-3 py-1.5 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold text-xs transition-colors">

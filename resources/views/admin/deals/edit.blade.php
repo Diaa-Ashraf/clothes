@@ -9,7 +9,7 @@
             <h2 class="text-2xl font-black text-gray-900 tracking-tight">{{ __('تعديل التخفيض') }}: <span class="text-red-600">{{ $deal->product->name ?? '' }}</span></h2>
             <p class="text-xs text-gray-500 font-medium mt-0.5">{{ __('تحديث بيانات ونسبة التخفيض وتاريخ الانتهاء') }}</p>
         </div>
-        <a href="{{ route('deals.index') }}" class="px-4 py-2 rounded-xl border border-orange-200 bg-canvas-base hover:bg-orange-50 text-gray-900 text-xs font-bold transition-colors">
+        <a href="{{ route('admin.deals.index') }}" class="px-4 py-2 rounded-xl border border-orange-200 bg-canvas-base hover:bg-orange-50 text-gray-900 text-xs font-bold transition-colors">
             &larr; {{ __('العودة للعروض') }}
         </a>
     </div>
@@ -26,7 +26,7 @@
     @endif
 
     <div class="bg-white border border-orange-100 rounded-3xl p-6 sm:p-8 shadow-xs">
-        <form action="{{ route('deals.update', $deal->id) }}" method="POST" class="space-y-6">
+        <form action="{{ route('admin.deals.update', $deal->id) }}" method="POST" class="space-y-6">
             @csrf
             @method('PUT')
             
