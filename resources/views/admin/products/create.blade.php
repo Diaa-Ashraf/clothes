@@ -30,7 +30,7 @@
 
     {{-- Main Form Card --}}
     <div class="bg-white border border-orange-100 rounded-3xl p-6 sm:p-8 shadow-xs">
-        <form action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6"
+        <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6"
               x-data="{ 
                   isWeighted: {{ old('is_weighted', false) ? 'true' : 'false' }}, 
                   basePrice: parseFloat('{{ old('price', 0) }}') || 0,

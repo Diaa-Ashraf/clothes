@@ -144,11 +144,23 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     // Products & Featured toggle
     Route::post('/products/{id}/toggle-featured', [ProductController::class, 'toggleFeatured'])->name('products.toggle-featured');
     Route::post('/products/{id}/admin-toggle-featured', [ProductController::class, 'toggleFeatured'])->name('admin.products.toggle-featured');
-    Route::resource('/products', ProductController::class);
-    Route::get('/products-admin', [ProductController::class, 'index'])->name('admin.products.index');
-    Route::get('/products-admin/create', [ProductController::class, 'create'])->name('admin.products.create');
-    Route::get('/products-admin/{id}/edit', [ProductController::class, 'edit'])->name('admin.products.edit');
-    Route::delete('/products-admin/{id}', [ProductController::class, 'destroy'])->name('admin.products.destroy');
+    Route::resource('/products', ProductController::class)->names([
+        'index' => 'admin.products.index',
+        'create' => 'admin.products.create',
+        'store' => 'admin.products.store',
+        'show' => 'admin.products.show',
+        'edit' => 'admin.products.edit',
+        'update' => 'admin.products.update',
+        'destroy' => 'admin.products.destroy',
+    ]);
+    Route::post('/products-store-alias', [ProductController::class, 'store'])->name('products.store');
+    Route::put('/products-update-alias/{id}', [ProductController::class, 'update'])->name('products.update');
+    Route::get('/products-edit-alias/{id}', [ProductController::class, 'edit'])->name('products.edit');
+    Route::delete('/products-destroy-alias/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
+    Route::get('/products-admin', [ProductController::class, 'index'])->name('admin.products.legacy-index');
+    Route::get('/products-admin/create', [ProductController::class, 'create'])->name('admin.products.legacy-create');
+    Route::get('/products-admin/{id}/edit', [ProductController::class, 'edit'])->name('admin.products.legacy-edit');
+    Route::delete('/products-admin/{id}', [ProductController::class, 'destroy'])->name('admin.products.legacy-destroy');
 
     // Categories
     Route::resource('/categories', CategoryController::class)->names([
@@ -189,23 +201,51 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     // Orders & Status Lifecycle
     Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
     Route::put('/orders/{id}/admin-status', [OrderController::class, 'updateStatus'])->name('admin.orders.update-status');
-    Route::get('/orders-admin/create', [OrderController::class, 'create'])->name('admin.orders.create');
-    Route::post('/orders-admin', [OrderController::class, 'store'])->name('admin.orders.store');
-    Route::resource('/orders', OrderController::class);
-    Route::get('/orders-admin', [OrderController::class, 'index'])->name('admin.orders.index');
+    Route::get('/orders-admin/create', [OrderController::class, 'create'])->name('admin.orders.legacy-create');
+    Route::post('/orders-admin', [OrderController::class, 'store'])->name('admin.orders.legacy-store');
+    Route::resource('/orders', OrderController::class)->names([
+        'index' => 'admin.orders.index',
+        'create' => 'admin.orders.create',
+        'store' => 'admin.orders.store',
+        'show' => 'admin.orders.show',
+        'edit' => 'admin.orders.edit',
+        'update' => 'admin.orders.update',
+        'destroy' => 'admin.orders.destroy',
+    ]);
+    Route::get('/orders-admin', [OrderController::class, 'index'])->name('admin.orders.legacy-index');
+    Route::post('/orders-store-alias', [OrderController::class, 'store'])->name('orders.store');
+    Route::put('/orders-update-alias/{id}', [OrderController::class, 'update'])->name('orders.update');
+    Route::get('/orders-show-alias/{id}', [OrderController::class, 'show'])->name('orders.show');
+    Route::delete('/orders-destroy-alias/{id}', [OrderController::class, 'destroy'])->name('orders.destroy');
 
     // Bundle Offers (Multi-products discount)
-    Route::resource('/bundles', \App\Http\Controllers\Admin\BundleController::class);
-    Route::get('/bundles-admin', [\App\Http\Controllers\Admin\BundleController::class, 'index'])->name('admin.bundles.index');
-    Route::get('/bundles-admin/create', [\App\Http\Controllers\Admin\BundleController::class, 'create'])->name('admin.bundles.create');
-    Route::get('/bundles-admin/{bundle}/edit', [\App\Http\Controllers\Admin\BundleController::class, 'edit'])->name('admin.bundles.edit');
-    Route::delete('/bundles-admin/{bundle}', [\App\Http\Controllers\Admin\BundleController::class, 'destroy'])->name('admin.bundles.destroy');
-    Route::put('/bundles-admin/{bundle}', [\App\Http\Controllers\Admin\BundleController::class, 'update'])->name('admin.bundles.update');
-    Route::post('/bundles-admin', [\App\Http\Controllers\Admin\BundleController::class, 'store'])->name('admin.bundles.store');
+    Route::resource('/bundles', \App\Http\Controllers\Admin\BundleController::class)->names([
+        'index' => 'admin.bundles.index',
+        'create' => 'admin.bundles.create',
+        'store' => 'admin.bundles.store',
+        'show' => 'admin.bundles.show',
+        'edit' => 'admin.bundles.edit',
+        'update' => 'admin.bundles.update',
+        'destroy' => 'admin.bundles.destroy',
+    ]);
+    Route::get('/bundles-admin', [\App\Http\Controllers\Admin\BundleController::class, 'index'])->name('admin.bundles.legacy-index');
+    Route::get('/bundles-admin/create', [\App\Http\Controllers\Admin\BundleController::class, 'create'])->name('admin.bundles.legacy-create');
+    Route::get('/bundles-admin/{bundle}/edit', [\App\Http\Controllers\Admin\BundleController::class, 'edit'])->name('admin.bundles.legacy-edit');
+    Route::delete('/bundles-admin/{bundle}', [\App\Http\Controllers\Admin\BundleController::class, 'destroy'])->name('admin.bundles.legacy-destroy');
+    Route::put('/bundles-admin/{bundle}', [\App\Http\Controllers\Admin\BundleController::class, 'update'])->name('admin.bundles.legacy-update');
+    Route::post('/bundles-admin', [\App\Http\Controllers\Admin\BundleController::class, 'store'])->name('admin.bundles.legacy-store');
 
     // Single Deals & Discounts
-    Route::resource('/deals', \App\Http\Controllers\Admin\DealController::class);
-    Route::get('/deals-admin', [\App\Http\Controllers\Admin\DealController::class, 'index'])->name('admin.deals.index');
+    Route::resource('/deals', \App\Http\Controllers\Admin\DealController::class)->names([
+        'index' => 'admin.deals.index',
+        'create' => 'admin.deals.create',
+        'store' => 'admin.deals.store',
+        'show' => 'admin.deals.show',
+        'edit' => 'admin.deals.edit',
+        'update' => 'admin.deals.update',
+        'destroy' => 'admin.deals.destroy',
+    ]);
+    Route::get('/deals-admin', [\App\Http\Controllers\Admin\DealController::class, 'index'])->name('admin.deals.legacy-index');
 
     // Coupons & Vouchers Management
     Route::resource('/coupons', \App\Http\Controllers\Admin\CouponController::class)->names([
@@ -230,8 +270,16 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     ]);
 
     // Banners & Sliders
-    Route::resource('/banners', BannerController::class);
-    Route::get('/banners-admin', [BannerController::class, 'index'])->name('admin.banners.index');
+    Route::resource('/banners', BannerController::class)->names([
+        'index' => 'admin.banners.index',
+        'create' => 'admin.banners.create',
+        'store' => 'admin.banners.store',
+        'show' => 'admin.banners.show',
+        'edit' => 'admin.banners.edit',
+        'update' => 'admin.banners.update',
+        'destroy' => 'admin.banners.destroy',
+    ]);
+    Route::get('/banners-admin', [BannerController::class, 'index'])->name('admin.banners.legacy-index');
 
     // Global Settings
     Route::get('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
@@ -258,8 +306,16 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::delete('/abandoned-carts-admin/{id}', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'destroy'])->name('admin.abandoned-carts.destroy');
 
     // User Management
-    Route::resource('/users', UserController::class);
-    Route::get('/users-admin', [UserController::class, 'index'])->name('admin.users.index');
+    Route::resource('/users', UserController::class)->names([
+        'index' => 'admin.users.index',
+        'create' => 'admin.users.create',
+        'store' => 'admin.users.store',
+        'show' => 'admin.users.show',
+        'edit' => 'admin.users.edit',
+        'update' => 'admin.users.update',
+        'destroy' => 'admin.users.destroy',
+    ]);
+    Route::get('/users-admin', [UserController::class, 'index'])->name('admin.users.legacy-index');
 });
 
 require __DIR__ . '/auth.php';
