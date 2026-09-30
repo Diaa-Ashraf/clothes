@@ -14,39 +14,40 @@
 
 <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md shadow-sm border-b border-cream" x-data="{ mobileSearchOpen: false }">
     <!-- Main Header Bar -->
-    <div class="container mx-auto px-4 py-3 sm:py-4">
-        <div class="flex items-center justify-between gap-4 md:gap-8">
+    <div class="container mx-auto px-3 sm:px-4 py-2.5 sm:py-3 md:py-4">
+        <div class="flex items-center justify-between gap-2 sm:gap-4 md:gap-8">
             
-            <!-- Mobile Menu Toggle Button -->
-            <button type="button" 
-                    @click="$dispatch('open-mobile-menu')"
-                    class="lg:hidden p-2 -mr-2 text-charcoal-secondary hover:text-primary-700 hover:bg-canvas-subtle rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    aria-label="القائمة الرئيسية">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-            </button>
+            <!-- Right Side: Hamburger + Logo -->
+            <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                <!-- Mobile Menu Toggle Button -->
+                <button type="button" 
+                        @click="$dispatch('open-mobile-menu')"
+                        class="lg:hidden p-1.5 text-charcoal-secondary hover:text-red-600 hover:bg-red-50 rounded-xl focus:outline-none transition-colors shrink-0"
+                        aria-label="القائمة الرئيسية">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
 
-            <!-- Brand Logo & Supermarket Name -->
-            <div class="flex items-center gap-3">
-                <a href="{{ route('site.home') }}" class="flex items-center gap-3 group">
+                <!-- Brand Logo & Name -->
+                <a href="{{ route('site.home') }}" class="flex items-center gap-2 sm:gap-3 group min-w-0">
                     @if(get_site_logo())
-                        <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-white p-1 flex items-center justify-center shadow-lg shadow-red-500/10 group-hover:scale-105 transition-all duration-300 border-2 border-orange-200 overflow-hidden shrink-0">
+                        <div class="w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-xl sm:rounded-2xl bg-white p-0.5 sm:p-1 flex items-center justify-center shadow-lg shadow-red-500/10 group-hover:scale-105 transition-all duration-300 border-2 border-orange-200 overflow-hidden shrink-0">
                             <img src="{{ get_site_logo() }}" alt="{{ settings('site_name', 'ألبان التوحيد') }}" class="w-full h-full object-contain">
                         </div>
                     @else
-                        <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-red-700 via-red-600 to-orange-500 text-white flex items-center justify-center shadow-lg shadow-red-500/25 group-hover:scale-105 transition-all duration-300 border-2 border-orange-200 shrink-0">
-                            <span class="text-2xl font-black font-sans">🥛</span>
+                        <div class="w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-red-700 via-red-600 to-orange-500 text-white flex items-center justify-center shadow-lg shadow-red-500/25 group-hover:scale-105 transition-all duration-300 border-2 border-orange-200 shrink-0">
+                            <span class="text-lg sm:text-2xl font-black font-sans">🥛</span>
                         </div>
                     @endif
-                    <div class="flex flex-col">
-                        <div class="flex items-center gap-1.5">
-                            <span class="text-xl sm:text-2xl font-black text-red-600 tracking-tight font-sans">
+                    <div class="flex flex-col min-w-0">
+                        <div class="flex items-center gap-1 sm:gap-1.5">
+                            <span class="text-sm sm:text-xl md:text-2xl font-black text-red-600 tracking-tight font-sans truncate">
                                 {{ settings('site_name', 'ألبان التوحيد') }}
                             </span>
-                            <span class="px-1.5 py-0.5 rounded text-[9px] font-black bg-orange-500 text-white uppercase tracking-wider">ماركت</span>
+                            <span class="hidden sm:inline px-1.5 py-0.5 rounded text-[9px] font-black bg-orange-500 text-white uppercase tracking-wider shrink-0">ماركت</span>
                         </div>
-                        <span class="text-[11px] text-gray-500 font-bold">
+                        <span class="hidden sm:block text-[11px] text-gray-500 font-bold truncate">
                             {{ settings('site_slogan', 'ماركت وألبان بلدية • 4 فروع بالعامرية') }}
                         </span>
                     </div>
@@ -125,12 +126,12 @@
                 </form>
             </div>
 
-            <!-- User Actions (Search on mobile, Wishlist, Cart, Profile) -->
-            <div class="flex items-center gap-1.5 sm:gap-3">
+            <!-- Left Side: Action Icons -->
+            <div class="flex items-center gap-0.5 sm:gap-1.5 shrink-0">
                 <!-- Mobile Search Toggle -->
                 <button type="button" 
                         @click="mobileSearchOpen = !mobileSearchOpen"
-                        class="md:hidden p-2 text-charcoal-secondary hover:text-primary-700 hover:bg-canvas-subtle rounded-full"
+                        class="md:hidden p-2 text-charcoal-secondary hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
                         aria-label="بحث في المنتجات">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -139,20 +140,20 @@
 
                 <!-- Wishlist -->
                 <a href="{{ route('wishlist.index') }}" 
-                   class="relative p-2 text-charcoal-secondary hover:text-primary-700 hover:bg-canvas-subtle rounded-full transition-colors"
+                   class="hidden sm:flex relative p-2 text-charcoal-secondary hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
                    title="قائمة المفضلة">
                     <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                     </svg>
                 </a>
 
-                <!-- Cart Action Button with Drawer Dispatch -->
+                <!-- Cart Action Button -->
                 <button type="button" 
                         @click.prevent="$dispatch('open-cart-drawer')"
-                        class="relative flex items-center gap-2 py-2 px-3 sm:px-3.5 bg-primary-50 hover:bg-primary-100 text-primary-800 rounded-full border border-primary-200 transition-all group cursor-pointer"
+                        class="relative flex items-center gap-1.5 py-1.5 px-2.5 sm:py-2 sm:px-3.5 bg-red-50 hover:bg-red-100 text-red-700 rounded-full border border-red-200 transition-all group cursor-pointer"
                         title="سلة المشتريات">
                     <div class="relative">
-                        <svg class="w-5 h-5 text-primary-700 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 text-red-600 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                         </svg>
                         <span id="cart-badge-count" 
@@ -168,7 +169,7 @@
                     <div class="relative" x-data="{ userMenuOpen: false }" @click.outside="userMenuOpen = false">
                         <button type="button" 
                                 @click="userMenuOpen = !userMenuOpen"
-                                class="p-2 text-charcoal-secondary hover:text-primary-700 hover:bg-canvas-subtle rounded-full transition-colors flex items-center gap-1 cursor-pointer"
+                                class="p-2 text-charcoal-secondary hover:text-red-600 hover:bg-red-50 rounded-full transition-colors flex items-center gap-1 cursor-pointer"
                                 title="حسابي">
                             <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
