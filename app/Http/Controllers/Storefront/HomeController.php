@@ -81,7 +81,7 @@ class HomeController extends Controller
             return Bundle::select(['id', 'name', 'description', 'image', 'original_total', 'bundle_price', 'discount_percent'])
                 ->active()
                 ->with(['products' => function ($q) {
-                    $q->select(['products.id', 'products.name']);
+                    $q->select(['products.id', 'products.name', 'products.image', 'products.price', 'products.discount_price']);
                 }])
                 ->ordered()
                 ->take(6)
