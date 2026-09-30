@@ -61,7 +61,7 @@
                     loading: false,
                     open: false,
                     fetchResults() {
-                        if (this.query.trim().length < 2) {
+                        if (this.query.trim().length < 1) {
                             this.results = [];
                             this.open = false;
                             return;
@@ -84,11 +84,11 @@
                     <input type="text" 
                            name="q" 
                            x-model="query"
-                           @input.debounce.300ms="fetchResults()"
+                           @input.debounce.250ms="fetchResults()"
                            @focus="if(results.length > 0) open = true"
                            placeholder="ابحث عن ألبان، جبن، بقالة، لحوم، منظفات..." 
                            autocomplete="off"
-                           class="w-full bg-canvas-base border border-cream hover:border-primary-300 focus:border-primary-600 focus:ring-2 focus:ring-primary-100 rounded-full py-2.5 pr-11 pl-10 text-sm text-charcoal placeholder-charcoal-muted/70 transition-all outline-none" />
+                           class="w-full bg-canvas-base border border-cream hover:border-red-300 focus:border-red-600 focus:ring-2 focus:ring-red-100 rounded-full py-2.5 pr-11 pl-10 text-base sm:text-sm text-charcoal placeholder-charcoal-muted/70 transition-all outline-none" />
                     <button type="submit" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-charcoal-muted hover:text-primary-700 transition-colors" aria-label="بحث">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -232,7 +232,7 @@
                 mobileLoading: false,
                 mobileDropdownOpen: false,
                 fetchMobileResults() {
-                    if (this.mobileQuery.trim().length < 2) {
+                    if (this.mobileQuery.trim().length < 1) {
                         this.mobileResults = [];
                         this.mobileDropdownOpen = false;
                         return;
@@ -254,17 +254,17 @@
                 <input type="text" 
                        name="q" 
                        x-model="mobileQuery"
-                       @input.debounce.300ms="fetchMobileResults()"
+                       @input.debounce.250ms="fetchMobileResults()"
                        placeholder="ابحث عن ألبان، جبن، بقالة، لحوم..." 
                        autocomplete="off"
-                       class="w-full bg-canvas-base border border-cream focus:border-primary-600 focus:ring-2 focus:ring-primary-100 rounded-full py-2 pr-10 pl-9 text-xs text-charcoal outline-none" />
-                <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 text-charcoal-muted" aria-label="بحث">
+                       class="w-full bg-canvas-base border border-cream focus:border-red-600 focus:ring-2 focus:ring-red-100 rounded-full py-2.5 pr-11 pl-10 text-base text-charcoal outline-none shadow-2xs" />
+                <button type="submit" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-charcoal-muted hover:text-red-600" aria-label="بحث">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                 </button>
-                <div x-show="mobileLoading" x-cloak class="absolute left-3 top-1/2 -translate-y-1/2">
-                    <svg class="w-3.5 h-3.5 animate-spin text-primary-700" fill="none" viewBox="0 0 24 24">
+                <div x-show="mobileLoading" x-cloak class="absolute left-3.5 top-1/2 -translate-y-1/2">
+                    <svg class="w-4 h-4 animate-spin text-red-600" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                     </svg>
@@ -274,19 +274,19 @@
                 <div x-show="mobileDropdownOpen" 
                      x-cloak 
                      x-transition 
-                     class="absolute top-full right-0 left-0 mt-2 bg-white rounded-xl shadow-xl border border-cream overflow-hidden z-50 divide-y divide-cream/60">
+                     class="absolute top-full right-0 left-0 mt-2 bg-white rounded-2xl shadow-2xl border border-cream overflow-hidden z-50 divide-y divide-cream/60">
                     <template x-for="item in mobileResults" :key="item.id">
-                        <a :href="item.url" class="flex items-center gap-2.5 p-2.5 hover:bg-canvas-subtle transition-colors">
-                            <img :src="item.image_url" :alt="item.name" class="w-9 h-9 object-contain rounded-lg bg-canvas-base p-1 border border-cream shrink-0">
+                        <a :href="item.url" class="flex items-center gap-3 p-3 hover:bg-canvas-subtle transition-colors">
+                            <img :src="item.image_url" :alt="item.name" class="w-10 h-10 object-contain rounded-xl bg-canvas-base p-1 border border-cream shrink-0">
                             <div class="flex-1 min-w-0 text-right">
-                                <div class="text-[11px] font-bold text-charcoal truncate" x-text="item.name"></div>
-                                <div class="text-[9px] text-charcoal-muted" x-text="item.category"></div>
+                                <div class="text-xs font-black text-charcoal truncate" x-text="item.name"></div>
+                                <div class="text-[10px] text-charcoal-muted" x-text="item.category"></div>
                             </div>
-                            <div class="text-[11px] font-black text-primary-800 tabular-nums shrink-0" x-text="item.price"></div>
+                            <div class="text-xs font-black text-red-600 tabular-nums shrink-0" x-text="item.price"></div>
                         </a>
                     </template>
-                    <div class="p-2 bg-canvas-base/50 text-center">
-                        <button type="submit" class="text-[11px] font-bold text-primary-800 hover:text-primary-900">
+                    <div class="p-2.5 bg-canvas-base/60 text-center">
+                        <button type="submit" class="text-xs font-black text-red-600 hover:text-red-700">
                             عرض جميع النتائج لـ "<span x-text="mobileQuery"></span>" ←
                         </button>
                     </div>

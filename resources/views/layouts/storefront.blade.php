@@ -96,6 +96,13 @@
         .toast-error {
             background-color: #730E1F !important;
         }
+
+        /* Prevent unwanted iOS Safari automatic zoom on form input focus */
+        @media screen and (max-width: 768px) {
+            input, select, textarea {
+                font-size: 16px !important;
+            }
+        }
     </style>
 
     @stack('styles')
