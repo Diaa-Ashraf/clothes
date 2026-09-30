@@ -60,8 +60,8 @@ class AdminNotification extends Model
     public static function createForOrder(Order $order): self
     {
         $orderNumber = $order->order_number ?? '#' . $order->id;
-        $customerName = $order->name ?? 'عميل جديد';
-        $total = number_format($order->total ?? 0, 2);
+        $customerName = $order->customer_name ?? 'عميل جديد';
+        $total = number_format($order->total_price ?? 0, 2);
 
         return self::create([
             'type' => 'order',
@@ -73,7 +73,7 @@ class AdminNotification extends Model
                 'order_id' => $order->id,
                 'order_number' => $orderNumber,
                 'customer_name' => $customerName,
-                'total' => $order->total,
+                'total' => $order->total_price,
             ],
             'is_read' => false,
         ]);
