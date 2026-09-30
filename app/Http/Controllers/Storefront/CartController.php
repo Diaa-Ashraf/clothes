@@ -147,6 +147,24 @@ class CartController extends Controller
     }
 
     /**
+     * Get complete cart payload (items, totals, count) for drawer and AJAX components.
+     */
+    public function getPayload(Request $request): JsonResponse
+    {
+        $deliveryType = $request->query('delivery_type', 'delivery');
+        $items = $this->cartService->getDetailedItems();
+        $totals = $this->cartService->getTotals($deliveryType);
+
+        return response()->json([
+            'success' => true,
+            'items' => $items,
+            'totals' => $totals,
+            'cart_count' => $this->cartService->getCount(),
+            'count' => $this->cartService->getCount(),
+        ]);
+    }
+
+    /**
      * Apply a discount coupon to the cart.
      */
     public function applyCoupon(Request $request, \App\Services\CouponService $couponService): JsonResponse
