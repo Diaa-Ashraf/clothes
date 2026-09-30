@@ -35,6 +35,15 @@ class AppServiceProvider extends ServiceProvider
             return $user->hasRole('super_admin') ? true : null;
         });
 
+        // Rate Limiting for checkout & coupons
+        \Illuminate\Support\Facades\RateLimiter::for('checkout', function (\Illuminate\Http\Request $request) {
+            return \Illuminate\Cache\RateLimiting\Limit::perMinute(20)->by($request->ip());
+        });
+
+        \Illuminate\Support\Facades\RateLimiter::for('coupon-apply', function (\Illuminate\Http\Request $request) {
+            return \Illuminate\Cache\RateLimiting\Limit::perMinute(20)->by($request->ip());
+        });
+
         // Share global categories with site header and layouts
         view()->composer(['layouts.site-sections.header', 'layouts.site'], function ($view) {
             $siteNavCategories = \Illuminate\Support\Facades\Cache::remember('site_nav_categories', 1800, function () {

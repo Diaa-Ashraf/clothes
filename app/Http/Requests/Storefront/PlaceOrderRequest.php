@@ -12,6 +12,31 @@ class PlaceOrderRequest extends FormRequest
         return true;
     }
 
+    /**
+     * Sanitize phone number, convert Arabic numbers, strip spaces before validation
+     */
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('phone')) {
+            $phone = (string)$this->input('phone');
+            
+            // Convert Arabic/Eastern numbers to standard ASCII digits
+            $arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+            $englishNumbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+            $phone = str_replace($arabicNumbers, $englishNumbers, $phone);
+            
+            // Remove non-digit characters
+            $phone = preg_replace('/[^0-9]/', '', $phone);
+            
+            // Normalize Egyptian country code: +2010... or 2010... -> 010...
+            if (str_starts_with($phone, '201') && strlen($phone) === 12) {
+                $phone = '0' . substr($phone, 2);
+            }
+
+            $this->merge(['phone' => $phone]);
+        }
+    }
+
     public function rules(): array
     {
         return [
@@ -35,14 +60,13 @@ class PlaceOrderRequest extends FormRequest
             'name.min' => 'الاسم يجب ألا يقل عن 3 أحرف.',
             'name.max' => 'الاسم لا يجب أن يتجاوز 150 حرفاً.',
             'phone.required' => 'يرجى كتابة رقم الهاتف للتواصل والتوصيل.',
-            'phone.regex' => 'يرجى إدخال رقم هاتف مصري صحيح (مثال: 01012345678).',
-            'email.email' => 'يرجى إدخال بريد إلكتروني صحيح.',
+            'phone.regex' => 'يرجى إدخال رقم هاتف مصري صحيح يبدأ بـ 01 (مثال: 01012345678).',
             'delivery_type.required' => 'يرجى اختيار طريقة الاستلام (توصيل للمنزل أو استلام من الفرع).',
             'delivery_type.in' => 'طريقة الاستلام المحددة غير صالحة.',
-            'branch_id.required_if' => 'يرجى اختيار الفرع المراد الاستلام منه بالعامرية.',
+            'branch_id.required' => 'يرجى اختيار الفرع بالعامرية.',
             'branch_id.exists' => 'الفرع المحدد غير موجود في سجلاتنا.',
             'address.required_if' => 'يرجى كتابة عنوان التوصيل بالتفصيل (المنطقة، الشارع، رقم العقار).',
-            'address.min' => 'العنوان قصير جداً، يرجى توضيح المعالم ورقم المنزل.',
+            'address.min' => 'العنوان قصير جداً، يرجى توضيح المنطقة والشارع ورقم المنزل.',
             'payment_method.required' => 'يرجى اختيار طريقة الدفع (كاش أو إنستاباي).',
             'payment_method.in' => 'طريقة الدفع المختارة غير صالحة.',
             'payment_proof_image.image' => 'الملف المرفق يجب أن يكون صورة لإيصال التحويل.',

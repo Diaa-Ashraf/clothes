@@ -23,6 +23,45 @@
         get grandTotal() {
             let fee = this.deliveryType === 'pickup' ? 0 : this.deliveryFee;
             return this.discountedSubtotal + fee;
+        },
+
+        submitCheckout(e) {
+            if (this.submitting) return;
+            this.submitting = true;
+
+            const form = e.target;
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                    'Accept': 'application/json'
+                },
+                body: formData
+            })
+            .then(async (res) => {
+                const data = await res.json().catch(() => ({}));
+                if (res.ok && data.success) {
+                    window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: 0 } }));
+                    toastr.success(data.message || 'تم تسجيل طلبك بنجاح!');
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url;
+                    }, 400);
+                } else {
+                    this.submitting = false;
+                    if (data.errors) {
+                        const allErrors = Object.values(data.errors).flat();
+                        toastr.error(allErrors[0] || 'يرجى مراجعة وتصحيح البيانات');
+                    } else {
+                        toastr.error(data.message || 'حدث خطأ أثناء تسجيل الطلب، يرجى المحاولة مجدداً');
+                    }
+                }
+            })
+            .catch(() => {
+                this.submitting = false;
+                toastr.error('حدث خطأ في الاتصال، يرجى المحاولة مرة أخرى.');
+            });
         }
      }">
     
@@ -41,7 +80,7 @@
         <div class="pb-3 border-b border-cream flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
                 <h1 class="text-xl sm:text-2xl md:text-3xl font-black text-charcoal-heading">إتمام الطلب والدفع</h1>
-                <p class="text-xs sm:text-sm text-charcoal-muted mt-1">توصيل سريع لجميع مناطق وقرى العامرية والإسكندرية</p>
+                <p class="text-xs sm:text-sm text-charcoal-muted mt-1">ألبان وسوبرماركت التوحيد • خدمة التوصيل السريع بالعامرية</p>
             </div>
             <div class="flex items-center gap-2 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl self-start sm:self-auto">
                 <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -49,24 +88,10 @@
             </div>
         </div>
 
-        @if($errors->any())
-        <div class="p-4 rounded-2xl bg-rose-50 border-2 border-rose-200 text-rose-800 text-xs space-y-1 shadow-xs">
-            <div class="font-black text-sm flex items-center gap-1.5">
-                <span>⚠️</span>
-                <span>يرجى مراجعة وتصحيح البيانات التالية:</span>
-            </div>
-            <ul class="list-disc list-inside space-y-0.5 pr-2 font-medium">
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-        @endif
-
         <form action="{{ route('checkout.place') }}" 
               method="POST" 
               enctype="multipart/form-data" 
-              @submit="submitting = true" 
+              @submit.prevent="submitCheckout($event)" 
               class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
             @csrf
 
@@ -79,11 +104,11 @@
                         <span class="w-7 h-7 rounded-xl bg-red-50 text-red-600 text-xs font-black flex items-center justify-center border border-red-200 shrink-0">1</span>
                         <div>
                             <h2 class="font-black text-sm sm:text-base text-charcoal-heading">بيانات العميل والتواصل</h2>
-                            <p class="text-[11px] text-charcoal-muted">بيانات استلام الأوردر والتواصل عبر واتساب</p>
+                            <p class="text-[11px] text-charcoal-muted">الاسم ورقم الهاتف لمتابعة طلبك وتوصيله</p>
                         </div>
                     </div>
 
-                    <div class="space-y-3.5 text-xs">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
                         <!-- Full Name -->
                         <div>
                             <label for="name" class="font-bold text-charcoal-heading block mb-1">
@@ -98,40 +123,25 @@
                                    class="w-full bg-canvas-base border border-cream focus:border-red-500 focus:ring-2 focus:ring-red-500/20 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-charcoal outline-none transition-all">
                         </div>
 
-                        <!-- Phone & Email Grid -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                            <div>
-                                <label for="phone" class="font-bold text-charcoal-heading block mb-1">
-                                    رقم الهاتف (واتساب) <span class="text-red-600">*</span>
-                                </label>
-                                <input type="tel" 
-                                       id="phone" 
-                                       name="phone" 
-                                       value="{{ old('phone', $user?->phone) }}" 
-                                       placeholder="01012345678"
-                                       dir="ltr"
-                                       required 
-                                       class="w-full bg-canvas-base border border-cream focus:border-red-500 focus:ring-2 focus:ring-red-500/20 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-charcoal text-right outline-none transition-all">
-                                <span class="text-[10px] text-charcoal-muted mt-1 block">رقم للتواصل ومتابعة حالة الأوردر</span>
-                            </div>
-
-                            <div>
-                                <label for="email" class="font-bold text-charcoal-heading block mb-1">
-                                    البريد الإلكتروني <span class="text-charcoal-muted font-normal">(اختياري)</span>
-                                </label>
-                                <input type="email" 
-                                       id="email" 
-                                       name="email" 
-                                       value="{{ old('email', $user?->email) }}" 
-                                       placeholder="example@mail.com"
-                                       dir="ltr"
-                                       class="w-full bg-canvas-base border border-cream focus:border-red-500 focus:ring-2 focus:ring-red-500/20 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-charcoal text-right outline-none transition-all">
-                            </div>
+                        <!-- Phone -->
+                        <div>
+                            <label for="phone" class="font-bold text-charcoal-heading block mb-1">
+                                رقم الهاتف (واتساب) <span class="text-red-600">*</span>
+                            </label>
+                            <input type="tel" 
+                                   id="phone" 
+                                   name="phone" 
+                                   value="{{ old('phone', $user?->phone) }}" 
+                                   placeholder="01012345678"
+                                   dir="ltr"
+                                   required 
+                                   class="w-full bg-canvas-base border border-cream focus:border-red-500 focus:ring-2 focus:ring-red-500/20 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-charcoal text-right outline-none transition-all">
+                            <span class="text-[10px] text-charcoal-muted mt-1 block">رقم للتواصل ومتابعة حالة الأوردر عبر واتساب</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- 2. Branch Selection Card (Dedicated & Always Visible) -->
+                <!-- 2. Branch Selection Card -->
                 <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-cream shadow-xs space-y-4">
                     <div class="flex items-center justify-between border-b border-cream pb-3">
                         <div class="flex items-center gap-2.5">
@@ -457,12 +467,12 @@
                     <div class="pt-2">
                         <button type="submit" 
                                 :disabled="submitting"
-                                class="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white font-black text-sm text-center shadow-lg shadow-red-600/25 hover:scale-[1.01] active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60">
+                                class="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white font-black text-sm text-center shadow-lg shadow-red-600/25 hover:scale-[1.01] active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
                             <svg x-show="submitting" x-cloak class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                             </svg>
-                            <span x-text="submitting ? 'جاري تسجيل طلبك...' : 'تأكيد الطلب الآن 🛍️'">تأكيد الطلب الآن 🛍️</span>
+                            <span x-text="submitting ? 'جاري تأكيد وتسجيل طلبك...' : 'تأكيد الطلب الآن 🛍️'">تأكيد الطلب الآن 🛍️</span>
                         </button>
                     </div>
 
