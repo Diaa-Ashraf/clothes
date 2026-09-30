@@ -27,6 +27,8 @@ class AppServiceProvider extends ServiceProvider
         \App\Models\Banner::observe(\App\Observers\BannerObserver::class);
         \App\Models\Deal::observe(\App\Observers\DealObserver::class);
         \App\Models\Bundle::observe(\App\Observers\BundleObserver::class);
+        \App\Models\Branch::observe(\App\Observers\BranchObserver::class);
+        \App\Models\Magazine::observe(\App\Observers\MagazineObserver::class);
 
         // Implicitly grant 'super_admin' all permissions
         \Illuminate\Support\Facades\Gate::before(function ($user, $ability) {

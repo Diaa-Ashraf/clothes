@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Banner;
 use App\Helpers\StorageHelper;
+use App\Http\Requests\Admin\StoreBannerRequest;
+use App\Http\Requests\Admin\UpdateBannerRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -30,30 +32,17 @@ class BannerController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreBannerRequest $request)
     {
-        $request->validate([
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'position' => 'required|integer|in:1,2,3,4',
-            'title' => 'nullable|string|max:255',
-            'url' => 'nullable|url',
-        ]);
-
-        $data = $request->except('image');
+        $data = $request->validated();
 
         if ($request->hasFile('image')) {
-            // Using StorageHelper if available as seen in ProductController, 
-            // otherwise fallback to standard storage. 
-            // Assuming StorageHelper exists based on ProductController usage.
-            // If StorageHelper isn't easily importable, I'll use standard Storage::putFile
-            
-            // To be safe and consistent with ProductController:
-             $data['image'] = StorageHelper::uploadImage($request, 'image', 'banners', 'banner-'.time());
+            $data['image'] = StorageHelper::uploadImage($request, 'image', 'banners', 'banner-'.time());
         }
 
         Banner::create($data);
 
-        return redirect()->route('admin.banners.index')->with('success', __('Banner created successfully'));
+        return redirect()->route('admin.banners.index')->with('success', __('تم إنشاء البانر الإعلاني بنجاح.'));
     }
 
     /**
@@ -75,16 +64,9 @@ class BannerController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Banner $banner)
+    public function update(UpdateBannerRequest $request, Banner $banner)
     {
-        $request->validate([
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'position' => 'required|integer|in:1,2,3,4',
-            'title' => 'nullable|string|max:255',
-            'url' => 'nullable|url',
-        ]);
-
-        $data = $request->except('image');
+        $data = $request->validated();
 
         if ($request->hasFile('image')) {
             if ($banner->image) {
@@ -95,7 +77,7 @@ class BannerController extends Controller
 
         $banner->update($data);
 
-        return redirect()->route('admin.banners.index')->with('success', __('Banner updated successfully'));
+        return redirect()->route('admin.banners.index')->with('success', __('تم تحديث بيانات البانر بنجاح.'));
     }
 
     /**

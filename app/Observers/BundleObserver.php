@@ -35,6 +35,10 @@ class BundleObserver
     protected function clearBundleCaches(): void
     {
         $locales = ['ar', 'en'];
+
+        Cache::forget('storefront_home_bundles');
+        Cache::forget('homepage_bundles');
+
         foreach ($locales as $locale) {
             Cache::forget('homepage_bundles_' . $locale);
             Cache::forget('site_bundles_' . $locale);

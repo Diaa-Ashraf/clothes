@@ -7,6 +7,16 @@ use Illuminate\Support\Facades\Cache;
 
 class ProductObserver
 {
+    public function created(Product $product): void
+    {
+        $this->clearProductCaches();
+    }
+
+    public function updated(Product $product): void
+    {
+        $this->clearProductCaches();
+    }
+
     public function saved(Product $product): void
     {
         $this->clearProductCaches();
@@ -17,27 +27,43 @@ class ProductObserver
         $this->clearProductCaches();
     }
 
+    public function restored(Product $product): void
+    {
+        $this->clearProductCaches();
+    }
+
     protected function clearProductCaches(): void
     {
         $locales = ['ar', 'en'];
-        $limits = [4, 6, 8, 12, 16];
+        $limits = [4, 6, 8, 10, 12, 16, 20];
 
-        foreach ($locales as $locale) {
-            foreach ($limits as $limit) {
+        foreach ($limits as $limit) {
+            Cache::forget("homepage_featured_products_{$limit}");
+            Cache::forget("homepage_latest_products_{$limit}");
+            Cache::forget("homepage_bestsellers_{$limit}");
+            Cache::forget("homepage_daily_deals_{$limit}");
+
+            foreach ($locales as $locale) {
                 Cache::forget("homepage_featured_products_{$locale}_{$limit}");
                 Cache::forget("homepage_latest_products_{$locale}_{$limit}");
                 Cache::forget("homepage_bestsellers_{$locale}_{$limit}");
                 Cache::forget("homepage_daily_deals_{$locale}_{$limit}");
             }
-            Cache::forget('site_nav_categories_' . $locale);
-            Cache::forget('site_homepage_categories_' . $locale);
         }
 
-        // Storefront home and category cache keys
+        foreach ($locales as $locale) {
+            Cache::forget('site_nav_categories_' . $locale);
+            Cache::forget('site_homepage_categories_' . $locale);
+            Cache::forget('site_all_categories_' . $locale);
+        }
+
+        // Storefront home and catalog cache keys
         Cache::forget('storefront_home_featured_products');
         Cache::forget('storefront_home_latest_products');
         Cache::forget('storefront_home_deals');
         Cache::forget('storefront_home_categories');
         Cache::forget('storefront_sidebar_categories');
+        Cache::forget('nav_categories_cache');
+        Cache::forget('site_nav_categories');
     }
 }
