@@ -1,138 +1,190 @@
-@extends('layouts.site')
+{{-- resources/views/site/wishlist.blade.php --}}
+@extends('layouts.storefront')
+
+@section('title', 'قائمة المنتجات المفضلة | ألبان وسوبرماركت التوحيد')
 
 @section('content')
-<div class="bg-[#F8F9FA] min-h-[80vh] py-8 sm:py-12 text-[#18181B]">
- <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
- 
- {{-- Header Breadcrumb & Title --}}
- <div class="bg-white border border-[#E5E7EB] rounded-2xl p-6 mb-8 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
- <div>
- <nav class="text-xs text-[#71717A] flex items-center gap-2 mb-1.5">
- <a href="{{ route('site.home') }}" class="hover:text-[#C5A059] transition-colors">{{ __('الرئيسية') }}</a>
- <span>/</span>
- <span class="text-[#18181B] font-semibold">{{ __('المفضلة') }}</span>
- </nav>
- <h1 class="text-xl sm:text-2xl font-bold text-[#18181B] flex items-center gap-2">
- <span></span>
- <span>{{ __('قائمة المقتنيات المفضلة') }}</span>
- </h1>
- </div>
+<div class="py-6 sm:py-10 bg-canvas-base min-h-[80vh]">
+    <div class="container mx-auto px-3 sm:px-4 md:px-6 max-w-7xl space-y-6">
+        
+        <!-- Breadcrumbs -->
+        <nav class="flex items-center gap-2 text-xs font-bold text-charcoal-muted flex-wrap">
+            <a href="{{ route('site.home') }}" class="hover:text-red-600 transition-colors">الرئيسية</a>
+            <span>/</span>
+            <span class="text-charcoal-heading font-black">قائمة المنتجات المفضلة</span>
+        </nav>
 
- @if(isset($wishlistItems) && $wishlistItems->count() > 0)
- <button type="button" 
- onclick="clearWishlist()"
- class="self-start sm:self-auto px-4 py-2 rounded-full border border-red-200 text-red-600 hover:bg-red-50 text-xs font-bold transition-colors">
- {{ __('إفراغ قائمة المفضلة') }}
- </button>
- @endif
- </div>
+        <!-- Page Header -->
+        <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-cream shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-red-50 text-red-600 flex items-center justify-center text-base">❤️</span>
+                    <h1 class="text-xl sm:text-2xl font-black text-charcoal-heading">قائمة المنتجات المفضلة</h1>
+                </div>
+                <p class="text-xs sm:text-sm text-charcoal-muted mt-1">المنتجات التي قمت بحفظها لشرائها لاحقاً من سوبرماركت التوحيد بالعامرية</p>
+            </div>
 
- {{-- Wishlist Items Grid --}}
- @if(isset($wishlistItems) && $wishlistItems->count() > 0)
- <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
- @foreach($wishlistItems as $item)
- @if($item->product)
- <div class="wishlist-item-wrapper relative" data-product-id="{{ $item->product->id }}">
- <x-product-card :product="$item->product" />
- <button type="button" 
- onclick="removeFromWishlist({{ $item->product->id }})" 
- class="absolute top-2 start-2 z-20 w-7 h-7 rounded-full bg-red-600 text-white flex items-center justify-center text-xs font-bold shadow-md hover:bg-red-700 transition-transform hover:scale-110"
- title="{{ __('حذف من المفضلة') }}">
- 
- </button>
- </div>
- @endif
- @endforeach
- </div>
- @else
- <div class="bg-white border border-[#E5E7EB] rounded-3xl p-12 sm:p-16 text-center space-y-4 shadow-xs max-w-xl mx-auto">
- <div class="w-20 h-20 mx-auto rounded-full bg-[#FAF8F5] border border-[#EADBCC] flex items-center justify-center text-4xl shadow-inner">
- 
- </div>
- <h3 class="text-lg font-bold text-[#18181B]">{{ __('قائمة المفضلة فارغة') }}</h3>
- <p class="text-xs text-[#71717A] max-w-sm mx-auto leading-relaxed">
- @if(!auth()->check())
- {{ __('قم بتسجيل الدخول لتتمكن من حفظ مقتنياتك المفضلة والرجوع إليها في أي وقت.') }}
- @else
- {{ __('لم تقم بإضافة أي منتجات إلى قائمة المفضلة بعد. تصفح متجرنا واختر مقتنياتك الفاخرة.') }}
- @endif
- </p>
- <div class="pt-2 flex items-center justify-center gap-3">
- @if(!auth()->check())
- <a href="{{ route('login') }}" class="px-6 py-2.5 rounded-full bg-[#C5A059] hover:bg-[#b38e44] text-white text-xs font-bold transition-all shadow-xs">
- {{ __('تسجيل الدخول') }}
- </a>
- @endif
- <a href="{{ route('product.shop') }}" class="px-6 py-2.5 rounded-full bg-[#18181B] hover:bg-[#C5A059] text-white text-xs font-bold transition-all shadow-xs">
- {{ __('استكشف المتجر') }} &larr;
- </a>
- </div>
- </div>
- @endif
+            @if(isset($wishlistItems) && $wishlistItems->count() > 0)
+            <button type="button" 
+                    onclick="clearWishlist()"
+                    class="self-start sm:self-auto px-4 py-2 rounded-xl border-2 border-red-200 hover:border-red-500 text-red-600 hover:bg-red-50 text-xs font-black transition-colors cursor-pointer flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                <span>إفراغ قائمة المفضلة</span>
+            </button>
+            @endif
+        </div>
 
- </div>
+        <!-- Wishlist Items Grid -->
+        @if(isset($wishlistItems) && $wishlistItems->count() > 0)
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
+            @foreach($wishlistItems as $item)
+                @if($item->product)
+                <div class="wishlist-item-wrapper relative bg-white border border-cream hover:border-orange-200 rounded-2xl p-3 flex flex-col justify-between shadow-xs hover:shadow-md transition-all group" 
+                     data-product-id="{{ $item->product->id }}">
+                    
+                    <!-- Remove Button (Top Corner) -->
+                    <button type="button" 
+                            onclick="removeFromWishlist({{ $item->product->id }})" 
+                            class="absolute top-2 start-2 z-20 w-7 h-7 rounded-full bg-red-50 hover:bg-red-600 text-red-600 hover:text-white flex items-center justify-center text-xs font-bold transition-all shadow-2xs cursor-pointer border border-red-200"
+                            title="إزالة من المفضلة">
+                        ✕
+                    </button>
+
+                    <!-- Product Image -->
+                    <div class="relative w-full aspect-square bg-canvas-base rounded-xl overflow-hidden mb-2.5 flex items-center justify-center p-2">
+                        <a href="{{ route('product.details', $item->product->slug ?? $item->product->id) }}" class="block w-full h-full">
+                            <img src="{{ $item->product->image_url ?? asset('assets/site/img/product/product-1.jpg') }}" 
+                                 alt="{{ $item->product->name }}" 
+                                 loading="lazy" 
+                                 class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300">
+                        </a>
+                        @if($item->product->has_discount)
+                            <span class="absolute bottom-2 end-2 bg-red-600 text-white font-black text-[10px] px-2 py-0.5 rounded-full shadow-xs">
+                                -{{ $item->product->discount_percentage }}%
+                            </span>
+                        @endif
+                    </div>
+
+                    <!-- Product Info -->
+                    <div class="space-y-1 text-right flex-1 flex flex-col justify-between">
+                        <div>
+                            @if($item->product->category)
+                                <span class="text-[10px] text-charcoal-muted font-bold block">{{ $item->product->category->name }}</span>
+                            @endif
+                            <a href="{{ route('product.details', $item->product->slug ?? $item->product->id) }}" class="font-black text-xs sm:text-sm text-charcoal-heading hover:text-red-600 transition-colors line-clamp-2 leading-snug">
+                                {{ $item->product->name }}
+                            </a>
+                        </div>
+
+                        <!-- Price -->
+                        <div class="pt-1.5 flex items-baseline gap-1.5 flex-wrap">
+                            <span class="font-black text-xs sm:text-sm text-red-600 tabular-nums">
+                                {{ format_currency($item->product->final_price) }}
+                            </span>
+                            @if($item->product->has_discount)
+                                <span class="text-[10px] text-charcoal-muted line-through tabular-nums">
+                                    {{ format_currency($item->product->price) }}
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- Add to Cart CTA -->
+                    <div class="pt-3 mt-2 border-t border-cream">
+                        @if($item->product->available_stock > 0)
+                            <button type="button" 
+                                    onclick="window.addToCart({{ $item->product->id }}, this);"
+                                    class="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white text-xs font-black transition-all shadow-xs flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer">
+                                <span>أضف للسلة</span>
+                                <span>🛒</span>
+                            </button>
+                        @else
+                            <button type="button" 
+                                    class="w-full py-2 px-3 rounded-xl bg-gray-100 text-gray-400 text-xs font-bold cursor-not-allowed" 
+                                    disabled>
+                                نفدت الكمية
+                            </button>
+                        @endif
+                    </div>
+
+                </div>
+                @endif
+            @endforeach
+        </div>
+        @else
+        <!-- Empty State -->
+        <div class="bg-white rounded-3xl p-8 sm:p-14 border border-cream text-center space-y-4 shadow-xs max-w-xl mx-auto">
+            <div class="w-20 h-20 mx-auto rounded-3xl bg-orange-50 text-red-600 border border-orange-200 flex items-center justify-center text-4xl shadow-inner">
+                🤍
+            </div>
+            <h3 class="text-base sm:text-lg font-black text-charcoal-heading">قائمة المفضلة فارغة حالياً</h3>
+            <p class="text-xs sm:text-sm text-charcoal-muted max-w-md mx-auto leading-relaxed">
+                @if(!auth()->check())
+                    قم بتسجيل الدخول لتتمكن من حفظ منتجات الألبان والأجبان والسلع المفضلة والرجوع إليها في أي وقت.
+                @else
+                    لم تقم بإضافة أي منتجات إلى قائمة المفضلة بعد. تصفح تشكيلتنا الطازجة وأضف ما ترغب لشرائه لاحقاً!
+                @endif
+            </p>
+            <div class="pt-2 flex items-center justify-center gap-3 flex-wrap">
+                @if(!auth()->check())
+                <a href="{{ route('login') }}" class="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-black transition-all shadow-md">
+                    تسجيل الدخول
+                </a>
+                @endif
+                <a href="{{ route('site.products') }}" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white text-xs font-black transition-all shadow-md">
+                    تصفح جميع المنتجات ←
+                </a>
+            </div>
+        </div>
+        @endif
+
+    </div>
 </div>
 @endsection
 
 @push('scripts')
 <script>
- function removeFromWishlist(productId) {
- window.showLuxuryConfirm({
- title: "{{ __('إزالة من المفضلة') }}",
- message: "{{ __('هل تود إزالة هذا المنتج من قائمة المقتنيات المفضلة؟') }}",
- confirmText: "{{ __('نعم، إزالة') }}",
- cancelText: "{{ __('إبقاء') }}",
- icon: "",
- iconBg: "bg-rose-50 text-rose-600 border-rose-200",
- confirmBtnClass: "bg-rose-600 hover:bg-rose-700 text-white",
- onConfirm: function() {
- $.post("{{ route('wishlist.remove', ':id') }}".replace(':id', productId))
- .done(function(res) {
- if (res.success) {
- toastr.success(res.message);
- window.dispatchEvent(new CustomEvent('wishlist-updated', { detail: res.wishlist_count }));
- $(`.wishlist-item-wrapper[data-product-id="${productId}"]`).fadeOut(300, function() {
- $(this).remove();
- if ($('.wishlist-item-wrapper').length === 0) {
- window.location.reload();
- }
- });
- } else {
- toastr.error(res.message);
- }
- })
- .fail(function() {
- toastr.error("{{ __('تعذر حذف العنصر.') }}");
- });
- }
- });
- }
+    function removeFromWishlist(productId) {
+        window.tawheedConfirm('حذف من المفضلة', 'هل تود إزالة هذا المنتج من قائمة رغباتك المفضلة؟', function() {
+            $.post("{{ route('wishlist.remove', ':id') }}".replace(':id', productId))
+            .done(function(res) {
+                if (res.success) {
+                    toastr.success(res.message || 'تمت الإزالة من المفضلة');
+                    window.dispatchEvent(new CustomEvent('wishlist-updated', { detail: res.wishlist_count }));
+                    $(`.wishlist-item-wrapper[data-product-id="${productId}"]`).fadeOut(300, function() {
+                        $(this).remove();
+                        if ($('.wishlist-item-wrapper').length === 0) {
+                            window.location.reload();
+                        }
+                    });
+                } else {
+                    toastr.error(res.message || 'تعذر حذف المنتج');
+                }
+            })
+            .fail(function() {
+                toastr.error('تعذر حذف العنصر من المفضلة');
+            });
+        }, null, { confirmText: 'نعم، إزالة', cancelText: 'إبقاء', icon: '🗑️' });
+    }
 
- function clearWishlist() {
- window.showLuxuryConfirm({
- title: "{{ __('تفريغ قائمة المفضلة') }}",
- message: "{{ __('هل أنت متأكد من رغبتك في إفراغ كافة العناصر من قائمة المفضلة؟') }}",
- confirmText: "{{ __('نعم، تفريغ الكل') }}",
- cancelText: "{{ __('تراجع') }}",
- icon: "",
- iconBg: "bg-amber-50 text-amber-600 border-amber-200",
- confirmBtnClass: "bg-[#18181B] hover:bg-rose-600 text-white",
- onConfirm: function() {
- $.post("{{ route('wishlist.clear') }}")
- .done(function(res) {
- if (res.success) {
- toastr.success(res.message);
- window.dispatchEvent(new CustomEvent('wishlist-updated', { detail: 0 }));
- window.location.reload();
- } else {
- toastr.error(res.message);
- }
- })
- .fail(function() {
- toastr.error("{{ __('تعذر إفراغ المفضلة.') }}");
- });
- }
- });
- }
+    function clearWishlist() {
+        window.tawheedConfirm('تفريغ المفضلة', 'هل أنت متأكد من رغبتك في حذف كافة المنتجات من قائمة المفضلة؟', function() {
+            $.post("{{ route('wishlist.clear') }}")
+            .done(function(res) {
+                if (res.success) {
+                    toastr.success(res.message || 'تم تفريغ المفضلة بنجاح');
+                    window.dispatchEvent(new CustomEvent('wishlist-updated', { detail: 0 }));
+                    window.location.reload();
+                } else {
+                    toastr.error(res.message || 'تعذر إفراغ المفضلة');
+                }
+            })
+            .fail(function() {
+                toastr.error('تعذر إفراغ قائمة المفضلة');
+            });
+        }, null, { confirmText: 'تفريغ الكل', cancelText: 'تراجع', icon: '⚠️' });
+    }
 </script>
 @endpush
