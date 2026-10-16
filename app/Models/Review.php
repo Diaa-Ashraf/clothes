@@ -12,14 +12,18 @@ class Review extends Model
     protected $fillable = [
         'product_id',
         'user_id',
+        'reviewer_name',
+        'governorate',
         'rating',
         'comment',
-        'approved'
+        'approved',
+        'is_featured'
     ];
 
     protected $casts = [
         'rating' => 'decimal:1',
-        'approved' => 'boolean'
+        'approved' => 'boolean',
+        'is_featured' => 'boolean'
     ];
 
     public function product()
@@ -35,5 +39,28 @@ class Review extends Model
     public function scopeApproved($query)
     {
         return $query->where('approved', true);
+    }
+
+    public function scopeFeatured($query)
+    {
+        return $query->where('is_featured', true);
+    }
+
+    public function getAuthorNameAttribute(): string
+    {
+        if (!empty($this->reviewer_name)) {
+            return $this->reviewer_name;
+        }
+
+        return $this->user?->name ?? 'عميل موثق';
+    }
+
+    public function getAuthorLocationAttribute(): string
+    {
+        if (!empty($this->governorate)) {
+            return $this->governorate;
+        }
+
+        return $this->user?->address ?? 'جمهورية مصر العربية';
     }
 }

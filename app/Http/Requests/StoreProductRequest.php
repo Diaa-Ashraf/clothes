@@ -36,7 +36,13 @@ class StoreProductRequest extends FormRequest
     {
         return [
             'category_id' => 'required|exists:categories,id',
+            'brand_id' => 'nullable|exists:brands,id',
             'name' => 'required|string|max:255',
+            'sku' => 'nullable|string|max:100',
+            'gender' => 'nullable|string|in:men,women,kids,unisex',
+            'season' => 'nullable|string|in:summer,winter,spring,autumn,all_seasons',
+            'material' => 'nullable|string|max:100',
+            'fit' => 'nullable|string|in:slim,regular,oversized,loose,relaxed',
             'description' => 'nullable|string',
             'keywords' => 'nullable',
             'price' => 'required|numeric|min:0',
@@ -49,6 +55,11 @@ class StoreProductRequest extends FormRequest
             'is_active' => 'nullable',
             'is_weighted' => 'nullable',
             'unit_type' => 'nullable|string|in:kg,piece,gram,liter',
+            'variants' => 'nullable|array',
+            'variants.*.sku' => 'nullable|string|max:100',
+            'variants.*.price' => 'nullable|numeric|min:0',
+            'variants.*.stock_quantity' => 'nullable|integer|min:0',
+            'variants.*.attribute_values' => 'nullable|array',
         ];
     }
 

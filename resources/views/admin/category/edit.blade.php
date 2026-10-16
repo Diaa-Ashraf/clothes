@@ -1,76 +1,148 @@
 @extends('layouts.admin')
 
-@section('title', __('تعديل التصنيف'))
+@section('title', 'تعديل التصنيف: ' . $category->name)
 
 @section('content')
-<div class="max-w-4xl mx-auto space-y-6">
+<div class="max-w-3xl mx-auto space-y-6">
+    {{-- Header --}}
     <div class="flex items-center justify-between">
         <div>
-            <h2 class="text-2xl font-bold text-[#1F2937]">{{ __('تعديل التصنيف') }}</h2>
-            <p class="text-sm text-gray-500 mt-0.5">{{ __('تعديل تفاصيل الفئة') }}: <span class="font-semibold text-[#1F2937]">{{ $category->name }}</span></p>
+            <h1 class="text-xl font-bold text-espresso">تعديل التصنيف: {{ $category->name }}</h1>
+            <p class="text-xs text-mocha mt-1">تحديث بيانات وقسم وتفاصيل تصنيف الأزياء</p>
         </div>
-        <a href="{{ route('admin.categories.index') }}" class="px-4 py-2 rounded-xl border border-[border-orange-100] bg-[bg-canvas-base] hover:bg-[#EDE8DC] text-[#1F2937] text-sm font-semibold transition-colors">
-            {{ __('العودة للتصنيفات') }}
+        <a href="{{ route('admin.categories.index') }}" 
+           class="px-3.5 py-2 rounded-xl bg-linen hover:bg-beige text-espresso text-xs font-semibold border border-sand/60 transition-all">
+            عودة للأقسام
         </a>
     </div>
 
-    <div class="bg-white border border-[border-orange-100] rounded-2xl p-6 sm:p-8 shadow-sm">
+    {{-- Form Card --}}
+    <div class="bg-cream border border-sand/40 rounded-2xl p-6 sm:p-8 shadow-sm">
         <form action="{{ route('admin.categories.update', $category->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
             @method('PUT')
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                    <label for="name" class="block text-sm font-semibold text-[#1F2937] mb-1.5">{{ __('اسم التصنيف') }} <span class="text-rose-500">*</span></label>
-                    <input type="text" id="name" name="name" 
-                           class="w-full px-3.5 py-2.5 rounded-xl border border-[border-orange-100] bg-white text-[#1F2937] focus:border-[#DC2626] focus:ring-1 focus:ring-[#DC2626] focus:outline-none text-sm transition-all @error('name') border-rose-500 @enderror"
-                           value="{{ old('name', $category->name) }}" required>
+                    <label for="name" class="block text-xs font-bold text-espresso mb-1.5">
+                        اسم التصنيف <span class="text-clay">*</span>
+                    </label>
+                    <input type="text" 
+                           id="name" 
+                           name="name" 
+                           value="{{ old('name', $category->name) }}" 
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-sand/60 bg-vanilla/30 text-espresso text-xs focus:outline-none focus:border-action transition-all @error('name') border-rose-500 @enderror"
+                           required>
                     @error('name')
-                        <p class="text-rose-500 text-xs mt-1.5">{{ $message }}</p>
+                        <p class="text-rose-600 text-[11px] mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div>
-                    <label for="slug" class="block text-sm font-semibold text-[#1F2937] mb-1.5">{{ __('الرابط الدائم (Slug)') }}</label>
-                    <input type="text" id="slug" name="slug" 
-                           class="w-full px-4 py-2.5 rounded-xl border border-[border-orange-100] bg-[bg-canvas-base]/40 text-[#1F2937] focus:border-[#DC2626] focus:ring-1 focus:ring-[#DC2626] focus:outline-none text-sm transition-all @error('slug') border-rose-500 @enderror" 
-                           value="{{ old('slug', $category->slug) }}">
+                    <label for="parent_id" class="block text-xs font-bold text-espresso mb-1.5">
+                        القسم الرئيسي (التسلسل الهرمي)
+                    </label>
+                    <select id="parent_id" 
+                            name="parent_id" 
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-sand/60 bg-vanilla/30 text-espresso text-xs focus:outline-none focus:border-action transition-all @error('parent_id') border-rose-500 @enderror">
+                        <option value="">-- قسم رئيسي مستقل (Root Level) --</option>
+                        @foreach($parentCategories as $parent)
+                            <option value="{{ $parent->id }}" {{ old('parent_id', $category->parent_id) == $parent->id ? 'selected' : '' }}>
+                                {{ $parent->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('parent_id')
+                        <p class="text-rose-600 text-[11px] mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                    <label for="slug" class="block text-xs font-bold text-espresso mb-1.5">
+                        الرابط الدائم (Slug)
+                    </label>
+                    <input type="text" 
+                           id="slug" 
+                           name="slug" 
+                           value="{{ old('slug', $category->slug) }}" 
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-sand/60 bg-vanilla/30 text-espresso text-xs focus:outline-none focus:border-action transition-all @error('slug') border-rose-500 @enderror">
                     @error('slug')
-                        <p class="text-rose-500 text-xs mt-1.5">{{ $message }}</p>
+                        <p class="text-rose-600 text-[11px] mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="sort_order" class="block text-xs font-bold text-espresso mb-1.5">
+                        ترتيب العرض
+                    </label>
+                    <input type="number" 
+                           id="sort_order" 
+                           name="sort_order" 
+                           value="{{ old('sort_order', $category->sort_order ?? 0) }}" 
+                           min="0"
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-sand/60 bg-vanilla/30 text-espresso text-xs focus:outline-none focus:border-action transition-all @error('sort_order') border-rose-500 @enderror">
+                    @error('sort_order')
+                        <p class="text-rose-600 text-[11px] mt-1">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
 
             <div>
-                <label for="description" class="block text-sm font-semibold text-[#1F2937] mb-1.5">{{ __('الوصف') }}</label>
-                <textarea id="description" name="description" rows="3"
-                          class="w-full px-3.5 py-2.5 rounded-xl border border-[border-orange-100] bg-white text-[#1F2937] focus:border-[#DC2626] focus:ring-1 focus:ring-[#DC2626] focus:outline-none text-sm transition-all @error('description') border-rose-500 @enderror">{{ old('description', $category->description) }}</textarea>
+                <label for="description" class="block text-xs font-bold text-espresso mb-1.5">
+                    وصف القسم
+                </label>
+                <textarea id="description" 
+                          name="description" 
+                          rows="3"
+                          class="w-full px-3.5 py-2.5 rounded-xl border border-sand/60 bg-vanilla/30 text-espresso text-xs focus:outline-none focus:border-action transition-all @error('description') border-rose-500 @enderror">{{ old('description', $category->description) }}</textarea>
                 @error('description')
-                    <p class="text-rose-500 text-xs mt-1.5">{{ $message }}</p>
+                    <p class="text-rose-600 text-[11px] mt-1">{{ $message }}</p>
                 @enderror
             </div>
 
             <div>
-                <label for="image" class="block text-sm font-semibold text-[#1F2937] mb-2">{{ __('صورة التصنيف') }}</label>
-                @if($category->image_url)
-                    <div class="mb-2 flex items-center gap-3">
-                        <img src="{{ $category->image_url }}" class="w-14 h-14 rounded-xl object-cover border border-[border-orange-100]" alt="{{ $category->name }}">
-                        <span class="text-xs text-gray-500">الصورة الحالية</span>
+                <label for="image" class="block text-xs font-bold text-espresso mb-1.5">
+                    صورة الغلاف / التصنيف
+                </label>
+                @if($category->image)
+                    <div class="mb-3 flex items-center gap-3 p-3 rounded-xl bg-vanilla/40 border border-sand/40 w-fit">
+                        <img src="{{ asset('storage/' . $category->image) }}" class="w-12 h-12 rounded-lg object-cover border border-sand/50" alt="{{ $category->name }}">
+                        <span class="text-xs text-mocha">الصورة الحالية محفوظة</span>
                     </div>
                 @endif
-                <input type="file" id="image" name="image" 
-                       class="w-full px-3.5 py-2 rounded-xl border border-[border-orange-100] bg-[bg-canvas-base]/40 text-[#1F2937] text-sm focus:outline-none file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#1F2937] file:text-white hover:file:bg-[#27272A] cursor-pointer @error('image') border-rose-500 @enderror">
+                <input type="file" 
+                       id="image" 
+                       name="image" 
+                       accept="image/*"
+                       class="w-full px-3 py-2 rounded-xl border border-sand/60 bg-vanilla/20 text-espresso text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-action file:text-action-ink hover:file:bg-espresso cursor-pointer @error('image') border-rose-500 @enderror">
+                <p class="text-[11px] text-taupe mt-1">اترك الحقل فارغاً إذا كنت لا ترغب بتغيير الصورة.</p>
                 @error('image')
-                    <p class="text-rose-500 text-xs mt-1.5">{{ $message }}</p>
+                    <p class="text-rose-600 text-[11px] mt-1">{{ $message }}</p>
                 @enderror
             </div>
 
-            <div class="pt-4 border-t border-[border-orange-100] flex items-center justify-end gap-3">
-                <a href="{{ route('admin.categories.index') }}" class="px-5 py-2.5 rounded-xl border border-[border-orange-100] bg-[bg-canvas-base] hover:bg-[#EDE8DC] text-[#1F2937] text-sm font-semibold transition-colors">
-                    {{ __('إلغاء') }}
+            <div class="flex items-center gap-2 pt-2">
+                <input type="checkbox" 
+                       id="is_active" 
+                       name="is_active" 
+                       value="1" 
+                       {{ old('is_active', $category->is_active ? '1' : '0') == '1' ? 'checked' : '' }}
+                       class="w-4 h-4 rounded text-action border-sand/80 focus:ring-action">
+                <label for="is_active" class="text-xs font-bold text-espresso cursor-pointer">
+                    تفعيل القسم وعرضه في شريط التصفح وقوائم المتجر
+                </label>
+            </div>
+
+            <div class="pt-5 border-t border-sand/40 flex items-center justify-end gap-3">
+                <a href="{{ route('admin.categories.index') }}" 
+                   class="px-5 py-2.5 rounded-xl bg-linen hover:bg-beige text-espresso text-xs font-semibold border border-sand/60 transition-all">
+                    إلغاء
                 </a>
-                <button type="submit" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white text-sm font-bold shadow-md shadow-red-500/20 transition-all cursor-pointer">
-                    {{ __('حفظ التعديلات') }}
+                <button type="submit" 
+                        class="px-6 py-2.5 rounded-xl bg-action hover:bg-espresso text-action-ink text-xs font-bold shadow-sm transition-all cursor-pointer">
+                    حفظ التعديلات
                 </button>
             </div>
         </form>

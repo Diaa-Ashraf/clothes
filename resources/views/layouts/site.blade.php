@@ -7,8 +7,17 @@
  <meta http-equiv="X-UA-Compatible" content="ie=edge">
  <meta name="csrf-token" content="{{ csrf_token() }}">
 
- <title>{{ settings('site_name', 'Regalest Store') }} | {{ __('Luxury Timepieces') }}</title>
- <meta name="description" content="Regalest Store — وجهتك الأولى للساعات والمقتنيات الملكية والفاخرة">
+ <title>@yield('title', settings('meta_title', settings('site_name', 'أزياء لافيستا') . ' | أرقى الملابس والتنسيقات'))</title>
+ <meta name="description" content="{{ settings('meta_description', 'أزياء لافيستا — وجهتك الأولى لأرقى الملابس الجاهزة النسائية والرجالية والأطفال في مصر.') }}">
+ <meta name="keywords" content="{{ settings('meta_keywords', 'أزياء لافيستا, ملابس رجالي, ملابس حريمي, أزياء أطفال, فساتين, بدل, قطن مصري') }}">
+ <meta property="og:title" content="{{ settings('meta_title', settings('site_name', 'أزياء لافيستا')) }}">
+ <meta property="og:description" content="{{ settings('meta_description', 'أزياء لافيستا') }}">
+ <meta property="og:type" content="website">
+ @if(get_og_image())
+ <meta property="og:image" content="{{ get_og_image() }}">
+ @elseif(get_site_logo())
+ <meta property="og:image" content="{{ get_site_logo() }}">
+ @endif
 
  @php
  $siteFavicon = get_site_favicon();

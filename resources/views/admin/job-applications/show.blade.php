@@ -147,7 +147,7 @@
 
  <!-- Quick WhatsApp Message to Applicant -->
  <div class="pt-4 border-t border-[border-orange-100]">
- <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $application->phone) }}?text={{ urlencode('مرحباً ' . $application->name . '، بخصوص طلب توظيفك في ألبان التوحيد...') }}" 
+ <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $application->phone) }}?text={{ urlencode('مرحباً ' . $application->name . '، بخصوص طلب توظيفك في ' . settings('site_name', 'أزياء لافيستا') . '...') }}" 
  target="_blank" 
  rel="noopener noreferrer" 
  class="w-full py-2.5 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold transition-colors flex items-center justify-center gap-2">
@@ -175,3 +175,4 @@
 
 </div>
 @endsection
+

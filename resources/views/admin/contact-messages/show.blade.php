@@ -60,7 +60,7 @@
  <div class="pt-4 border-t border-[border-orange-100] flex flex-wrap items-center justify-between gap-3">
  <div class="flex items-center gap-3">
  @if($message->phone)
- <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $message->phone) }}?text={{ urlencode('مرحباً أستاذ ' . $message->name . '، رداً على رسالتكم لألبان التوحيد...') }}" 
+ <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $message->phone) }}?text={{ urlencode('مرحباً أستاذ ' . $message->name . '، رداً على رسالتكم لـ ' . settings('site_name', 'أزياء لافيستا') . '...') }}" 
  target="_blank" 
  rel="noopener noreferrer" 
  class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors flex items-center gap-2 shadow-sm">
@@ -96,3 +96,4 @@
 
 </div>
 @endsection
+

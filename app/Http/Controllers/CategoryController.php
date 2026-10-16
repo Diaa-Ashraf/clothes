@@ -23,10 +23,11 @@ class CategoryController extends Controller
     public function index(): View
     {
         $categories = Category::query()
-            ->select(['id', 'name', 'slug', 'image', 'created_at'])
+            ->select(['id', 'name', 'slug', 'image', 'parent_id', 'is_active', 'sort_order', 'created_at'])
+            ->with(['parent:id,name'])
             ->withCount('products')
-            ->latest()
-            ->paginate(15);
+            ->ordered()
+            ->paginate(20);
 
         return view('admin.category.index', compact('categories'));
     }
@@ -36,7 +37,9 @@ class CategoryController extends Controller
      */
     public function create(): View
     {
-        return view('admin.category.create');
+        $parentCategories = Category::parents()->ordered()->get(['id', 'name']);
+
+        return view('admin.category.create', compact('parentCategories'));
     }
 
     /**
@@ -51,6 +54,10 @@ class CategoryController extends Controller
         } else {
             $data['slug'] = Str::slug($data['slug']);
         }
+
+        $data['is_active'] = $request->boolean('is_active', true);
+        $data['sort_order'] = (int) ($request->input('sort_order', 0));
+        $data['parent_id'] = $request->input('parent_id') ?: null;
 
         if ($request->hasFile('image')) {
             $data['image'] = $imageService->uploadAsWebp($request->file('image'), 'assets/uploads/category');
@@ -71,7 +78,9 @@ class CategoryController extends Controller
      */
     public function edit(Category $category): View
     {
-        return view('admin.category.edit', compact('category'));
+        $parentCategories = Category::where('id', '!=', $category->id)->parents()->ordered()->get(['id', 'name']);
+
+        return view('admin.category.edit', compact('category', 'parentCategories'));
     }
 
     /**
@@ -85,8 +94,14 @@ class CategoryController extends Controller
             $data['slug'] = Str::slug($data['slug']);
         }
 
+        $data['is_active'] = $request->boolean('is_active');
+        $data['sort_order'] = (int) ($request->input('sort_order', 0));
+        $data['parent_id'] = $request->input('parent_id') ?: null;
+
         if ($request->hasFile('image')) {
-            $imageService->deleteImage($category->image);
+            if ($category->image) {
+                $imageService->deleteImage($category->image);
+            }
             $data['image'] = $imageService->uploadAsWebp($request->file('image'), 'assets/uploads/category');
         }
 

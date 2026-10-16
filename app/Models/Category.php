@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 
 class Category extends Model
 {
@@ -16,6 +18,15 @@ class Category extends Model
         'description',
         'slug',
         'image',
+        'parent_id',
+        'is_active',
+        'sort_order',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+        'sort_order' => 'integer',
+        'parent_id' => 'integer',
     ];
 
     protected $appends = ['image_url'];
@@ -34,7 +45,17 @@ class Category extends Model
             return Storage::disk('public')->url("categories/{$this->image}");
         }
 
-        return null;
+        return asset($this->image);
+    }
+
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Category::class, 'parent_id');
+    }
+
+    public function children(): HasMany
+    {
+        return $this->hasMany(Category::class, 'parent_id')->orderBy('sort_order', 'asc');
     }
 
     public function products(): HasMany
@@ -47,13 +68,23 @@ class Category extends Model
         return $this->hasMany(Product::class)->where('is_active', true);
     }
 
-    public function scopeActive(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    public function scopeRoots(Builder $query): Builder
     {
-        return $query;
+        return $query->whereNull('parent_id');
     }
 
-    public function scopeOrdered(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    public function scopeParents(Builder $query): Builder
     {
-        return $query->orderBy('id', 'asc');
+        return $query->whereNull('parent_id');
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function scopeOrdered(Builder $query): Builder
+    {
+        return $query->orderBy('sort_order', 'asc')->orderBy('id', 'asc');
     }
 }

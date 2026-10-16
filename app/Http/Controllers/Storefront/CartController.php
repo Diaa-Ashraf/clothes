@@ -45,8 +45,9 @@ class CartController extends Controller
         $portionType = $request->input('portion_type', 'piece');
         $customAmount = $request->filled('custom_amount') ? (float)$request->input('custom_amount') : null;
         $notes = $request->input('notes');
+        $variantId = $request->filled('variant_id') ? (int)$request->input('variant_id') : null;
 
-        $result = $this->cartService->addProduct($id, $quantity, $portionType, $customAmount, $notes);
+        $result = $this->cartService->addProduct($id, $quantity, $portionType, $customAmount, $notes, $variantId);
 
         if ($result['success']) {
             $this->abandonedCartService->recordSnapshot(

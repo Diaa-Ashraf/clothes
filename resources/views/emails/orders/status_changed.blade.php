@@ -1,7 +1,7 @@
 <x-mail::message>
 # مرحباً {{ $order->customer_name }} 👋
 
-تم تحديث حالة طلبك رقم **#{{ $order->public_order_id }}** في متجر **التوحيد**.
+تم تحديث حالة طلبك رقم **#{{ $order->public_order_id }}** في متجر **{{ settings('site_name', 'أزياء لافيستا') }}**.
 
 <x-mail::panel>
 ### الحالة الحالية للطلب: **{{ $order->status_label ?? $order->status }}**
@@ -10,7 +10,7 @@
 @elseif($order->status === 'ready_for_pickup')
 🏬 طلبك جاهز للاستلام الآن من فرعنا.
 @elseif($order->status === 'delivered')
-🎉 تم تسليم الطلب بنجاح. شكراً لثقتك بمتجر التوحيد!
+🎉 تم تسليم الطلب بنجاح. شكراً لثقتك بمتجر {{ settings('site_name', 'أزياء لافيستا') }}!
 @elseif($order->status === 'cancelled')
 ⚠️ تم إلغاء الطلب. @if($order->cancel_reason) سبب الإلغاء: {{ $order->cancel_reason }} @endif
 @endif
@@ -30,5 +30,5 @@
 إذا كان لديك أي استفسار، لا تتردد في التواصل معنا عبر واتساب أو الاتصال بخدمة العملاء.
 
 مع خالص التحيات،<br>
-فريق عمل **{{ config('app.name', 'التوحيد') }}**
+فريق عمل **{{ settings('site_name', config('app.name', 'أزياء لافيستا')) }}**
 </x-mail::message>

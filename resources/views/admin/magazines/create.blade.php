@@ -63,11 +63,11 @@
                 <!-- Title -->
                 <div>
                     <label for="title" class="block text-xs font-bold text-gray-900 mb-1.5">
-                        {{ __('عنوان إصدار المجلة') }} <span class="text-red-500">*</span>
+                        {{ __('عنوان إصدار المجلة والكتالوج') }} <span class="text-red-500">*</span>
                     </label>
                     <input type="text" name="title" id="title" required
-                        value="{{ old('title', 'مجلة عروض ألبان وسوبرماركت التوحيد') }}"
-                        placeholder="مثال: مجلة عروض الأسبوع الأول من أكتوبر"
+                        value="{{ old('title', 'كتالوج ومجلة ' . settings('site_name', 'أزياء لافيستا')) }}"
+                        placeholder="مثال: كتالوج ومجلة {{ settings('site_name', 'أزياء لافيستا') }}"
                         class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 font-bold text-xs focus:border-red-500 focus:bg-white focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all">
                 </div>
 
@@ -77,8 +77,8 @@
                         {{ __('نص الشارة العلوية (Badge)') }}
                     </label>
                     <input type="text" name="badge_text" id="badge_text"
-                        value="{{ old('badge_text', 'إصدار مجلة التوفير الأسبوعية • سارية حتى نفاذ الكمية') }}"
-                        placeholder="إصدار مجلة التوفير الأسبوعية"
+                        value="{{ old('badge_text', 'إصدار الموسم الجديد • تشكيلات حصرية') }}"
+                        placeholder="إصدار الموسم الجديد • تشكيلات حصرية"
                         class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 font-bold text-xs focus:border-red-500 focus:bg-white focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all">
                 </div>
 
@@ -88,7 +88,7 @@
                         {{ __('الوصف الترويجي أسفل العنوان') }}
                     </label>
                     <input type="text" name="subtitle" id="subtitle"
-                        value="{{ old('subtitle', 'تصفح كل عروض الأسبوع، كراتين التوفير، الخصومات الحصرية على الألبان الفلاحي الطازجة وسلع التموين بفروع العامرية الأربعة.') }}"
+                        value="{{ old('subtitle', 'تصفح أحدث موديلات وتنسيقات الموسم، إطلالات كاملة، وتخفيضات استثنائية مع حق المعاينة وقياس المقاس.') }}"
                         class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 font-medium text-xs focus:border-red-500 focus:bg-white focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all">
                 </div>
 

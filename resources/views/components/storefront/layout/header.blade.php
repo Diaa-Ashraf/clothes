@@ -1,397 +1,623 @@
 {{-- resources/views/components/storefront/layout/header.blade.php --}}
 @php
     $cartCount = 0;
+    $cartTotal = 0;
     try {
-        $cartCount = app(\App\Services\CartService::class)->getCount();
+        $cartService = app(\App\Services\CartService::class);
+        $cartCount = $cartService->getCount();
+        $cartTotal = $cartService->getSubtotal();
     } catch (\Throwable $e) {
-        $cartCount = session('cart') ? count(session('cart')) : 0;
+        $cart = session('tawhid_cart', []);
+        $cartCount = 0;
+        $cartTotal = 0.0;
+        foreach ($cart as $item) {
+            $cartCount += (int)($item['quantity'] ?? 0);
+            $cartTotal += (float)($item['total'] ?? 0);
+        }
     }
 
-    $navCategories = \Illuminate\Support\Facades\Cache::remember('nav_categories_cache', 3600, function () {
-        return \App\Models\Category::select('id', 'name', 'slug')->take(8)->get();
-    });
+    $navCategories = \App\Models\Category::query()
+        ->select(['id', 'name', 'slug', 'parent_id', 'sort_order', 'is_active', 'image'])
+        ->whereNull('parent_id')
+        ->where('is_active', true)
+        ->with(['children' => fn($q) => $q->select(['id', 'name', 'slug', 'parent_id', 'sort_order', 'is_active'])->where('is_active', true)->orderBy('sort_order')->orderBy('name')])
+        ->orderBy('sort_order')
+        ->orderBy('id')
+        ->get();
+
+    $menCategory = $navCategories->first(fn($c) => str_contains($c->slug, 'men') || str_contains($c->name, 'رجال'));
+    $womenCategory = $navCategories->first(fn($c) => str_contains($c->slug, 'women') || str_contains($c->name, 'نسا'));
+    $kidsCategory = $navCategories->first(fn($c) => str_contains($c->slug, 'kid') || str_contains($c->name, 'أطفال') || str_contains($c->name, 'اطفال'));
+
+    $featuredCategoryIds = collect([$menCategory?->id, $womenCategory?->id, $kidsCategory?->id])->filter()->toArray();
+    $otherCategories = $navCategories->whereNotIn('id', $featuredCategoryIds);
 @endphp
 
-<header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md shadow-sm border-b border-cream" x-data="{ mobileSearchOpen: false }">
-    <!-- Main Header Bar -->
-    <div class="container mx-auto px-3 sm:px-4 py-2.5 sm:py-3 md:py-4">
-        <div class="flex items-center justify-between gap-2 sm:gap-4 md:gap-8">
+<header class="sticky top-0 z-40 bg-white shadow-sm select-none border-b border-[#BDAB75]/30 transition-all duration-300" 
+        x-data="{ 
+            activeMenu: null,
+            cartBump: false,
+            searchFocused: false,
+            cartCount: {{ (int)$cartCount }},
+            cartTotal: '{{ format_currency($cartTotal) }}'
+        }"
+        @cart-updated.window="
+            if ($event.detail) {
+                cartCount = ($event.detail.count ?? $event.detail.cart_count ?? ($event.detail.totals ? $event.detail.totals.count : cartCount));
+                if ($event.detail.totals && $event.detail.totals.formatted_subtotal) {
+                    cartTotal = $event.detail.totals.formatted_subtotal;
+                }
+            }
+            cartBump = true;
+            setTimeout(() => cartBump = false, 700);
+        "
+        dir="rtl">
+
+    <!-- 1. Top Utility Strip (Warm Egyptian Bronze & Delivery Assurance - Dynamic from Settings) -->
+    @if(settings('topbar_enabled', '1') == '1')
+    <div class="bg-[#2E2416] text-white py-1.5 px-3 sm:px-6 lg:px-8 text-xs border-b border-[#AC9653]/30">
+        <div class="max-w-7xl 2xl:max-w-[1440px] mx-auto">
             
-            <!-- Right Side: Hamburger + Logo -->
-            <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-                <!-- Mobile Menu Toggle Button -->
+            <!-- Desktop / Large Viewport (>= lg) -->
+            <div class="hidden lg:flex items-center justify-between gap-4">
+                <!-- Right: Egyptian Phone & Service -->
+                <div class="flex items-center gap-2.5 text-xs shrink-0">
+                    @php
+                        $topPhone = settings('topbar_phone') ?: settings('store_phone', '01000000000');
+                    @endphp
+                    <a href="tel:{{ preg_replace('/[^0-9+]/', '', $topPhone) }}" class="flex items-center gap-1.5 text-white/95 hover:text-[#CBA367] transition-colors group">
+                        <span class="w-2 h-2 rounded-full bg-[#CBA367] animate-ping"></span>
+                        <svg class="w-3.5 h-3.5 text-[#CBA367] group-hover:rotate-12 transition-transform" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 4V3z"/>
+                        </svg>
+                        <span>خدمة العملاء: <strong class="text-white font-bold tracking-wider" dir="ltr">{{ $topPhone }}</strong></span>
+                    </a>
+                    <span class="text-white/25">|</span>
+                    <span class="text-white/80">{{ settings('topbar_payment_note', 'دفع عند الاستلام • فودافون كاش • إنستاباي') }}</span>
+                </div>
+
+                <!-- Center: Trust & Inspection Assurance -->
+                <div class="text-xs font-medium text-white/95 text-center flex items-center gap-2">
+                    <span class="text-[#CBA367] animate-pulse">✦</span>
+                    @if(settings('announcement_bar_link'))
+                        <a href="{{ settings('announcement_bar_link') }}" class="hover:text-[#CBA367] transition-colors">
+                            {{ settings('topbar_announcement', 'شحن سريع لكافة محافظات مصر • معاينة وقياس قبل الدفع • استبدال مجاني 14 يوماً') }}
+                        </a>
+                    @else
+                        <span>{{ settings('topbar_announcement', 'شحن سريع لكافة محافظات مصر • معاينة وقياس قبل الدفع • استبدال مجاني 14 يوماً') }}</span>
+                    @endif
+                </div>
+
+                <!-- Left: Quick Links & EGP Currency -->
+                <div class="flex items-center gap-3 text-[11px] shrink-0">
+                    <a href="{{ route('orders.track') }}" class="text-white/80 hover:text-[#CBA367] transition-colors">تتبع طلبك</a>
+                    <span class="text-white/25">|</span>
+                    <a href="{{ route('branches.index') }}" class="text-white/80 hover:text-[#CBA367] transition-colors">فروعنا</a>
+                    <span class="text-white/25">|</span>
+                    <span class="inline-flex items-center gap-1.5 bg-[#AC9653]/35 px-2.5 py-0.5 rounded-full text-white font-bold text-[10px] border border-[#BDAB75]/30">
+                        <span>{{ settings('default_currency', 'EGP') }}</span>
+                        <span>{{ settings('currency_symbol', 'ج.م') }}</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Mobile & Tablet Viewport (< lg) -->
+            <div class="lg:hidden flex items-center justify-between text-[10px] sm:text-[11px] gap-2 overflow-hidden w-full">
+                @php
+                    $mobilePhone = settings('topbar_phone') ?: settings('store_phone', '01000000000');
+                @endphp
+                <a href="tel:{{ preg_replace('/[^0-9+]/', '', $mobilePhone) }}" class="flex items-center gap-1 text-white/95 hover:text-[#CBA367] transition-colors shrink-0">
+                    <span class="w-1.5 h-1.5 rounded-full bg-[#CBA367] animate-ping"></span>
+                    <svg class="w-3 h-3 text-[#CBA367]" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 4V3z"/>
+                    </svg>
+                    <span class="font-bold tracking-wider" dir="ltr">{{ $mobilePhone }}</span>
+                </a>
+
+                <div class="flex-1 min-w-0 text-center text-white/90 truncate font-medium text-[9.5px] sm:text-[11px]">
+                    <span class="text-[#CBA367]">✦</span>
+                    <span class="truncate">{{ settings('topbar_announcement_mobile', settings('topbar_announcement', 'معاينة وقياس قبل الدفع • شحن لكافة المحافظات')) }}</span>
+                </div>
+
+                <span class="hidden xs:inline-block shrink-0 text-[9.5px] bg-[#AC9653]/40 px-2 py-0.5 rounded-full text-white font-bold border border-[#BDAB75]/30">
+                    {{ settings('currency_symbol', 'ج.م') }}
+                </span>
+            </div>
+
+        </div>
+    </div>
+    @endif
+
+    <!-- 2. Main Middle Bar: Brand Logo, Animated Search, Quick Actions -->
+    <div class="max-w-7xl 2xl:max-w-[1440px] mx-auto px-2.5 sm:px-6 lg:px-8 xl:px-10 py-2 sm:py-3 w-full overflow-hidden">
+        <div class="flex items-center justify-between gap-1.5 sm:gap-4 lg:gap-8 w-full">
+            
+            <!-- Mobile Toggle + Store Brand Logo -->
+            <div class="flex items-center gap-1.5 sm:gap-3 min-w-0 flex-1">
                 <button type="button" 
                         @click="$dispatch('open-mobile-menu')"
-                        class="lg:hidden p-1.5 text-charcoal-secondary hover:text-red-600 hover:bg-red-50 rounded-xl focus:outline-none transition-colors shrink-0"
-                        aria-label="القائمة الرئيسية">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        class="lg:hidden p-1.5 sm:p-2 text-[#2E2416] hover:bg-gray-100 rounded-lg sm:rounded-xl transition-colors cursor-pointer active:scale-95 shrink-0"
+                        aria-label="القائمة">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                 </button>
 
-                <!-- Brand Logo & Name -->
-                <a href="{{ route('site.home') }}" class="flex items-center gap-2 sm:gap-3 group min-w-0">
+                <a href="{{ route('site.home') }}" class="flex items-center gap-1.5 sm:gap-3 group min-w-0">
                     @if(get_site_logo())
-                        <div class="w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-xl sm:rounded-2xl bg-white p-0.5 sm:p-1 flex items-center justify-center shadow-lg shadow-red-500/10 group-hover:scale-105 transition-all duration-300 border-2 border-orange-200 overflow-hidden shrink-0">
-                            <img src="{{ get_site_logo() }}" alt="{{ settings('site_name', 'ألبان التوحيد') }}" class="w-full h-full object-contain">
+                        <div class="h-8 sm:h-12 max-w-[100px] xs:max-w-[130px] sm:max-w-[160px] flex items-center justify-center shrink-0">
+                            <img src="{{ get_site_logo() }}" alt="{{ settings('site_name', 'أزياء لافيستا') }}" class="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300">
                         </div>
                     @else
-                        <div class="w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-red-700 via-red-600 to-orange-500 text-white flex items-center justify-center shadow-lg shadow-red-500/25 group-hover:scale-105 transition-all duration-300 border-2 border-orange-200 shrink-0">
-                            <span class="text-lg sm:text-2xl font-black font-sans">🥛</span>
+                        <div class="w-7 h-7 xs:w-8 xs:h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-tr from-[#AC9653] to-[#CBA367] flex items-center justify-center text-white font-black text-xs xs:text-sm sm:text-xl shadow-xs group-hover:scale-105 transition-all duration-300 shrink-0">
+                            {{ mb_substr(settings('site_name', 'أزياء لافيستا'), 0, 1) }}
                         </div>
                     @endif
-                    <div class="flex flex-col min-w-0">
-                        <div class="flex items-center gap-1 sm:gap-1.5">
-                            <span class="text-sm sm:text-xl md:text-2xl font-black text-red-600 tracking-tight font-sans truncate">
-                                {{ settings('site_name', 'ألبان التوحيد') }}
-                            </span>
-                            <span class="hidden sm:inline px-1.5 py-0.5 rounded text-[9px] font-black bg-orange-500 text-white uppercase tracking-wider shrink-0">ماركت</span>
-                        </div>
-                        <span class="hidden sm:block text-[11px] text-gray-500 font-bold truncate">
-                            {{ settings('site_slogan', 'ماركت وألبان بلدية • 4 فروع بالعامرية') }}
+                    <div class="flex flex-col text-right min-w-0">
+                        <span class="text-xs xs:text-sm sm:text-xl lg:text-2xl font-black text-[#2E2416] tracking-tight group-hover:text-[#AC9653] transition-colors leading-tight truncate">
+                            {{ settings('site_name', 'أزياء لافيستا') }}
+                        </span>
+                        <span class="hidden xs:block text-[7px] sm:text-[9.5px] font-bold text-[#AC9653] tracking-widest uppercase -mt-0.5 group-hover:text-[#CBA367] transition-colors truncate">
+                            {{ settings('site_tagline', 'LAVISTA FASHION') }}
                         </span>
                     </div>
                 </a>
             </div>
 
-            <!-- Instant Search Bar (Desktop) -->
-            <div class="hidden md:flex flex-1 max-w-xl mx-4"
-                 x-data="{
-                    query: '{{ request('q', request('search')) }}',
-                    results: [],
-                    loading: false,
-                    open: false,
-                    fetchResults() {
-                        if (this.query.trim().length < 1) {
-                            this.results = [];
-                            this.open = false;
-                            return;
-                        }
-                        this.loading = true;
-                        fetch('{{ route('search.autocomplete') }}?q=' + encodeURIComponent(this.query))
-                            .then(res => res.json())
-                            .then(data => {
-                                this.results = data.results || [];
-                                this.open = this.results.length > 0;
-                                this.loading = false;
-                            })
-                            .catch(() => {
-                                this.loading = false;
-                            });
-                    }
-                 }"
-                 @click.outside="open = false">
-                <form action="{{ route('search.index') }}" method="GET" class="w-full relative">
-                    <input type="text" 
-                           name="q" 
-                           x-model="query"
-                           @input.debounce.250ms="fetchResults()"
-                           @focus="if(results.length > 0) open = true"
-                           placeholder="ابحث عن ألبان، جبن، بقالة، لحوم، منظفات..." 
-                           autocomplete="off"
-                           class="w-full bg-canvas-base border border-cream hover:border-red-300 focus:border-red-600 focus:ring-2 focus:ring-red-100 rounded-full py-2.5 pr-11 pl-10 text-base sm:text-sm text-charcoal placeholder-charcoal-muted/70 transition-all outline-none" />
-                    <button type="submit" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-charcoal-muted hover:text-primary-700 transition-colors" aria-label="بحث">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </button>
-                    <div x-show="loading" x-cloak class="absolute left-3.5 top-1/2 -translate-y-1/2">
-                        <svg class="w-4 h-4 animate-spin text-primary-700" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                        </svg>
-                    </div>
-
-                    <!-- Live Autocomplete Dropdown -->
-                    <div x-show="open" 
-                         x-cloak 
-                         x-transition 
-                         class="absolute top-full right-0 left-0 mt-2 bg-white rounded-2xl shadow-xl border border-cream overflow-hidden z-50 divide-y divide-cream/60">
-                        <template x-for="item in results" :key="item.id">
-                            <a :href="item.url" class="flex items-center gap-3 p-3 hover:bg-canvas-subtle transition-colors group">
-                                <img :src="item.image_url" :alt="item.name" class="w-11 h-11 object-contain rounded-lg bg-canvas-base p-1 border border-cream shrink-0">
-                                <div class="flex-1 min-w-0 text-right">
-                                    <div class="text-xs font-bold text-charcoal group-hover:text-primary-800 truncate" x-text="item.name"></div>
-                                    <div class="text-[10px] text-charcoal-muted" x-text="item.category"></div>
-                                </div>
-                                <div class="text-xs font-black text-primary-800 tabular-nums shrink-0" x-text="item.price"></div>
-                            </a>
-                        </template>
-                        <div class="p-2.5 bg-canvas-base/50 text-center">
-                            <button type="submit" class="text-xs font-bold text-primary-800 hover:text-primary-900 transition-colors">
-                                عرض جميع نتائج البحث لـ "<span x-text="query"></span>" ←
-                            </button>
+            <!-- Central Search Bar with Category Selector (Desktop >= lg) -->
+            <div class="hidden lg:flex flex-1 max-w-xl xl:max-w-2xl 2xl:max-w-3xl mx-4 xl:mx-8">
+                <form action="{{ route('shop') }}" method="GET" 
+                      class="w-full flex items-center rounded-xl bg-white border border-[#BDAB75]/50 shadow-2xs hover:border-[#AC9653] focus-within:border-[#AC9653] focus-within:ring-2 focus-within:ring-[#CBA367]/30 transition-all duration-300 overflow-hidden">
+                    
+                    <!-- Department Selector Dropdown -->
+                    <div class="relative bg-gray-50/80 border-l border-gray-200">
+                        <select name="category_id" 
+                                class="bg-transparent text-gray-700 text-xs font-bold pl-7 pr-3 py-2.5 outline-none cursor-pointer max-w-[145px] truncate appearance-none">
+                            <option value="">كافة الأقسام</option>
+                            @foreach($navCategories as $cat)
+                                <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>
+                                    {{ $cat->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <div class="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
                         </div>
                     </div>
+
+                    <!-- Search Text Input -->
+                    <input type="text" 
+                           name="search" 
+                           value="{{ request('search') }}"
+                           placeholder="ابحث عن قميص، فستان، بنطلون، جاكيت، ترنج أطفال، حذاء..."
+                           class="flex-1 px-4 py-2.5 text-xs text-gray-800 placeholder-gray-400 outline-none bg-transparent">
+
+                    <!-- Search Button with Micro-Animation -->
+                    <button type="submit" 
+                            class="bg-[#CBA367] hover:bg-[#b88f55] active:scale-95 text-white px-5 py-2.5 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-xs">
+                        <svg class="w-4 h-4 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        <span>بحث</span>
+                    </button>
                 </form>
             </div>
 
-            <!-- Left Side: Action Icons -->
-            <div class="flex items-center gap-0.5 sm:gap-1.5 shrink-0">
-                <!-- Mobile Search Toggle -->
-                <button type="button" 
-                        @click="mobileSearchOpen = !mobileSearchOpen"
-                        class="md:hidden p-2 text-charcoal-secondary hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
-                        aria-label="بحث في المنتجات">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                </button>
+            <!-- User Quick Actions (Account, Wishlist, Animated Cart) -->
+            <div class="flex items-center gap-1 sm:gap-2.5 shrink-0">
+                
+                <!-- Account / Login Button (Hidden on mobile < sm, accessible in bottom nav & slide-over menu) -->
+                @auth
+                    <a href="{{ route('account.profile') }}" 
+                       class="hidden sm:flex h-9 sm:h-10 px-2 sm:px-3 rounded-xl border border-gray-200/80 hover:border-[#AC9653] hover:bg-[#AC9653]/10 text-gray-700 transition-all items-center justify-center sm:justify-start gap-2 group shrink-0"
+                       title="حسابي">
+                        <div class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#AC9653] text-white flex items-center justify-center font-bold text-[10px] sm:text-xs">
+                            {{ mb_substr(auth()->user()->name, 0, 1) }}
+                        </div>
+                        <div class="hidden xl:flex flex-col text-right">
+                            <span class="text-[9px] text-gray-400">مرحباً بك</span>
+                            <span class="text-xs font-bold text-gray-800 group-hover:text-[#AC9653] transition-colors leading-none">{{ Str::limit(auth()->user()->name, 10) }}</span>
+                        </div>
+                    </a>
+                @else
+                    <a href="{{ route('login') }}" 
+                       class="hidden sm:flex h-9 sm:h-10 px-2 sm:px-3 rounded-xl border border-gray-200/80 hover:border-[#AC9653] hover:bg-gray-50 text-gray-700 transition-all items-center justify-center sm:justify-start gap-1.5 group shrink-0"
+                       title="تسجيل الدخول">
+                        <svg class="w-4 h-4 text-gray-600 group-hover:text-[#AC9653] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        <span class="text-xs font-bold text-gray-700 group-hover:text-[#AC9653] transition-colors hidden sm:inline">دخول</span>
+                    </a>
+                @endauth
 
-                <!-- Wishlist -->
+                <!-- Wishlist Button with Heart Animation -->
                 <a href="{{ route('wishlist.index') }}" 
-                   class="hidden sm:flex relative p-2 text-charcoal-secondary hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
-                   title="قائمة المفضلة">
-                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                   class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl border border-gray-200/80 hover:border-red-300 text-gray-600 hover:text-red-500 hover:bg-red-50/60 transition-all flex items-center justify-center group active:scale-95 shrink-0"
+                   title="قائمة الرغبات">
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                     </svg>
                 </a>
 
-                <!-- Cart Action Button -->
+                <!-- Cart Button with Animated Bounce Badge -->
                 <button type="button" 
                         @click.prevent="$dispatch('open-cart-drawer')"
-                        class="relative flex items-center gap-1.5 py-1.5 px-2.5 sm:py-2 sm:px-3.5 bg-red-50 hover:bg-red-100 text-red-700 rounded-full border border-red-200 transition-all group cursor-pointer"
-                        title="سلة المشتريات">
-                    <div class="relative">
-                        <svg class="w-5 h-5 text-red-600 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        class="h-8 sm:h-10 px-2 sm:px-3.5 bg-gradient-to-r from-[#AC9653] to-[#CBA367] hover:brightness-105 active:scale-95 text-white rounded-lg sm:rounded-xl shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer group shrink-0"
+                        title="سلة التسوق">
+                    <div class="relative flex items-center justify-center">
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                         </svg>
-                        <span id="cart-badge-count" 
-                              class="absolute -top-2 -right-2 bg-accent-600 text-white font-bold text-[10px] min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center shadow">
+                        <span class="absolute -top-1.5 -right-1.5 bg-[#2E2416] text-[#F3EFE6] text-[9px] sm:text-[10px] font-black min-w-3.5 sm:min-w-4 h-3.5 sm:h-4 px-1 rounded-full flex items-center justify-center shadow-xs transition-transform duration-300" 
+                              :class="cartBump ? 'scale-125 bg-red-600' : ''"
+                              x-text="cartCount">
                             {{ $cartCount }}
                         </span>
                     </div>
-                    <span class="hidden sm:inline font-bold text-xs">السلة</span>
+                    <div class="hidden sm:flex flex-col text-right">
+                        <span class="text-[9px] text-white/80 leading-none">السلة</span>
+                        <span class="text-xs font-black text-white leading-tight" x-text="cartTotal">
+                            {{ format_currency($cartTotal) }}
+                        </span>
+                    </div>
                 </button>
 
-                <!-- User Account -->
-                @auth
-                    <div class="relative" x-data="{ userMenuOpen: false }" @click.outside="userMenuOpen = false">
-                        <button type="button" 
-                                @click="userMenuOpen = !userMenuOpen"
-                                class="p-2 text-charcoal-secondary hover:text-red-600 hover:bg-red-50 rounded-full transition-colors flex items-center gap-1 cursor-pointer"
-                                title="حسابي">
-                            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                        </button>
-
-                        <div x-show="userMenuOpen" 
-                             x-cloak 
-                             x-transition 
-                             class="absolute left-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-cream py-2 z-50 divide-y divide-cream/60 text-xs">
-                            <div class="px-4 py-2">
-                                <div class="font-bold text-charcoal truncate">{{ auth()->user()->name }}</div>
-                                <div class="text-[10px] text-charcoal-muted truncate">{{ auth()->user()->phone }}</div>
-                            </div>
-                            <div class="py-1">
-                                <a href="{{ route('account.profile') }}" class="block px-4 py-2 hover:bg-canvas-subtle text-charcoal hover:text-primary-800 font-semibold">
-                                    الملف الشخصي
-                                </a>
-                                <a href="{{ route('account.addresses') }}" class="block px-4 py-2 hover:bg-canvas-subtle text-charcoal hover:text-primary-800 font-semibold">
-                                    العناوين المحفوظة
-                                </a>
-                                <a href="{{ route('account.orders') }}" class="block px-4 py-2 hover:bg-canvas-subtle text-charcoal hover:text-primary-800 font-semibold">
-                                    سجل طلباتي
-                                </a>
-                                @if(auth()->user()->isAdmin())
-                                    <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2 hover:bg-primary-50 text-primary-800 font-bold">
-                                        لوحة التحكم
-                                    </a>
-                                @endif
-                            </div>
-                            <div class="pt-1">
-                                <form action="{{ route('logout') }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="w-full text-right px-4 py-2 text-rose-600 hover:bg-rose-50 font-semibold cursor-pointer">
-                                        تسجيل الخروج
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                @else
-                    <a href="{{ route('login') }}" 
-                       class="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-charcoal-secondary hover:text-primary-700 px-3 py-2 rounded-lg hover:bg-canvas-subtle transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                        </svg>
-                        <span>دخول</span>
-                    </a>
-                @endauth
             </div>
+
         </div>
 
-        <!-- Mobile Search Dropdown Bar -->
-        <div x-show="mobileSearchOpen" 
-             x-cloak 
-             x-transition 
-             class="mt-3 md:hidden pt-2 border-t border-cream"
-             x-data="{
-                mobileQuery: '{{ request('q', request('search')) }}',
-                mobileResults: [],
-                mobileLoading: false,
-                mobileDropdownOpen: false,
-                fetchMobileResults() {
-                    if (this.mobileQuery.trim().length < 1) {
-                        this.mobileResults = [];
-                        this.mobileDropdownOpen = false;
-                        return;
-                    }
-                    this.mobileLoading = true;
-                    fetch('{{ route('search.autocomplete') }}?q=' + encodeURIComponent(this.mobileQuery))
-                        .then(res => res.json())
-                        .then(data => {
-                            this.mobileResults = data.results || [];
-                            this.mobileDropdownOpen = this.mobileResults.length > 0;
-                            this.mobileLoading = false;
-                        })
-                        .catch(() => {
-                            this.mobileLoading = false;
-                        });
-                }
-             }">
-            <form action="{{ route('search.index') }}" method="GET" class="relative">
+        <!-- Mobile & Tablet Search Bar + Horizontal Category Pills (< lg) -->
+        <div class="mt-2 lg:hidden space-y-2 w-full overflow-hidden">
+            <!-- Search Input -->
+            <form action="{{ route('shop') }}" method="GET" 
+                  class="w-full flex items-center rounded-xl bg-gray-50/90 hover:bg-white border border-[#BDAB75]/50 focus-within:border-[#AC9653] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#CBA367]/25 transition-all duration-200 shadow-2xs overflow-hidden">
                 <input type="text" 
-                       name="q" 
-                       x-model="mobileQuery"
-                       @input.debounce.250ms="fetchMobileResults()"
-                       placeholder="ابحث عن ألبان، جبن، بقالة، لحوم..." 
-                       autocomplete="off"
-                       class="w-full bg-canvas-base border border-cream focus:border-red-600 focus:ring-2 focus:ring-red-100 rounded-full py-2.5 pr-11 pl-10 text-base text-charcoal outline-none shadow-2xs" />
-                <button type="submit" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-charcoal-muted hover:text-red-600" aria-label="بحث">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                       name="search" 
+                       value="{{ request('search') }}"
+                       placeholder="ابحث عن قميص، فستان، بنطلون، جاكيت..."
+                       class="flex-1 py-1.5 sm:py-2.5 px-3 text-xs text-gray-800 placeholder-gray-400 outline-none bg-transparent min-w-0">
+                @if(request('search'))
+                    <a href="{{ route('shop') }}" class="p-1.5 text-gray-400 hover:text-gray-600 text-xs">✕</a>
+                @endif
+                <button type="submit" 
+                        class="h-7 sm:h-9 px-3 sm:px-4 bg-[#CBA367] hover:bg-[#b88f55] active:scale-95 text-white text-xs font-bold rounded-lg m-1 flex items-center gap-1 justify-center transition-all shrink-0 cursor-pointer shadow-xs">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
+                    <span>بحث</span>
                 </button>
-                <div x-show="mobileLoading" x-cloak class="absolute left-3.5 top-1/2 -translate-y-1/2">
-                    <svg class="w-4 h-4 animate-spin text-red-600" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                    </svg>
-                </div>
-
-                <!-- Mobile Autocomplete Dropdown -->
-                <div x-show="mobileDropdownOpen" 
-                     x-cloak 
-                     x-transition 
-                     class="absolute top-full right-0 left-0 mt-2 bg-white rounded-2xl shadow-2xl border border-cream overflow-hidden z-50 divide-y divide-cream/60">
-                    <template x-for="item in mobileResults" :key="item.id">
-                        <a :href="item.url" class="flex items-center gap-3 p-3 hover:bg-canvas-subtle transition-colors">
-                            <img :src="item.image_url" :alt="item.name" class="w-10 h-10 object-contain rounded-xl bg-canvas-base p-1 border border-cream shrink-0">
-                            <div class="flex-1 min-w-0 text-right">
-                                <div class="text-xs font-black text-charcoal truncate" x-text="item.name"></div>
-                                <div class="text-[10px] text-charcoal-muted" x-text="item.category"></div>
-                            </div>
-                            <div class="text-xs font-black text-red-600 tabular-nums shrink-0" x-text="item.price"></div>
-                        </a>
-                    </template>
-                    <div class="p-2.5 bg-canvas-base/60 text-center">
-                        <button type="submit" class="text-xs font-black text-red-600 hover:text-red-700">
-                            عرض جميع النتائج لـ "<span x-text="mobileQuery"></span>" ←
-                        </button>
-                    </div>
-                </div>
             </form>
+
+            <!-- Horizontal Scrollable Category Pills -->
+            <div class="relative w-full overflow-hidden">
+                <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 whitespace-nowrap text-xs scroll-smooth px-0.5">
+                    <a href="{{ route('shop', ['deals_only' => 1]) }}" 
+                       class="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-gradient-to-r from-[#CBA367] to-[#AC9653] text-white font-bold rounded-full flex items-center gap-1 shadow-2xs shrink-0 text-[10px] sm:text-[11px] active:scale-95 transition-transform">
+                        <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                        </svg>
+                        <span>عروض اليوم</span>
+                    </a>
+                    <a href="{{ route('shop') }}" 
+                       class="px-2.5 sm:px-3 py-1 sm:py-1.5 {{ !request('category_id') && !request('deals_only') ? 'bg-[#2E2416] text-white' : 'bg-gray-100 text-gray-800 hover:bg-[#AC9653]/15' }} font-bold rounded-full shrink-0 transition-colors text-[10px] sm:text-[11px]">
+                        كافة الملابس
+                    </a>
+                    @foreach($navCategories as $cat)
+                        <a href="{{ route('shop', ['category_id' => $cat->id]) }}" 
+                           class="px-2.5 sm:px-3 py-1 sm:py-1.5 {{ request('category_id') == $cat->id ? 'bg-[#AC9653] text-white' : 'bg-gray-100 text-gray-800 hover:bg-[#AC9653]/15' }} font-bold rounded-full shrink-0 transition-colors text-[10px] sm:text-[11px]">
+                            {{ $cat->name }}
+                        </a>
+                    @endforeach
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Navigation Menu (Desktop) -->
-    <nav class="hidden lg:block border-t border-cream/70 bg-canvas-base/60 text-xs font-semibold">
-        <div class="container mx-auto px-4 flex items-center justify-between">
-            <div class="flex items-center gap-1">
-                <!-- All Categories Dropdown Menu -->
-                <div class="relative py-2.5" x-data="{ open: false }" @click.outside="open = false">
-                    <button @click="open = !open" 
-                            type="button" 
-                            class="flex items-center gap-2 px-3.5 py-1.5 bg-primary-800 text-white rounded-lg hover:bg-primary-900 transition-colors shadow-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
-                        </svg>
-                        <span>جميع الأقسام</span>
-                        <svg class="w-3.5 h-3.5 transition-transform" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </button>
+    <!-- 3. Desktop Category Navigation Bar (Rich Golden #AC9653 with Interactive Dropdowns - Hidden on Mobile) -->
+    <nav class="hidden lg:block bg-[#AC9653] text-white border-t border-[#BDAB75]/40 shadow-xs relative z-30" 
+         @mouseleave="activeMenu = null">
+        <div class="max-w-7xl 2xl:max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10">
+            <div class="flex items-center justify-between h-12">
+                
+                <!-- Right Side: Departments & Main Clothing Links -->
+                <div class="flex items-center h-full gap-1.5 xl:gap-2.5">
+                    
+                    <!-- All Categories Mega Trigger -->
+                    <div class="relative h-full flex items-center"
+                         @mouseenter="activeMenu = 'all'"
+                         @mouseleave="activeMenu = null">
+                        <button type="button" 
+                                @click="activeMenu = (activeMenu === 'all' ? null : 'all')"
+                                class="flex items-center gap-2 bg-[#8C7838] hover:bg-[#7D6A31] active:scale-95 text-white px-3.5 py-2 rounded-lg font-bold text-xs transition-all shrink-0 shadow-2xs cursor-pointer">
+                            <svg class="w-4 h-4 text-[#F3EFE6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+                            </svg>
+                            <span>جميع الأقسام</span>
+                            <svg class="w-3 h-3 text-white/80 transition-transform duration-200" :class="activeMenu === 'all' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
 
-                    <div x-show="open" 
-                         x-cloak 
-                         x-transition:enter="transition ease-out duration-150"
-                         x-transition:enter-start="opacity-0 translate-y-1"
-                         x-transition:enter-end="opacity-100 translate-y-0"
-                         x-transition:leave="transition ease-in duration-100"
-                         x-transition:leave-start="opacity-100 translate-y-0"
-                         x-transition:leave-end="opacity-0 translate-y-1"
-                         class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-cream py-2 z-50">
-                        @foreach($navCategories as $cat)
-                            <a href="{{ route('category.product', $cat->id) }}" 
-                               class="flex items-center justify-between px-4 py-2 text-charcoal hover:bg-canvas-subtle hover:text-primary-800 transition-colors">
-                                <span>{{ $cat->name }}</span>
-                                <svg class="w-3.5 h-3.5 text-charcoal-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        <!-- All Categories Mega Dropdown Panel with Hover Bridge -->
+                        <div x-show="activeMenu === 'all'" 
+                             x-cloak
+                             x-transition:enter="transition ease-out duration-200 transform"
+                             x-transition:enter-start="opacity-0 -translate-y-2 scale-98"
+                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                             x-transition:leave="transition ease-in duration-150 transform"
+                             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                             x-transition:leave-end="opacity-0 -translate-y-2 scale-98"
+                             class="absolute right-0 top-full pt-1.5 z-50 w-[480px] lg:w-[560px] xl:w-[620px]">
+                            
+                            <div class="dropdown-glass relative rounded-2xl p-5 text-right shadow-2xl border border-[#BDAB75]/40">
+                                <!-- Top Caret Indicator -->
+                                <div class="absolute -top-1.5 right-8 w-3 h-3 bg-white rotate-45 border-t border-r border-[#BDAB75]/40"></div>
+                                
+                                <div class="grid grid-cols-2 gap-3.5 max-h-[72vh] overflow-y-auto no-scrollbar relative z-10 pr-1">
+                                    @foreach($navCategories as $cat)
+                                        <div class="p-2.5 rounded-xl hover:bg-gray-50/90 transition-colors border border-transparent hover:border-[#BDAB75]/30">
+                                            <a href="{{ route('shop', ['category_id' => $cat->id]) }}" class="flex items-center justify-between text-xs font-bold text-gray-900 hover:text-[#AC9653] group">
+                                                <span class="group-hover:translate-x-0.5 transition-transform">{{ $cat->name }}</span>
+                                                <span class="text-xs text-[#AC9653]">‹</span>
+                                            </a>
+                                            @if($cat->children->isNotEmpty())
+                                                <div class="flex flex-wrap gap-1 mt-2">
+                                                    @foreach($cat->children->take(4) as $sub)
+                                                        <a href="{{ route('shop', ['category_id' => $sub->id]) }}" class="text-[10px] text-gray-600 hover:text-[#CBA367] bg-gray-100 hover:bg-[#CBA367]/15 px-2 py-0.5 rounded-md transition-colors font-medium">
+                                                            {{ $sub->name }}
+                                                        </a>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </div>
+
+                                <div class="pt-3 mt-3 border-t border-gray-100 flex items-center justify-between text-xs">
+                                    <a href="{{ route('shop') }}" class="font-bold text-[#AC9653] hover:underline flex items-center gap-1">
+                                        <span>تصفح كافة معروضات المتجر</span>
+                                        <span>‹</span>
+                                    </a>
+                                    <span class="text-[10px] text-gray-400 font-medium">خامات قطنية مصرية 100%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Direct Nav Link: الرئيسية -->
+                    <a href="{{ route('site.home') }}" class="nav-link-indicator h-full flex items-center px-2.5 xl:px-3 text-xs font-bold text-white hover:text-[#F3EFE6] transition-colors shrink-0">
+                        الرئيسية
+                    </a>
+
+                    <!-- Direct Nav Link: كافة الملابس -->
+                    <a href="{{ route('shop') }}" class="nav-link-indicator h-full flex items-center px-2.5 xl:px-3 text-xs font-bold text-white hover:text-[#F3EFE6] transition-colors shrink-0">
+                        كافة الملابس
+                    </a>
+
+                    <!-- Dropdown: ملابس رجالية (ديناميكي من الداتا بيز) -->
+                    @if($menCategory)
+                    <div class="relative h-full flex items-center" 
+                         @mouseenter="activeMenu = 'men'"
+                         @mouseleave="activeMenu = null">
+                        <a href="{{ route('shop', ['category_id' => $menCategory->id]) }}" 
+                           class="nav-link-indicator h-full flex items-center gap-1 px-2.5 xl:px-3 text-xs font-bold text-white hover:text-[#F3EFE6] transition-colors shrink-0">
+                            <span>{{ $menCategory->name }}</span>
+                            @if($menCategory->children->isNotEmpty())
+                                <svg class="w-3 h-3 text-white/80 transition-transform duration-200" :class="activeMenu === 'men' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                 </svg>
+                            @endif
+                        </a>
+
+                        @if($menCategory->children->isNotEmpty())
+                        <!-- Men Dropdown Panel with Hover Bridge -->
+                        <div x-show="activeMenu === 'men'" 
+                             x-cloak
+                             x-transition:enter="transition ease-out duration-200 transform"
+                             x-transition:enter-start="opacity-0 -translate-y-2 scale-98"
+                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                             x-transition:leave="transition ease-in duration-150 transform"
+                             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                             x-transition:leave-end="opacity-0 -translate-y-2 scale-98"
+                             class="absolute right-0 top-full pt-1.5 z-50 w-96">
+                            
+                            <div class="dropdown-glass relative rounded-2xl p-4 text-right grid grid-cols-2 gap-4 shadow-2xl border border-[#BDAB75]/40">
+                                <div class="absolute -top-1.5 right-6 w-3 h-3 bg-white rotate-45 border-t border-r border-[#BDAB75]/40"></div>
+                                
+                                <div class="space-y-1.5 relative z-10">
+                                    <span class="block text-[11px] font-black text-[#AC9653] border-b border-gray-100 pb-1">أقسام {{ $menCategory->name }}</span>
+                                    @foreach($menCategory->children as $sub)
+                                        <a href="{{ route('shop', ['category_id' => $sub->id]) }}" class="block text-xs font-semibold text-gray-700 hover:text-[#AC9653] hover:translate-x-1 py-1 transition-all">
+                                            {{ $sub->name }}
+                                        </a>
+                                    @endforeach
+                                </div>
+                                
+                                <div class="bg-gradient-to-br from-[#AC9653]/15 to-[#CBA367]/25 p-3.5 rounded-xl flex flex-col justify-between text-center border border-[#AC9653]/20 relative z-10">
+                                    <div>
+                                        <span class="text-[10px] font-black text-[#AC9653] uppercase tracking-wider">تشكيلة الموسم الجديد</span>
+                                        <h5 class="text-xs font-black text-gray-900 mt-1">كولكشن {{ $menCategory->name }}</h5>
+                                        <p class="text-[10px] text-gray-500 mt-1">خامات قطنية وصوف تركي فاخر</p>
+                                    </div>
+                                    <a href="{{ route('shop', ['category_id' => $menCategory->id]) }}" class="mt-3 py-1.5 px-3 bg-[#AC9653] hover:bg-[#8D793C] active:scale-95 text-white text-[11px] font-bold rounded-lg shadow-xs transition-all">
+                                        تصفح الكل
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                    </div>
+                    @endif
+
+                    <!-- Dropdown: أزياء نسائية (ديناميكي من الداتا بيز) -->
+                    @if($womenCategory)
+                    <div class="relative h-full flex items-center" 
+                         @mouseenter="activeMenu = 'women'"
+                         @mouseleave="activeMenu = null">
+                        <a href="{{ route('shop', ['category_id' => $womenCategory->id]) }}" 
+                           class="nav-link-indicator h-full flex items-center gap-1 px-2.5 xl:px-3 text-xs font-bold text-white hover:text-[#F3EFE6] transition-colors shrink-0">
+                            <span>{{ $womenCategory->name }}</span>
+                            @if($womenCategory->children->isNotEmpty())
+                                <svg class="w-3 h-3 text-white/80 transition-transform duration-200" :class="activeMenu === 'women' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            @endif
+                        </a>
+
+                        @if($womenCategory->children->isNotEmpty())
+                        <!-- Women Dropdown Panel with Hover Bridge -->
+                        <div x-show="activeMenu === 'women'" 
+                             x-cloak
+                             x-transition:enter="transition ease-out duration-200 transform"
+                             x-transition:enter-start="opacity-0 -translate-y-2 scale-98"
+                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                             x-transition:leave="transition ease-in duration-150 transform"
+                             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                             x-transition:leave-end="opacity-0 -translate-y-2 scale-98"
+                             class="absolute right-0 top-full pt-1.5 z-50 w-96">
+                            
+                            <div class="dropdown-glass relative rounded-2xl p-4 text-right grid grid-cols-2 gap-4 shadow-2xl border border-[#BDAB75]/40">
+                                <div class="absolute -top-1.5 right-6 w-3 h-3 bg-white rotate-45 border-t border-r border-[#BDAB75]/40"></div>
+                                
+                                <div class="space-y-1.5 relative z-10">
+                                    <span class="block text-[11px] font-black text-[#AC9653] border-b border-gray-100 pb-1">أقسام {{ $womenCategory->name }}</span>
+                                    @foreach($womenCategory->children as $sub)
+                                        <a href="{{ route('shop', ['category_id' => $sub->id]) }}" class="block text-xs font-semibold text-gray-700 hover:text-[#AC9653] hover:translate-x-1 py-1 transition-all">
+                                            {{ $sub->name }}
+                                        </a>
+                                    @endforeach
+                                </div>
+                                
+                                <div class="bg-gradient-to-br from-[#CBA367]/15 to-[#AC9653]/25 p-3.5 rounded-xl flex flex-col justify-between text-center border border-[#CBA367]/25 relative z-10">
+                                    <div>
+                                        <span class="text-[10px] font-black text-[#CBA367] uppercase tracking-wider">إطلالة متألقة</span>
+                                        <h5 class="text-xs font-black text-gray-900 mt-1">كولكشن {{ $womenCategory->name }}</h5>
+                                        <p class="text-[10px] text-gray-500 mt-1">أناقة وألوان عصرية وتفاصيل فاخرة</p>
+                                    </div>
+                                    <a href="{{ route('shop', ['category_id' => $womenCategory->id]) }}" class="mt-3 py-1.5 px-3 bg-[#CBA367] hover:bg-[#b88f55] active:scale-95 text-white text-[11px] font-bold rounded-lg shadow-xs transition-all">
+                                        تصفحي الكل
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                    </div>
+                    @endif
+
+                    <!-- Dropdown: أطفال ومواليد (ديناميكي من الداتا بيز) -->
+                    @if($kidsCategory)
+                    <div class="relative h-full flex items-center" 
+                         @mouseenter="activeMenu = 'kids'"
+                         @mouseleave="activeMenu = null">
+                        <a href="{{ route('shop', ['category_id' => $kidsCategory->id]) }}" 
+                           class="nav-link-indicator h-full flex items-center gap-1 px-2.5 xl:px-3 text-xs font-bold text-white hover:text-[#F3EFE6] transition-colors shrink-0">
+                            <span>{{ $kidsCategory->name }}</span>
+                            @if($kidsCategory->children->isNotEmpty())
+                                <svg class="w-3 h-3 text-white/80 transition-transform duration-200" :class="activeMenu === 'kids' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            @endif
+                        </a>
+
+                        @if($kidsCategory->children->isNotEmpty())
+                        <!-- Kids Dropdown Panel with Hover Bridge -->
+                        <div x-show="activeMenu === 'kids'" 
+                             x-cloak
+                             x-transition:enter="transition ease-out duration-200 transform"
+                             x-transition:enter-start="opacity-0 -translate-y-2 scale-98"
+                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                             x-transition:leave="transition ease-in duration-150 transform"
+                             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                             x-transition:leave-end="opacity-0 -translate-y-2 scale-98"
+                             class="absolute right-0 top-full pt-1.5 z-50 w-72">
+                            
+                            <div class="dropdown-glass relative rounded-2xl p-4 text-right space-y-2.5 shadow-2xl border border-[#BDAB75]/40">
+                                <div class="absolute -top-1.5 right-6 w-3 h-3 bg-white rotate-45 border-t border-r border-[#BDAB75]/40"></div>
+                                
+                                <span class="block text-[11px] font-black text-[#AC9653] border-b border-gray-100 pb-1">أقسام {{ $kidsCategory->name }}</span>
+                                @foreach($kidsCategory->children as $sub)
+                                    <a href="{{ route('shop', ['category_id' => $sub->id]) }}" class="block text-xs font-semibold text-gray-700 hover:text-[#AC9653] hover:translate-x-1 py-1 transition-all">
+                                        {{ $sub->name }}
+                                    </a>
+                                @endforeach
+                                <div class="pt-2 border-t border-gray-100">
+                                    <a href="{{ route('shop', ['category_id' => $kidsCategory->id]) }}" class="block text-center py-2 bg-[#AC9653] hover:bg-[#8D793C] active:scale-95 text-white text-[11px] font-bold rounded-lg transition-all shadow-xs">
+                                        كافة أزياء الأطفال
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                    </div>
+                    @endif
+
+                    <!-- بقية الأقسام الرئيسية (ديناميكية 100% من قاعدة البيانات) -->
+                    @foreach($otherCategories as $otherCat)
+                        <div class="relative h-full flex items-center"
+                             @mouseenter="activeMenu = 'cat_{{ $otherCat->id }}'"
+                             @mouseleave="activeMenu = null">
+                            <a href="{{ route('shop', ['category_id' => $otherCat->id]) }}" class="nav-link-indicator h-full flex items-center gap-1 px-2.5 xl:px-3 text-xs font-bold text-white hover:text-[#F3EFE6] transition-colors shrink-0">
+                                <span>{{ $otherCat->name }}</span>
+                                @if($otherCat->children->isNotEmpty())
+                                    <svg class="w-3 h-3 text-white/80 transition-transform duration-200" :class="activeMenu === 'cat_{{ $otherCat->id }}' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                @endif
                             </a>
-                        @endforeach
-                        <div class="border-t border-cream my-1"></div>
-                        <a href="{{ route('site.products') }}" class="block px-4 py-2 text-center text-primary-700 font-bold hover:underline">
-                            عرض كل الأقسام والمنتجات ←
+
+                            @if($otherCat->children->isNotEmpty())
+                            <div x-show="activeMenu === 'cat_{{ $otherCat->id }}'" 
+                                 x-cloak
+                                 x-transition:enter="transition ease-out duration-200 transform"
+                                 x-transition:enter-start="opacity-0 -translate-y-2 scale-98"
+                                 x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                                 x-transition:leave="transition ease-in duration-150 transform"
+                                 x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                                 x-transition:leave-end="opacity-0 -translate-y-2 scale-98"
+                                 class="absolute right-0 top-full pt-1.5 z-50 w-64">
+                                <div class="dropdown-glass relative rounded-2xl p-4 text-right space-y-2 shadow-2xl border border-[#BDAB75]/40">
+                                    <div class="absolute -top-1.5 right-6 w-3 h-3 bg-white rotate-45 border-t border-r border-[#BDAB75]/40"></div>
+                                    <span class="block text-[11px] font-black text-[#AC9653] border-b border-gray-100 pb-1">أقسام {{ $otherCat->name }}</span>
+                                    @foreach($otherCat->children as $sub)
+                                        <a href="{{ route('shop', ['category_id' => $sub->id]) }}" class="block text-xs font-semibold text-gray-700 hover:text-[#AC9653] hover:translate-x-1 py-1 transition-all">
+                                            {{ $sub->name }}
+                                        </a>
+                                    @endforeach
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+                    @endforeach
+
+                    <!-- Flash Sale & Deals Highlight with Animated Pulse Glow & Shimmer (No emoji) -->
+                    <div class="h-full flex items-center pr-1 shrink-0">
+                        <a href="{{ route('shop', ['deals_only' => 1]) }}" 
+                           class="animate-pulse-glow shimmer-badge px-3 py-1.5 text-xs font-black bg-[#CBA367] hover:bg-[#b88f55] active:scale-95 text-white rounded-lg transition-all flex items-center gap-1.5 shrink-0 shadow-xs">
+                            <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                            </svg>
+                            <span>عروض اليوم</span>
                         </a>
                     </div>
+
                 </div>
 
-                <!-- Nav Links -->
-                <a href="{{ route('site.home') }}" 
-                   class="px-3.5 py-3 transition-colors {{ request()->routeIs('site.home') ? 'text-primary-800 border-b-2 border-primary-700 font-bold' : 'text-charcoal hover:text-primary-700' }}">
-                    الرئيسية
-                </a>
+                <!-- Left Side: Branches & Contact with Balanced Placement -->
+                <div class="flex items-center h-full gap-2.5 sm:gap-4 text-xs font-bold text-white/95 shrink-0">
+                    <a href="{{ route('branches.index') }}" class="nav-link-indicator h-full flex items-center hover:text-white transition-colors py-1">
+                        <span>فروعنا</span>
+                        <span class="hidden 2xl:inline mr-1">في مصر</span>
+                    </a>
+                    <span class="opacity-40">|</span>
+                    <a href="{{ route('contact') }}" class="nav-link-indicator h-full flex items-center hover:text-white transition-colors py-1">
+                        اتصل بنا
+                    </a>
+                </div>
 
-                <a href="{{ route('site.products') }}" 
-                   class="px-3.5 py-3 transition-colors {{ request()->routeIs('site.products') ? 'text-primary-800 border-b-2 border-primary-700 font-bold' : 'text-charcoal hover:text-primary-700' }}">
-                    كل المنتجات
-                </a>
-
-                <a href="{{ route('shop') }}" 
-                   class="px-3.5 py-3 transition-colors {{ request()->routeIs('shop') || request()->routeIs('product.shop') ? 'text-primary-800 border-b-2 border-primary-700 font-bold' : 'text-charcoal hover:text-primary-700' }}">
-                    المتجر
-                </a>
-
-                <a href="{{ route('offers.index') }}" 
-                   class="px-3.5 py-3 transition-colors {{ request()->routeIs('offers.index') ? 'text-primary-800 border-b-2 border-primary-700 font-bold' : 'text-red-600 hover:text-red-700 font-bold' }} flex items-center gap-1">
-                    <span>مجلة العروض</span>
-                    <span class="px-1.5 py-0.2 rounded-full bg-red-600 text-white text-[9px] font-black animate-pulse">جديد</span>
-                </a>
-
-                <a href="{{ Route::has('branches.index') ? route('branches.index') : url('/branches') }}" 
-                   class="px-3.5 py-3 transition-colors {{ request()->is('branches*') ? 'text-primary-800 border-b-2 border-primary-700 font-bold' : 'text-charcoal hover:text-primary-700' }}">
-                    فروعنا (4 فروع)
-                </a>
-
-                <a href="{{ route('orders.track') }}" 
-                   class="px-3.5 py-3 transition-colors {{ request()->routeIs('orders.track') ? 'text-primary-800 border-b-2 border-primary-700 font-bold' : 'text-charcoal hover:text-primary-700' }}">
-                    تتبع طلبك
-                </a>
-
-                <a href="{{ Route::has('about') ? route('about') : url('/about') }}" 
-                   class="px-3.5 py-3 transition-colors {{ request()->is('about*') ? 'text-primary-800 border-b-2 border-primary-700 font-bold' : 'text-charcoal hover:text-primary-700' }}">
-                    عن التوحيد
-                </a>
-
-                <a href="{{ Route::has('careers.index') ? route('careers.index') : url('/careers') }}" 
-                   class="px-3.5 py-3 transition-colors {{ request()->is('careers*') ? 'text-primary-800 border-b-2 border-primary-700 font-bold' : 'text-charcoal hover:text-primary-700' }}">
-                    انضم لفريقنا
-                </a>
-
-                <a href="{{ route('contact') }}" 
-                   class="px-3.5 py-3 transition-colors {{ request()->routeIs('contact') ? 'text-primary-800 border-b-2 border-primary-700 font-bold' : 'text-charcoal hover:text-primary-700' }}">
-                    تواصل معنا
-                </a>
-            </div>
-
-            <!-- Quick Hotline Callout -->
-            <div class="flex items-center gap-2 text-primary-800 font-bold">
-                <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>خدمة التوصيل السريع بالعامرية</span>
             </div>
         </div>
     </nav>
+
 </header>

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('إعدادات متجر ألبان التوحيد'))
+@section('title', __('إعدادات متجر أزياء لافيستا'))
 
 @section('content')
 <div class="max-w-7xl mx-auto space-y-6" x-data="{ 
@@ -176,8 +176,8 @@
                     <label class="block text-xs font-bold text-gray-800 mb-2">
                         {{ __('اسم المتجر الرسمي') }} <span class="text-rose-500">*</span>
                     </label>
-                    <input type="text" name="settings[site_name]" value="{{ $settings['site_name'] ?? 'ألبان وسوبرماركت التوحيد' }}" required
-                        placeholder="ألبان وسوبرماركت التوحيد"
+                    <input type="text" name="settings[site_name]" value="{{ $settings['site_name'] ?? 'أزياء لافيستا' }}" required
+                        placeholder="أزياء لافيستا"
                         class="w-full px-4 py-3 text-xs rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-700 focus:bg-white transition-all">
                     <span class="text-[11px] text-gray-400 mt-1 block">يظهر في ترويسة الموقع، الفواتير، ورسائل الواتساب.</span>
                 </div>
@@ -187,10 +187,10 @@
                     <label class="block text-xs font-bold text-gray-800 mb-2">
                         {{ __('الشعار اللفظي / السلوجان') }}
                     </label>
-                    <input type="text" name="settings[site_tagline]" value="{{ $settings['site_tagline'] ?? 'أصالة الطعم البلدي وجودة السوبرماركت في العامرية' }}"
-                        placeholder="أصالة الطعم البلدي وجودة السوبرماركت في العامرية"
+                    <input type="text" name="settings[site_tagline]" value="{{ $settings['site_tagline'] ?? 'أناقة راقية، خامات قطنية مصرية فاخرة، وتصاميم استثنائية' }}"
+                        placeholder="أناقة راقية، خامات قطنية مصرية فاخرة، وتصاميم استثنائية"
                         class="w-full px-4 py-3 text-xs rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-700 focus:bg-white transition-all">
-                    <span class="text-[11px] text-gray-400 mt-1 block">يظهر أسفل الشعار وفي بطاقات المشاركة.</span>
+                    <span class="text-[11px] text-gray-400 mt-1 block">يظهر أسفل الشعار وفي بطاقات المشاركة والترويسة.</span>
                 </div>
 
                 <!-- Currency Symbol -->
@@ -227,19 +227,31 @@
                     </div>
 
                     @if(get_site_logo())
-                    <div class="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-200">
-                        <div class="w-16 h-12 bg-gray-100 rounded-lg p-1 flex items-center justify-center shrink-0">
-                            <img src="{{ get_site_logo() }}" alt="Logo" class="max-h-full max-w-full object-contain">
+                    <div class="p-3 bg-white rounded-xl border border-gray-200 space-y-2">
+                        <div class="flex items-center gap-3">
+                            <div class="w-20 h-14 bg-gray-50 rounded-lg p-1.5 flex items-center justify-center border border-gray-100 shrink-0">
+                                <img src="{{ get_site_logo() }}" alt="Logo" class="max-h-full max-w-full object-contain">
+                            </div>
+                            <div class="text-[11px] text-gray-500">
+                                <span class="font-bold text-gray-700 block">الشعار مفعل حالياً</span>
+                                <span>يتم تطبيقه تلقائياً في الترويسة، القائمة الجانبية، والفوتر.</span>
+                            </div>
                         </div>
-                        <div class="text-[11px] text-gray-500">
-                            <span class="font-bold text-gray-700 block">الشعار الحالي</span>
-                            <span>يتم تطبيقه في الهيدر والفوتر والإيميلات.</span>
-                        </div>
+                        <label class="flex items-center gap-2 pt-2 border-t border-gray-100 text-xs text-rose-600 cursor-pointer font-bold select-none">
+                            <input type="checkbox" name="remove_site_logo" value="1" class="rounded border-gray-300 text-rose-600 focus:ring-rose-500">
+                            <span>حذف الشعار المرفوع والعودة للشعار الذهبي الافتراضي</span>
+                        </label>
+                    </div>
+                    @else
+                    <div class="p-3 bg-amber-50/60 rounded-xl border border-amber-200 text-[11px] text-amber-800 flex items-center gap-2">
+                        <span class="font-bold text-sm text-[#AC9653]">ت</span>
+                        <span>يتم حالياً استخدام الشعار النصي الذهبي الفاخر بناءً على اسم المتجر. يمكنك رفع شعار مصور مخصص في أي وقت.</span>
                     </div>
                     @endif
 
                     <input type="file" name="site_logo" accept="image/*" 
                         class="w-full text-xs text-gray-500 file:ml-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-gray-900 file:text-white hover:file:bg-primary-800 file:cursor-pointer">
+                    <p class="text-[10px] text-gray-400">موصى به: خلفية شفافة بأبعاد تقريبية 240x80 بكسل.</p>
                 </div>
 
                 <!-- Site Favicon -->
@@ -252,19 +264,26 @@
                     </div>
 
                     @if(get_site_favicon())
-                    <div class="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-200">
-                        <div class="w-12 h-12 bg-gray-100 rounded-lg p-1 flex items-center justify-center shrink-0">
-                            <img src="{{ get_site_favicon() }}" alt="Favicon" class="w-8 h-8 object-contain">
+                    <div class="p-3 bg-white rounded-xl border border-gray-200 space-y-2">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-gray-50 rounded-lg p-1 flex items-center justify-center border border-gray-100 shrink-0">
+                                <img src="{{ get_site_favicon() }}" alt="Favicon" class="w-8 h-8 object-contain">
+                            </div>
+                            <div class="text-[11px] text-gray-500">
+                                <span class="font-bold text-gray-700 block">أيقونة التاب الحالية</span>
+                                <span>تظهر بجوار عنوان الموقع في متصفح الزائر.</span>
+                            </div>
                         </div>
-                        <div class="text-[11px] text-gray-500">
-                            <span class="font-bold text-gray-700 block">أيقونة التاب الحالية</span>
-                            <span>تظهر بجوار اسم الموقع في متصفح العميل.</span>
-                        </div>
+                        <label class="flex items-center gap-2 pt-2 border-t border-gray-100 text-xs text-rose-600 cursor-pointer font-bold select-none">
+                            <input type="checkbox" name="remove_site_favicon" value="1" class="rounded border-gray-300 text-rose-600 focus:ring-rose-500">
+                            <span>حذف أيقونة التاب المخصصة</span>
+                        </label>
                     </div>
                     @endif
 
                     <input type="file" name="site_favicon" accept="image/*,.ico" 
                         class="w-full text-xs text-gray-500 file:ml-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-gray-900 file:text-white hover:file:bg-primary-800 file:cursor-pointer">
+                    <p class="text-[10px] text-gray-400">موصى به: أيقونة مربعة بأبعاد 32x32 أو 64x64 بكسل بصيغة PNG أو ICO.</p>
                 </div>
 
             </div>
@@ -450,8 +469,8 @@
                         <label class="block text-xs font-bold text-gray-800 mb-1.5">
                             {{ __('اسم صاحب الحساب في تطبيق إنستاباي') }}
                         </label>
-                        <input type="text" name="settings[instapay_name]" value="{{ $settings['instapay_name'] ?? 'ألبان وسوبرماركت التوحيد' }}"
-                            placeholder="ألبان وسوبرماركت التوحيد"
+                        <input type="text" name="settings[instapay_name]" value="{{ $settings['instapay_name'] ?? 'أزياء لافيستا' }}"
+                            placeholder="أزياء لافيستا"
                             class="w-full px-3.5 py-2.5 text-xs rounded-xl bg-white border border-rose-300 text-gray-900 font-bold focus:ring-2 focus:ring-rose-500">
                     </div>
                 </div>
@@ -565,102 +584,187 @@
         </div>
 
         <!-- ========================================== -->
-        <!-- TAB 5: Announcement Bar                    -->
+        <!-- TAB 5: Announcement & Top Utility Bar      -->
         <!-- ========================================== -->
         <div x-show="activeTab === 'announcements'" x-cloak class="bg-white border border-gray-100 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
             <div class="pb-4 border-b border-gray-100">
                 <h2 class="text-base font-black text-gray-900 flex items-center gap-2">
-                    <span>📢</span>
-                    <span>{{ __('شريط الإعلانات والتنبيهات العلوي (Top Announcement Bar)') }}</span>
+                    <svg class="w-5 h-5 text-primary-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/>
+                    </svg>
+                    <span>{{ __('شريط الإعلانات والخدمات العلوي (Top Announcement Strip)') }}</span>
                 </h2>
-                <p class="text-xs text-gray-500 mt-1">يظهر في أعلى كل صفحات المتجر للترويج للعروض الحصرية أو إعلانات التوصيل.</p>
+                <p class="text-xs text-gray-500 mt-1">التحكم الكامل في شريط الترويسة العلوي الملون (أرقام خدمة العملاء، نص الضمان والمعاينة، طرق الدفع).</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Status -->
                 <div>
                     <label class="block text-xs font-bold text-gray-800 mb-2">
-                        {{ __('حالة تفعيل الشريط العلوي') }}
+                        {{ __('حالة تفعيل الشريط العلوي بالكامل') }}
                     </label>
-                    <select name="settings[announcement_bar_enabled]" class="w-full px-4 py-3 text-xs rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 font-bold focus:ring-2 focus:ring-primary-700">
-                        <option value="1" {{ ($settings['announcement_bar_enabled'] ?? '1') == '1' ? 'selected' : '' }}>مفعل وظاهر للزوار ✓</option>
-                        <option value="0" {{ ($settings['announcement_bar_enabled'] ?? '1') == '0' ? 'selected' : '' }}>مخفي / معطل ✗</option>
+                    <select name="settings[topbar_enabled]" class="w-full px-4 py-3 text-xs rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 font-bold focus:ring-2 focus:ring-primary-700">
+                        <option value="1" {{ ($settings['topbar_enabled'] ?? '1') == '1' ? 'selected' : '' }}>مفعل وظاهر في جميع الصفحات ✓</option>
+                        <option value="0" {{ ($settings['topbar_enabled'] ?? '1') == '0' ? 'selected' : '' }}>مخفي / معطل ✗</option>
                     </select>
                 </div>
 
-                <div class="md:col-span-2">
+                <!-- Topbar Direct Customer Care Phone -->
+                <div>
                     <label class="block text-xs font-bold text-gray-800 mb-2">
-                        {{ __('رابط اختياري يفتح عند النقر على الشريط') }}
+                        {{ __('هاتف خدمة العملاء بالشريط العلوي') }}
+                    </label>
+                    <input type="text" name="settings[topbar_phone]" value="{{ $settings['topbar_phone'] ?? ($settings['store_phone'] ?? '01000000000') }}" dir="ltr"
+                        placeholder="01000000000"
+                        class="w-full px-4 py-3 text-xs rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 font-mono focus:ring-2 focus:ring-primary-700">
+                    <span class="text-[10px] text-gray-400 mt-1 block">يظهر بجوار أيقونة الاتصال المباشر لخدمة العملاء.</span>
+                </div>
+
+                <!-- Announcement Link -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-800 mb-2">
+                        {{ __('رابط يفتح عند النقر على إعلان الشريط (اختياري)') }}
                     </label>
                     <input type="text" name="settings[announcement_bar_link]" value="{{ $settings['announcement_bar_link'] ?? '' }}" dir="ltr"
-                        placeholder="https://... أو /offers"
+                        placeholder="https://... أو /shop"
                         class="w-full px-4 py-3 text-xs rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 font-mono focus:ring-2 focus:ring-primary-700">
                 </div>
 
+                <!-- Payment Note Strip -->
                 <div class="md:col-span-3">
                     <label class="block text-xs font-bold text-gray-800 mb-2">
-                        {{ __('نص الإعلان أو العرض الترويجي') }}
+                        {{ __('نص طرق الدفع المعتمدة بجوار الهاتف') }}
                     </label>
-                    <input type="text" name="settings[announcement_bar_text]" value="{{ $settings['announcement_bar_text'] ?? 'التوصيل السريع متاح لجميع مناطق العامرية وقرى مريوط والإسكندرية' }}"
-                        placeholder="التوصيل السريع متاح لجميع مناطق العامرية وقرى مريوط والإسكندرية"
+                    <input type="text" name="settings[topbar_payment_note]" value="{{ $settings['topbar_payment_note'] ?? 'دفع عند الاستلام • فودافون كاش • إنستاباي' }}"
+                        placeholder="دفع عند الاستلام • فودافون كاش • إنستاباي"
                         class="w-full px-4 py-3 text-xs rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 font-bold focus:ring-2 focus:ring-primary-700">
+                    <span class="text-[10px] text-gray-400 mt-1 block">يظهر بجوار رقم الهاتف لطمأنة العميل بشأن خيارات الدفع المتاحة.</span>
+                </div>
+
+                <!-- Main Desktop Guarantee & Announcement Text -->
+                <div class="md:col-span-3">
+                    <label class="block text-xs font-bold text-gray-800 mb-2">
+                        {{ __('نص إعلان الضمان والشحن في منتصف الشريط (للشاشات والكمبيوتر)') }}
+                    </label>
+                    <input type="text" name="settings[topbar_announcement]" value="{{ $settings['topbar_announcement'] ?? ($settings['announcement_bar_text'] ?? 'شحن سريع لكافة محافظات مصر • معاينة وقياس قبل الدفع • استبدال مجاني 14 يوماً') }}"
+                        placeholder="شحن سريع لكافة محافظات مصر • معاينة وقياس قبل الدفع • استبدال مجاني 14 يوماً"
+                        class="w-full px-4 py-3 text-xs rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 font-bold focus:ring-2 focus:ring-primary-700">
+                    <span class="text-[10px] text-gray-400 mt-1 block">الرسالة الترويجية المركزية مع وميض النجمة.</span>
+                </div>
+
+                <!-- Mobile Short Announcement Text -->
+                <div class="md:col-span-3">
+                    <label class="block text-xs font-bold text-gray-800 mb-2">
+                        {{ __('نص إعلان الشريط المختصر لشاشات الموبايل') }}
+                    </label>
+                    <input type="text" name="settings[topbar_announcement_mobile]" value="{{ $settings['topbar_announcement_mobile'] ?? 'معاينة وقياس قبل الدفع • شحن لكافة المحافظات' }}"
+                        placeholder="معاينة وقياس قبل الدفع • شحن لكافة المحافظات"
+                        class="w-full px-4 py-3 text-xs rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 font-bold focus:ring-2 focus:ring-primary-700">
+                    <span class="text-[10px] text-gray-400 mt-1 block">نص مقتضب ومناسب لعرض شاشات الهواتف دون حدوث كسر بالأسطر.</span>
                 </div>
             </div>
         </div>
 
         <!-- ========================================== -->
-        <!-- TAB 6: Social Media Links                  -->
+        <!-- TAB 6: Social Media & Channels             -->
         <!-- ========================================== -->
         <div x-show="activeTab === 'social'" x-cloak class="bg-white border border-gray-100 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
             <div class="pb-4 border-b border-gray-100">
                 <h2 class="text-base font-black text-gray-900 flex items-center gap-2">
-                    <span>🌐</span>
-                    <span>{{ __('روابط شبكات التواصل الاجتماعي الرسمية') }}</span>
+                    <svg class="w-5 h-5 text-primary-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+                    </svg>
+                    <span>{{ __('روابط شبكات التواصل الاجتماعي الرسمية وقنوات المتابعة') }}</span>
                 </h2>
-                <p class="text-xs text-gray-500 mt-1">تظهر في فوتر الموقع، الترويسة، وبطاقات التواصل للعملاء.</p>
+                <p class="text-xs text-gray-500 mt-1">تظهر تلقائياً في فوتر المتجر وصفحات التواصل لزيادة متابعين البراند وتفاعل العملاء.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Facebook -->
                 <div>
-                    <label class="block text-xs font-bold text-gray-800 mb-2 flex items-center gap-1.5">
-                        <span class="text-blue-600 font-bold">f</span>
+                    <label class="block text-xs font-bold text-gray-800 mb-2 flex items-center gap-2">
+                        <span class="w-5 h-5 rounded bg-[#1877F2] text-white flex items-center justify-center text-[11px] font-black">f</span>
                         <span>{{ __('رابط صفحة فيسبوك') }}</span>
                     </label>
                     <input type="url" name="settings[facebook_link]" value="{{ $settings['facebook_link'] ?? '' }}" dir="ltr"
-                        placeholder="https://facebook.com/altawheed.dairy"
+                        placeholder="https://facebook.com/altawhid.fashion"
                         class="w-full px-4 py-3 text-xs rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 font-mono focus:ring-2 focus:ring-primary-700">
                 </div>
 
                 <!-- Instagram -->
                 <div>
-                    <label class="block text-xs font-bold text-gray-800 mb-2 flex items-center gap-1.5">
-                        <span class="text-pink-600 font-bold">📷</span>
+                    <label class="block text-xs font-bold text-gray-800 mb-2 flex items-center gap-2">
+                        <span class="w-5 h-5 rounded bg-gradient-to-tr from-[#F58529] via-[#DD2A7B] to-[#8134AF] text-white flex items-center justify-center text-[10px]">📷</span>
                         <span>{{ __('رابط حساب إنستغرام') }}</span>
                     </label>
                     <input type="url" name="settings[instagram_link]" value="{{ $settings['instagram_link'] ?? '' }}" dir="ltr"
-                        placeholder="https://instagram.com/altawheed.dairy"
+                        placeholder="https://instagram.com/altawhid.fashion"
                         class="w-full px-4 py-3 text-xs rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 font-mono focus:ring-2 focus:ring-primary-700">
                 </div>
 
                 <!-- TikTok -->
                 <div>
-                    <label class="block text-xs font-bold text-gray-800 mb-2 flex items-center gap-1.5">
-                        <span>🎵</span>
+                    <label class="block text-xs font-bold text-gray-800 mb-2 flex items-center gap-2">
+                        <span class="w-5 h-5 rounded bg-black text-white flex items-center justify-center text-[10px]">🎵</span>
                         <span>{{ __('رابط حساب تيك توك') }}</span>
                     </label>
                     <input type="url" name="settings[tiktok_link]" value="{{ $settings['tiktok_link'] ?? '' }}" dir="ltr"
-                        placeholder="https://tiktok.com/@altawheed.dairy"
+                        placeholder="https://tiktok.com/@altawhid.fashion"
                         class="w-full px-4 py-3 text-xs rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 font-mono focus:ring-2 focus:ring-primary-700">
                 </div>
 
                 <!-- YouTube -->
                 <div>
-                    <label class="block text-xs font-bold text-gray-800 mb-2 flex items-center gap-1.5">
-                        <span class="text-rose-600 font-bold">▶</span>
+                    <label class="block text-xs font-bold text-gray-800 mb-2 flex items-center gap-2">
+                        <span class="w-5 h-5 rounded bg-[#FF0000] text-white flex items-center justify-center text-[10px]">▶</span>
                         <span>{{ __('رابط قناة يوتيوب') }}</span>
                     </label>
                     <input type="url" name="settings[youtube_link]" value="{{ $settings['youtube_link'] ?? '' }}" dir="ltr"
-                        placeholder="https://youtube.com/@altawheed"
+                        placeholder="https://youtube.com/@altawhidfashion"
+                        class="w-full px-4 py-3 text-xs rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 font-mono focus:ring-2 focus:ring-primary-700">
+                </div>
+
+                <!-- Twitter / X -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-800 mb-2 flex items-center gap-2">
+                        <span class="w-5 h-5 rounded bg-black text-white flex items-center justify-center text-[11px] font-mono font-bold">𝕏</span>
+                        <span>{{ __('رابط حساب منصة X (تويتر سابقاً)') }}</span>
+                    </label>
+                    <input type="url" name="settings[twitter_link]" value="{{ $settings['twitter_link'] ?? '' }}" dir="ltr"
+                        placeholder="https://x.com/altawhidfashion"
+                        class="w-full px-4 py-3 text-xs rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 font-mono focus:ring-2 focus:ring-primary-700">
+                </div>
+
+                <!-- Telegram -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-800 mb-2 flex items-center gap-2">
+                        <span class="w-5 h-5 rounded bg-[#229ED9] text-white flex items-center justify-center text-[10px]">✈</span>
+                        <span>{{ __('رابط قناة تيليجرام للعروض الحصرية') }}</span>
+                    </label>
+                    <input type="url" name="settings[telegram_link]" value="{{ $settings['telegram_link'] ?? '' }}" dir="ltr"
+                        placeholder="https://t.me/altawhidfashion"
+                        class="w-full px-4 py-3 text-xs rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 font-mono focus:ring-2 focus:ring-primary-700">
+                </div>
+
+                <!-- Snapchat -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-800 mb-2 flex items-center gap-2">
+                        <span class="w-5 h-5 rounded bg-[#FFFC00] text-black flex items-center justify-center text-[10px]">👻</span>
+                        <span>{{ __('رابط حساب سناب شات') }}</span>
+                    </label>
+                    <input type="url" name="settings[snapchat_link]" value="{{ $settings['snapchat_link'] ?? '' }}" dir="ltr"
+                        placeholder="https://snapchat.com/add/altawhid"
+                        class="w-full px-4 py-3 text-xs rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 font-mono focus:ring-2 focus:ring-primary-700">
+                </div>
+
+                <!-- WhatsApp Direct Chat Link -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-800 mb-2 flex items-center gap-2">
+                        <span class="w-5 h-5 rounded bg-[#25D366] text-white flex items-center justify-center text-[10px]">💬</span>
+                        <span>{{ __('رابط محادثة واتساب المباشرة أو قروب VIP') }}</span>
+                    </label>
+                    <input type="url" name="settings[whatsapp_group_link]" value="{{ $settings['whatsapp_group_link'] ?? '' }}" dir="ltr"
+                        placeholder="https://chat.whatsapp.com/... أو https://wa.me/201..."
                         class="w-full px-4 py-3 text-xs rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 font-mono focus:ring-2 focus:ring-primary-700">
                 </div>
             </div>
@@ -684,8 +788,8 @@
                     <label class="block text-xs font-bold text-gray-800 mb-2">
                         {{ __('عنوان المتجر الافتراضي في جوجل (Meta Title)') }}
                     </label>
-                    <input type="text" name="settings[meta_title]" value="{{ $settings['meta_title'] ?? 'ألبان وسوبرماركت التوحيد | العامرية - الإسكندرية' }}"
-                        placeholder="ألبان وسوبرماركت التوحيد | العامرية - الإسكندرية"
+                    <input type="text" name="settings[meta_title]" value="{{ $settings['meta_title'] ?? 'أزياء لافيستا | أرقى الملابس والتنسيقات' }}"
+                        placeholder="أزياء لافيستا | أرقى الملابس والتنسيقات"
                         class="w-full px-4 py-3 text-xs rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 font-bold focus:ring-2 focus:ring-primary-700">
                 </div>
 
@@ -695,7 +799,7 @@
                         {{ __('الوصف الافتراضي للموقع في نتائج البحث (Meta Description)') }}
                     </label>
                     <textarea name="settings[meta_description]" rows="3"
-                        class="w-full p-4 text-xs rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 focus:ring-2 focus:ring-primary-700 leading-relaxed">{{ $settings['meta_description'] ?? 'ألبان وسوبرماركت التوحيد في العامرية، الإسكندرية. أجود منتجات الألبان والأجبان الطبيعية والسلع الغذائية وخدمة توصيل فورية.' }}</textarea>
+                        class="w-full p-4 text-xs rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 focus:ring-2 focus:ring-primary-700 leading-relaxed">{{ $settings['meta_description'] ?? 'أزياء لافيستا. تشكيلات حصرية من أرقى الملابس والموديلات النسائية والرجالية والأطفال، خامات طبيعية وتوصيل مع حق المعاينة قبل الاستلام.' }}</textarea>
                 </div>
 
                 <!-- Meta Keywords -->
@@ -703,7 +807,7 @@
                     <label class="block text-xs font-bold text-gray-800 mb-2">
                         {{ __('الكلمات المفتاحية (Meta Keywords - مفصولة بفواصل)') }}
                     </label>
-                    <input type="text" name="settings[meta_keywords]" value="{{ $settings['meta_keywords'] ?? 'ألبان التوحيد, سوبرماركت التوحيد, جبن بلدي, ألبان العامرية, توصيل طلبات العامرية, سوبرماركت الإسكندرية, كينج مريوط' }}"
+                    <input type="text" name="settings[meta_keywords]" value="{{ $settings['meta_keywords'] ?? 'أزياء لافيستا, بوتيك لافيستا, ملابس راقية, فساتين, بدلات, أزياء كاجوال, مقاسات خاصة, توصيل ملابس' }}"
                         class="w-full px-4 py-3 text-xs rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 focus:ring-2 focus:ring-primary-700">
                 </div>
 
@@ -770,10 +874,10 @@
                 <!-- About Us Full -->
                 <div>
                     <label class="block text-xs font-bold text-gray-800 mb-2">
-                        {{ __('قصة ورؤية ألبان وسوبرماركت التوحيد (صفحة من نحن)') }}
+                        {{ __('قصة ورؤية أزياء لافيستا (صفحة من نحن)') }}
                     </label>
                     <textarea name="settings[about_us_content]" rows="4"
-                        class="w-full p-4 text-xs rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 focus:ring-2 focus:ring-primary-700 leading-relaxed">{{ $settings['about_us_content'] ?? 'ألبان وسوبرماركت التوحيد، الاسم الرائد في تقديم أجود منتجات الألبان البلدية الطبيعية والجبن الطازج والسلع الغذائية في العامرية والإسكندرية عبر 4 فروع وخدمة توصيل فورية.' }}</textarea>
+                        class="w-full p-4 text-xs rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 focus:ring-2 focus:ring-primary-700 leading-relaxed">{{ $settings['about_us_content'] ?? 'أزياء لافيستا، وجهتك الأولى للأناقة الراقية والموديلات العصرية المختارة بعناية من أجود خامات القطن والكتان والصوف الطبيعي لتمنحك إطلالة فريدة ومقاساً مثالياً.' }}</textarea>
                 </div>
 
                 <!-- About Us Short (Footer) -->
@@ -782,7 +886,7 @@
                         {{ __('نبذة مختصرة لفوتر الموقع الرئيسي') }}
                     </label>
                     <textarea name="settings[about_us_short]" rows="2"
-                        class="w-full p-4 text-xs rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 focus:ring-2 focus:ring-primary-700 leading-relaxed">{{ $settings['about_us_short'] ?? 'من أكبر مراكز الألبان والسوبرماركت في منطقة العامرية والإسكندرية. نوفر أجود منتجات الألبان الطازجة، الأجبان الطبيعية، والسلع الغذائية بأسعار الجملة والتجزئة وخدمة توصيل سريعة حتى باب بيتك.' }}</textarea>
+                        class="w-full p-4 text-xs rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 focus:ring-2 focus:ring-primary-700 leading-relaxed">{{ $settings['about_us_short'] ?? 'بيت الأزياء والموضة الراقية. نوفر تشكيلات متنوعة من أرقى الموديلات، الأطقم الكاملة، والأقمشة الطبيعية مع خدمة معاينة المقاس قبل الاستلام.' }}</textarea>
                 </div>
 
                 <!-- Terms Custom -->
@@ -808,10 +912,10 @@
                 <!-- Return Policy Custom -->
                 <div>
                     <label class="block text-xs font-bold text-gray-800 mb-2">
-                        {{ __('نص إضافي / مخصص لسياسة الاستبدال والاسترجاع للمنتجات المبردة والجافة') }}
+                        {{ __('نص إضافي / مخصص لسياسة الاستبدال والاسترجاع للملابس والأزياء') }}
                     </label>
                     <textarea name="settings[return_policy_content]" rows="3"
-                        placeholder="شروط استبدال الجبن والألبان والسلع التموينية..."
+                        placeholder="شروط استبدال مقاسات الملابس والأزياء..."
                         class="w-full p-4 text-xs rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 focus:ring-2 focus:ring-primary-700 leading-relaxed">{{ $settings['return_policy_content'] ?? '' }}</textarea>
                 </div>
             </div>
@@ -994,8 +1098,8 @@
                         <label class="block text-xs font-bold text-gray-800 mb-1.5">
                             {{ __('العنوان الرئيسي للمجلة') }}
                         </label>
-                        <input type="text" name="settings[magazine_title]" value="{{ $settings['magazine_title'] ?? 'مجلة عروض ألبان وسوبرماركت التوحيد' }}"
-                            placeholder="مجلة عروض ألبان وسوبرماركت التوحيد"
+                        <input type="text" name="settings[magazine_title]" value="{{ $settings['magazine_title'] ?? 'كتالوج ومجلة أزياء لافيستا' }}"
+                            placeholder="كتالوج ومجلة أزياء لافيستا"
                             class="w-full px-3.5 py-2.5 text-xs rounded-xl bg-white border border-gray-300 text-gray-900 font-bold focus:ring-2 focus:ring-primary-700">
                     </div>
 
@@ -1004,8 +1108,8 @@
                         <label class="block text-xs font-bold text-gray-800 mb-1.5">
                             {{ __('نص الشارة العلوية (Badge)') }}
                         </label>
-                        <input type="text" name="settings[magazine_badge]" value="{{ $settings['magazine_badge'] ?? 'إصدار مجلة التوفير الأسبوعية • سارية حتى نفاذ الكمية' }}"
-                            placeholder="إصدار مجلة التوفير الأسبوعية • سارية حتى نفاذ الكمية"
+                        <input type="text" name="settings[magazine_badge]" value="{{ $settings['magazine_badge'] ?? 'إصدار الموسم الجديد • تشكيلات حصرية' }}"
+                            placeholder="إصدار الموسم الجديد • تشكيلات حصرية"
                             class="w-full px-3.5 py-2.5 text-xs rounded-xl bg-white border border-gray-300 text-gray-900 font-bold focus:ring-2 focus:ring-primary-700">
                     </div>
 
@@ -1014,7 +1118,7 @@
                         <label class="block text-xs font-bold text-gray-800 mb-1.5">
                             {{ __('الوصف الترويجي أسفل العنوان') }}
                         </label>
-                        <input type="text" name="settings[magazine_subtitle]" value="{{ $settings['magazine_subtitle'] ?? 'تصفح كل عروض الأسبوع، كراتين التوفير، الخصومات الحصرية على الألبان الفلاحي الطازجة وسلع التموين بفروع العامرية الأربعة.' }}"
+                        <input type="text" name="settings[magazine_subtitle]" value="{{ $settings['magazine_subtitle'] ?? 'تصفح أحدث موديلات وتنسيقات الموسم، إطلالات كاملة، وخصومات استثنائية مع حق المعاينة وقياس المقاس.' }}"
                             class="w-full px-3.5 py-2.5 text-xs rounded-xl bg-white border border-gray-300 text-gray-900 font-medium focus:ring-2 focus:ring-primary-700">
                     </div>
 

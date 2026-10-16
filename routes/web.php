@@ -34,12 +34,10 @@ Route::get('/privacy', [\App\Http\Controllers\Storefront\PageController::class, 
 Route::get('/return-policy', [\App\Http\Controllers\Storefront\PageController::class, 'returnPolicy'])->name('pages.return-policy');
 Route::get('/sitemap.xml', [\App\Http\Controllers\Storefront\PageController::class, 'sitemap'])->name('sitemap');
 
-// Change Language Route
-Route::get('change-language/{lang}', function ($lang) {
-    if (in_array($lang, ['en', 'ar'])) {
-        Session::put('locale', $lang);
-        App::setLocale($lang);
-    }
+// Language locked to Arabic only
+Route::get('change-language/{lang?}', function () {
+    Session::put('locale', 'ar');
+    App::setLocale('ar');
     return redirect()->back();
 })->name('change.language');
 
@@ -353,22 +351,18 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/users-edit-alias/{user}', [UserController::class, 'edit'])->name('users.edit');
     Route::put('/users-update-alias/{user}', [UserController::class, 'update'])->name('users.update');
     // Stocks & Inventory Management
-    Route::resource('/stocks', StockController::class)->names([
-        'index' => 'admin.stocks.index',
-        'create' => 'admin.stocks.create',
-        'store' => 'admin.stocks.store',
-        'show' => 'admin.stocks.show',
-        'edit' => 'admin.stocks.edit',
-        'update' => 'admin.stocks.update',
-        'destroy' => 'admin.stocks.destroy',
-    ]);
+    Route::get('/stocks', [StockController::class, 'index'])->name('admin.stocks.index');
+    Route::post('/stocks/adjust', [StockController::class, 'adjust'])->name('admin.stocks.adjust');
+    Route::get('/stocks/movements', [StockController::class, 'movements'])->name('admin.stocks.movements');
     Route::get('/stocks-alias', [StockController::class, 'index'])->name('stocks.index');
-    Route::get('/stocks-create-alias', [StockController::class, 'create'])->name('stocks.create');
-    Route::post('/stocks-store-alias', [StockController::class, 'store'])->name('stocks.store');
-    Route::get('/stocks-show-alias/{stock}', [StockController::class, 'show'])->name('stocks.show');
-    Route::get('/stocks-edit-alias/{stock}', [StockController::class, 'edit'])->name('stocks.edit');
-    Route::put('/stocks-update-alias/{stock}', [StockController::class, 'update'])->name('stocks.update');
-    Route::delete('/stocks-destroy-alias/{stock}', [StockController::class, 'destroy'])->name('stocks.destroy');
+
+    // Brands Management (Fashion Brands)
+    Route::resource('/brands', \App\Http\Controllers\Admin\BrandController::class)->names('admin.brands');
+
+    // Attributes & Fashion Variants Features (Sizes, Colors, Materials, Fits)
+    Route::resource('/attributes', \App\Http\Controllers\Admin\AttributeController::class)->except(['create', 'show', 'edit'])->names('admin.attributes');
+    Route::post('/attributes/values', [\App\Http\Controllers\Admin\AttributeController::class, 'storeValue'])->name('admin.attributes.values.store');
+    Route::delete('/attributes/values/{id}', [\App\Http\Controllers\Admin\AttributeController::class, 'destroyValue'])->name('admin.attributes.values.destroy');
 
     // Clients Management
     Route::resource('/clients', ClientController::class)->names([

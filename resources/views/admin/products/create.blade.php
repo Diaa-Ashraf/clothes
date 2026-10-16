@@ -1,26 +1,117 @@
 @extends('layouts.admin')
 
-@section('title', __('إضافة منتج جديد'))
+@section('title', 'إضافة قطعة أزياء جديدة')
 
 @section('content')
-<div class="max-w-5xl mx-auto space-y-6">
+<div class="max-w-5xl mx-auto space-y-6" 
+     x-data="{
+        hasVariants: false,
+        selectedSizes: [],
+        selectedColors: [],
+        variants: [],
+        basePrice: '{{ old('price', '') }}',
+        baseSku: '{{ old('sku', '') }}',
+
+        generateVariants() {
+            if (this.selectedSizes.length === 0 && this.selectedColors.length === 0) {
+                this.variants = [];
+                return;
+            }
+
+            let sizes = this.selectedSizes.length > 0 ? this.selectedSizes : [{ id: null, name: '-' }];
+            let colors = this.selectedColors.length > 0 ? this.selectedColors : [{ id: null, name: '-', hex: null }];
+
+            let newVariants = [];
+            let idx = 1;
+
+            sizes.forEach(size => {
+                colors.forEach(color => {
+                    let attrIds = [];
+                    let labelParts = [];
+
+                    if (size.id) {
+                        attrIds.push(size.id);
+                        labelParts.push(size.name);
+                    }
+                    if (color.id) {
+                        attrIds.push(color.id);
+                        labelParts.push(color.name);
+                    }
+
+                    let label = labelParts.join(' / ');
+                    let autoSku = (this.baseSku ? this.baseSku : 'VAR') + '-' + (size.name !== '-' ? size.name : '') + (color.name !== '-' ? '-' + color.name : '');
+                    autoSku = autoSku.replace(/\s+/g, '-');
+
+                    // Check if already in variants to keep stock/price
+                    let existing = this.variants.find(v => v.label === label);
+
+                    newVariants.push({
+                        label: label,
+                        sizeName: size.name,
+                        colorName: color.name,
+                        colorHex: color.hex,
+                        sku: existing ? existing.sku : autoSku,
+                        barcode: existing ? existing.barcode : '',
+                        price: existing ? existing.price : '',
+                        stock_quantity: existing ? existing.stock_quantity : 5,
+                        attribute_values: attrIds
+                    });
+                    idx++;
+                });
+            });
+
+            this.variants = newVariants;
+        },
+
+        toggleSize(id, name) {
+            let index = this.selectedSizes.findIndex(s => s.id === id);
+            if (index > -1) {
+                this.selectedSizes.splice(index, 1);
+            } else {
+                this.selectedSizes.push({ id: id, name: name });
+            }
+            this.generateVariants();
+        },
+
+        toggleColor(id, name, hex) {
+            let index = this.selectedColors.findIndex(c => c.id === id);
+            if (index > -1) {
+                this.selectedColors.splice(index, 1);
+            } else {
+                this.selectedColors.push({ id: id, name: name, hex: hex });
+            }
+            this.generateVariants();
+        },
+
+        removeVariant(index) {
+            this.variants.splice(index, 1);
+        }
+     }">
+
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-            <h2 class="text-2xl font-black text-gray-900 tracking-tight">{{ __('إضافة منتج جديد') }}</h2>
-            <p class="text-xs text-gray-500 font-medium mt-0.5">{{ __('أدخل تفاصيل ومواصفات المنتج لإضافته لكتالوج المتجر') }}</p>
+            <div class="flex items-center gap-2">
+                <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-action/10 text-action">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                    </svg>
+                </span>
+                <h1 class="text-xl font-bold text-espresso">إضافة قطعة أزياء جديدة</h1>
+            </div>
+            <p class="text-xs text-mocha mt-1">تسجيل منتج أزياء جديد وتحديد المقاسات والألوان وتنويعات المخزون</p>
         </div>
-        <a href="{{ route('admin.products.index') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-orange-200 bg-canvas-base hover:bg-orange-50 text-gray-900 text-xs font-bold transition-colors">
-            <span>&rarr;</span>
-            <span>{{ __('العودة لقائمة المنتجات') }}</span>
+        <a href="{{ route('admin.products.index') }}" 
+           class="px-3.5 py-2 rounded-xl bg-linen hover:bg-beige text-espresso text-xs font-semibold border border-sand/60 transition-all">
+            عودة لقائمة المنتجات
         </a>
     </div>
 
     {{-- Error Alert --}}
-    @if ($errors->any())
-        <div class="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-800 text-xs font-bold">
-            <div class="mb-1">{{ __('يرجى تصحيح الأخطاء التالية:') }}</div>
-            <ul class="list-disc list-inside space-y-1 font-medium">
+    @if (isset($errors) && $errors->any())
+        <div class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs">
+            <div class="font-bold mb-1">يرجى مراجعة وتصحيح الملاحظات التالية:</div>
+            <ul class="list-disc list-inside space-y-0.5">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -28,268 +119,409 @@
         </div>
     @endif
 
-    {{-- Main Form Card --}}
-    <div class="bg-white border border-orange-100 rounded-3xl p-6 sm:p-8 shadow-xs">
-        <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6"
-              x-data="{ 
-                  isWeighted: {{ old('is_weighted', false) ? 'true' : 'false' }}, 
-                  basePrice: parseFloat('{{ old('price', 0) }}') || 0,
-                  unitType: '{{ old('unit_type', 'kg') }}'
-              }">
-            @csrf
+    {{-- Form --}}
+    <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+        @csrf
 
-            {{-- Category Selection --}}
-            <div class="p-5 rounded-2xl bg-canvas-base border border-orange-100">
-                <label for="category_id" class="block text-xs font-bold text-gray-900 mb-2">
-                    {{ __('التصنيف والقسم الرئيسي') }} <span class="text-red-500">*</span>
-                </label>
-                <select id="category_id" name="category_id" class="w-full px-4 py-2.5 rounded-xl border border-orange-100 bg-white text-gray-900 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none text-xs font-bold transition-all @error('category_id') border-red-500 @enderror" required>
-                    <option value="">-- {{ __('اختر التصنيف من القائمة') }} --</option>
-                    @foreach ($categories as $category)
-                        <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
-                            🏷️ {{ $category->name }}
-                        </option>
-                    @endforeach
-                </select>
-                @error('category_id')
-                    <p class="text-red-500 text-xs mt-1.5 font-bold">{{ $message }}</p>
-                @enderror
+        {{-- 1. Main Info Card --}}
+        <div class="bg-cream border border-sand/40 rounded-2xl p-6 shadow-sm space-y-5">
+            <h2 class="text-sm font-bold text-espresso border-b border-sand/30 pb-2">1. المعلومات الأساسية والتصنيف</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div class="md:col-span-2">
+                    <label for="name" class="block text-xs font-bold text-espresso mb-1.5">
+                        اسم المنتج الكامل <span class="text-clay">*</span>
+                    </label>
+                    <input type="text" 
+                           id="name" 
+                           name="name" 
+                           value="{{ old('name') }}" 
+                           placeholder="مثال: فستان سهرة مخمل مطرز، قميص أكسفورد كلاسيكي" 
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-sand/60 bg-vanilla/30 text-espresso text-xs focus:outline-none focus:border-action transition-all @error('name') border-rose-500 @enderror"
+                           required>
+                    @error('name')
+                        <p class="text-rose-600 text-[11px] mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="sku" class="block text-xs font-bold text-espresso mb-1.5">
+                        كود المنتج الرئيسي (SKU)
+                    </label>
+                    <input type="text" 
+                           id="sku" 
+                           name="sku" 
+                           x-model="baseSku"
+                           @input="generateVariants()"
+                           value="{{ old('sku') }}" 
+                           placeholder="مثال: OXF-SHIRT-01" 
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-sand/60 bg-vanilla/30 text-espresso text-xs focus:outline-none focus:border-action font-mono dir-ltr text-right transition-all @error('sku') border-rose-500 @enderror">
+                    @error('sku')
+                        <p class="text-rose-600 text-[11px] mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
             </div>
 
-            {{-- Product Name --}}
-            <div>
-                <label for="name" class="block text-xs font-bold text-gray-900 mb-2">
-                    {{ __('اسم المنتج الكامل') }} <span class="text-red-500">*</span>
-                </label>
-                <input type="text" id="name" name="name" 
-                       class="w-full px-4 py-2.5 rounded-xl border border-orange-100 bg-canvas-base text-gray-900 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none text-xs font-bold transition-all @error('name') border-red-500 @enderror" 
-                       value="{{ old('name') }}" required placeholder="مثال: جبنة رومي قديمة فاخرة">
-                @error('name')
-                    <p class="text-red-500 text-xs mt-1.5 font-bold">{{ $message }}</p>
-                @enderror
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                    <label for="category_id" class="block text-xs font-bold text-espresso mb-1.5">
+                        القسم والتصنيف <span class="text-clay">*</span>
+                    </label>
+                    <select id="category_id" 
+                            name="category_id" 
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-sand/60 bg-vanilla/30 text-espresso text-xs focus:outline-none focus:border-action transition-all @error('category_id') border-rose-500 @enderror"
+                            required>
+                        <option value="">-- اختر التصنيف --</option>
+                        @foreach ($categories as $category)
+                            <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                                {{ $category->parent ? '— ' . $category->name . ' (' . $category->parent->name . ')' : '● ' . $category->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('category_id')
+                        <p class="text-rose-600 text-[11px] mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="brand_id" class="block text-xs font-bold text-espresso mb-1.5">
+                        العلامة التجارية / المصمم
+                    </label>
+                    <select id="brand_id" 
+                            name="brand_id" 
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-sand/60 bg-vanilla/30 text-espresso text-xs focus:outline-none focus:border-action transition-all @error('brand_id') border-rose-500 @enderror">
+                        <option value="">-- بدون علامة محددة --</option>
+                        @foreach ($brands as $brand)
+                            <option value="{{ $brand->id }}" {{ old('brand_id') == $brand->id ? 'selected' : '' }}>
+                                {{ $brand->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('brand_id')
+                        <p class="text-rose-600 text-[11px] mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
             </div>
 
-            {{-- Product Description --}}
             <div>
-                <label for="description" class="block text-xs font-bold text-gray-900 mb-2">
-                    {{ __('وصف وتفاصيل المنتج') }}
+                <label for="description" class="block text-xs font-bold text-espresso mb-1.5">
+                    تفاصيل ووصف القطعة
                 </label>
-                <textarea id="description" name="description" rows="3"
-                          class="w-full px-4 py-2.5 rounded-xl border border-orange-100 bg-canvas-base text-gray-900 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none text-xs font-medium transition-all @error('description') border-red-500 @enderror" 
-                          placeholder="اكتب مواصفات المنتج ومميزاته بالتفصيل...">{{ old('description') }}</textarea>
+                <textarea id="description" 
+                          name="description" 
+                          rows="3"
+                          placeholder="تعليمات الغسيل، تفاصيل القصة، الخامات المستخدمة ومميزات التصميم..."
+                          class="w-full px-3.5 py-2.5 rounded-xl border border-sand/60 bg-vanilla/30 text-espresso text-xs focus:outline-none focus:border-action transition-all @error('description') border-rose-500 @enderror">{{ old('description') }}</textarea>
                 @error('description')
-                    <p class="text-red-500 text-xs mt-1.5 font-bold">{{ $message }}</p>
+                    <p class="text-rose-600 text-[11px] mt-1">{{ $message }}</p>
                 @enderror
             </div>
+        </div>
 
-            {{-- Weighted Product & Slicing Settings Card --}}
-            <div class="p-6 rounded-3xl transition-all duration-200 border-2"
-                 :class="isWeighted ? 'bg-gradient-to-br from-amber-50/90 via-orange-50/50 to-amber-50/90 border-orange-300 shadow-sm' : 'bg-canvas-base border-orange-100'">
-                
-                {{-- Toggle Header --}}
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div class="space-y-1">
-                        <div class="flex items-center gap-2">
-                            <span class="text-xl">⚖️</span>
-                            <h4 class="font-black text-sm text-gray-900">
-                                {{ __('إعدادات البيع بالوزن والتقطيع (للأجبان واللحوم والألبان)') }}
-                            </h4>
-                            <span class="text-[11px] font-black px-2.5 py-0.5 rounded-full"
-                                  :class="isWeighted ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-200 text-gray-600'"
-                                  x-text="isWeighted ? '✓ مفعّل للبيع بالوزن' : 'معطّل (بيع بالقطعة)'">
-                            </span>
-                        </div>
-                        <p class="text-xs text-gray-600 font-medium">
-                            {{ __('تفعيل هذا الخيار يمكن العملاء من اختيار الأوزان (ثمن، ربع، نصف، كيلو) أو شراء بمبلغ مالي مخصص (مثال: جبنة بـ 20 ج.م) واختيار طريقة التقطيع.') }}
-                        </p>
-                    </div>
+        {{-- 2. Fashion Attributes --}}
+        <div class="bg-cream border border-sand/40 rounded-2xl p-6 shadow-sm space-y-5">
+            <h2 class="text-sm font-bold text-espresso border-b border-sand/30 pb-2">2. مواصفات وخصائص الموضة</h2>
 
-                    {{-- Switch Control --}}
-                    <div class="flex items-center gap-3">
-                        <input type="hidden" name="is_weighted" :value="isWeighted ? '1' : '0'">
-                        <button type="button" 
-                                @click="isWeighted = !isWeighted"
-                                class="relative inline-flex h-7 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
-                                :class="isWeighted ? 'bg-orange-600' : 'bg-gray-300'">
-                            <span class="pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
-                                  :class="isWeighted ? 'translate-x-0 rtl:-translate-x-7' : 'translate-x-7 rtl:translate-x-0'"></span>
-                        </button>
-                    </div>
-                </div>
-
-                {{-- Expanded Weighted Details (Visible when isWeighted is true) --}}
-                <div x-show="isWeighted" x-transition class="space-y-5 pt-5 mt-5 border-t border-orange-200">
-                    
-                    {{-- Unit Type & Instructions --}}
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label for="unit_type" class="block text-xs font-bold text-amber-950 mb-1.5">
-                                {{ __('وحدة القياس والتسعير الأساسية') }} <span class="text-red-500">*</span>
-                            </label>
-                            <select id="unit_type" name="unit_type" x-model="unitType" class="w-full px-4 py-2.5 rounded-xl border border-orange-200 bg-white text-xs font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500/20">
-                                <option value="kg">كيلوجرام (كجم) - السعر هو سعر الكيلو الكامل (الافتراضي للأجبان)</option>
-                                <option value="gram">جرام</option>
-                                <option value="piece">قطعة / قالب</option>
-                                <option value="liter">لتر</option>
-                            </select>
-                        </div>
-                        <div class="flex items-center text-xs text-amber-950 bg-white/90 p-3.5 rounded-2xl border border-orange-200 font-medium">
-                            <span>💡 يرجى كتابة <strong>سعر الكيلو الكامل</strong> في خانة "السعر الأساسي" بالأسفل، وسيتكفل المتجر بحساب أسعار الربع والثمن والـ 20 ج.م تلقائياً للعميل.</span>
-                        </div>
-                    </div>
-
-                    {{-- Live Price Breakdown Cards --}}
-                    <div>
-                        <h5 class="text-xs font-black text-amber-950 mb-2.5 flex items-center gap-1.5">
-                            <span>📊</span>
-                            <span>{{ __('معاينة حية لأسعار الأوزان المحسوبة تلقائياً للعميل:') }}</span>
-                        </h5>
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                            <div class="bg-white p-3 rounded-2xl border border-orange-200 text-center shadow-xs">
-                                <span class="text-[11px] font-bold text-gray-500 block">ثمن كيلو (125 جم)</span>
-                                <span class="text-sm font-black text-red-600 block mt-1" x-text="(basePrice * 0.125).toFixed(2) + ' ج.م'">0.00 ج.م</span>
-                            </div>
-                            <div class="bg-white p-3 rounded-2xl border border-orange-200 text-center shadow-xs">
-                                <span class="text-[11px] font-bold text-gray-500 block">ربع كيلو (250 جم)</span>
-                                <span class="text-sm font-black text-red-600 block mt-1" x-text="(basePrice * 0.25).toFixed(2) + ' ج.م'">0.00 ج.م</span>
-                            </div>
-                            <div class="bg-white p-3 rounded-2xl border border-orange-200 text-center shadow-xs">
-                                <span class="text-[11px] font-bold text-gray-500 block">نصف كيلو (500 جم)</span>
-                                <span class="text-sm font-black text-red-600 block mt-1" x-text="(basePrice * 0.50).toFixed(2) + ' ج.م'">0.00 ج.م</span>
-                            </div>
-                            <div class="bg-white p-3 rounded-2xl border border-orange-200 text-center shadow-xs">
-                                <span class="text-[11px] font-bold text-gray-500 block">كيلو كامل (1000 جم)</span>
-                                <span class="text-sm font-black text-red-600 block mt-1" x-text="(basePrice * 1.0).toFixed(2) + ' ج.م'">0.00 ج.م</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Slicing Options Supported --}}
-                    <div class="p-4 bg-white/80 rounded-2xl border border-orange-200">
-                        <h5 class="text-xs font-black text-amber-950 mb-2 flex items-center gap-1.5">
-                            <span>🔪</span>
-                            <span>{{ __('خيارات التقطيع المتاحة للزبون في صفحة المنتج:') }}</span>
-                        </h5>
-                        <div class="flex flex-wrap gap-2 text-xs font-bold text-gray-700">
-                            <span class="px-3 py-1 bg-amber-100/70 border border-amber-200 rounded-xl">🥪 شرائح رقيقة (ساندوتشات)</span>
-                            <span class="px-3 py-1 bg-amber-100/70 border border-amber-200 rounded-xl">🧀 شرائح سميكة</span>
-                            <span class="px-3 py-1 bg-amber-100/70 border border-amber-200 rounded-xl">🧱 قالب سليم (بدون تقطيع)</span>
-                            <span class="px-3 py-1 bg-amber-100/70 border border-amber-200 rounded-xl">🥣 مكعبات / بشر</span>
-                            <span class="px-3 py-1 bg-emerald-100/70 border border-emerald-200 text-emerald-900 rounded-xl">💵 شراء بقيمة مخصصة (مثال: بـ 20 ج.م)</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Keywords --}}
-            <div>
-                <label for="keywords" class="block text-xs font-bold text-gray-900 mb-2">
-                    {{ __('الكلمات المفتاحية للبحث') }}
-                </label>
-                <input type="text" id="keywords" name="keywords" 
-                       class="w-full px-4 py-2.5 rounded-xl border border-orange-100 bg-canvas-base text-gray-900 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none text-xs font-medium transition-all @error('keywords') border-red-500 @enderror" 
-                       value="{{ old('keywords') }}" placeholder="ألبان، جبن رومي، طازج، بلدي">
-                @error('keywords')
-                    <p class="text-red-500 text-xs mt-1.5 font-bold">{{ $message }}</p>
-                @enderror
-            </div>
-
-            {{-- Slug & Image --}}
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                    <label for="slug" class="block text-xs font-bold text-gray-900 mb-2">
-                        {{ __('الرابط الدائم (Slug)') }}
-                    </label>
-                    <input type="text" id="slug" name="slug" dir="ltr"
-                           class="w-full px-4 py-2.5 rounded-xl border border-orange-100 bg-canvas-base text-gray-900 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none text-xs font-bold transition-all text-right @error('slug') border-red-500 @enderror" 
-                           value="{{ old('slug') }}" placeholder="cheese-romi-egypt">
-                    <small class="text-gray-400 text-[11px] mt-1 block">{{ __('اتركه فارغاً للتوليد التلقائي من الاسم') }}</small>
-                    @error('slug')
-                        <p class="text-red-500 text-xs mt-1.5 font-bold">{{ $message }}</p>
-                    @enderror
+                    <label for="gender" class="block text-xs font-bold text-espresso mb-1.5">الفئة المستهدفة</label>
+                    <select id="gender" name="gender" class="w-full px-3.5 py-2.5 rounded-xl border border-sand/60 bg-vanilla/30 text-espresso text-xs focus:outline-none focus:border-action">
+                        <option value="unisex" {{ old('gender') == 'unisex' ? 'selected' : '' }}>للجنسين (Unisex)</option>
+                        <option value="men" {{ old('gender') == 'men' ? 'selected' : '' }}>رجالي (Men)</option>
+                        <option value="women" {{ old('gender') == 'women' ? 'selected' : '' }}>نسائي (Women)</option>
+                        <option value="kids" {{ old('gender') == 'kids' ? 'selected' : '' }}>أطفال (Kids)</option>
+                    </select>
                 </div>
 
                 <div>
-                    <label for="image" class="block text-xs font-bold text-gray-900 mb-2">
-                        {{ __('صورة المنتج الرئيسية') }}
-                    </label>
-                    <input type="file" id="image" name="image" accept="image/*"
-                           class="w-full px-3.5 py-2 rounded-xl border border-orange-100 bg-canvas-base text-gray-900 text-xs focus:outline-none file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-gray-900 file:text-white hover:file:bg-red-600 cursor-pointer @error('image') border-red-500 @enderror">
-                    @error('image')
-                        <p class="text-red-500 text-xs mt-1.5 font-bold">{{ $message }}</p>
-                    @enderror
+                    <label for="season" class="block text-xs font-bold text-espresso mb-1.5">الموسم</label>
+                    <select id="season" name="season" class="w-full px-3.5 py-2.5 rounded-xl border border-sand/60 bg-vanilla/30 text-espresso text-xs focus:outline-none focus:border-action">
+                        <option value="all_seasons" {{ old('season') == 'all_seasons' ? 'selected' : '' }}>جميع المواسم</option>
+                        <option value="summer" {{ old('season') == 'summer' ? 'selected' : '' }}>صيف</option>
+                        <option value="winter" {{ old('season') == 'winter' ? 'selected' : '' }}>شتاء</option>
+                        <option value="spring" {{ old('season') == 'spring' ? 'selected' : '' }}>ربيع</option>
+                        <option value="autumn" {{ old('season') == 'autumn' ? 'selected' : '' }}>خريف</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="material" class="block text-xs font-bold text-espresso mb-1.5">نوع القماش / الخامة</label>
+                    <input type="text" 
+                           id="material" 
+                           name="material" 
+                           value="{{ old('material') }}" 
+                           placeholder="مثال: قطن 100%، كتان طبيعي، كشمير"
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-sand/60 bg-vanilla/30 text-espresso text-xs focus:outline-none focus:border-action">
+                </div>
+
+                <div>
+                    <label for="fit" class="block text-xs font-bold text-espresso mb-1.5">القَصّة (Fit)</label>
+                    <select id="fit" name="fit" class="w-full px-3.5 py-2.5 rounded-xl border border-sand/60 bg-vanilla/30 text-espresso text-xs focus:outline-none focus:border-action">
+                        <option value="regular" {{ old('fit') == 'regular' ? 'selected' : '' }}>Regular Fit (عادي)</option>
+                        <option value="slim" {{ old('fit') == 'slim' ? 'selected' : '' }}>Slim Fit (مجسم)</option>
+                        <option value="oversized" {{ old('fit') == 'oversized' ? 'selected' : '' }}>Oversized (واسع عصري)</option>
+                        <option value="relaxed" {{ old('fit') == 'relaxed' ? 'selected' : '' }}>Relaxed Fit (مريح)</option>
+                        <option value="loose" {{ old('fit') == 'loose' ? 'selected' : '' }}>Loose Fit (فضفاض)</option>
+                    </select>
                 </div>
             </div>
+        </div>
 
-            {{-- Pricing & Stock --}}
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+        {{-- 3. Base Pricing & Base Stock --}}
+        <div class="bg-cream border border-sand/40 rounded-2xl p-6 shadow-sm space-y-5">
+            <h2 class="text-sm font-bold text-espresso border-b border-sand/30 pb-2">3. التسعير والمخزون الأساسي</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
                 <div>
-                    <label for="price" class="block text-xs font-bold text-gray-900 mb-2">
-                        {{ __('السعر الأساسي (أو سعر الكيلو)') }} (ج.م) <span class="text-red-500">*</span>
+                    <label for="price" class="block text-xs font-bold text-espresso mb-1.5">
+                        السعر الأساسي (ج.م) <span class="text-clay">*</span>
                     </label>
-                    <div class="relative">
-                        <input type="number" step="0.01" id="price" name="price" 
-                               @input="basePrice = parseFloat($event.target.value) || 0"
-                               class="w-full pl-12 pr-4 py-2.5 rounded-xl border border-orange-100 bg-canvas-base text-gray-900 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none text-xs font-black transition-all @error('price') border-red-500 @enderror" 
-                               value="{{ old('price') }}" placeholder="0.00" required>
-                        <span class="absolute left-3 top-2.5 text-xs font-bold text-gray-400">ج.م</span>
-                    </div>
+                    <input type="number" 
+                           step="0.01" 
+                           id="price" 
+                           name="price" 
+                           x-model="basePrice"
+                           value="{{ old('price') }}" 
+                           placeholder="0.00" 
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-sand/60 bg-vanilla/30 text-espresso text-xs focus:outline-none focus:border-action transition-all @error('price') border-rose-500 @enderror"
+                           required>
                     @error('price')
-                        <p class="text-red-500 text-xs mt-1.5 font-bold">{{ $message }}</p>
+                        <p class="text-rose-600 text-[11px] mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div>
-                    <label for="discount_price" class="block text-xs font-bold text-gray-900 mb-2">
-                        {{ __('سعر الخصم الترويجي') }} (ج.م)
+                    <label for="discount_price" class="block text-xs font-bold text-espresso mb-1.5">
+                        سعر الخصم / العرض (اختياري)
                     </label>
-                    <div class="relative">
-                        <input type="number" step="0.01" id="discount_price" name="discount_price" 
-                               class="w-full pl-12 pr-4 py-2.5 rounded-xl border border-orange-100 bg-canvas-base text-gray-900 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none text-xs font-black transition-all @error('discount_price') border-red-500 @enderror" 
-                               value="{{ old('discount_price') }}" placeholder="اختياري">
-                        <span class="absolute left-3 top-2.5 text-xs font-bold text-gray-400">ج.م</span>
-                    </div>
+                    <input type="number" 
+                           step="0.01" 
+                           id="discount_price" 
+                           name="discount_price" 
+                           value="{{ old('discount_price') }}" 
+                           placeholder="0.00" 
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-sand/60 bg-vanilla/30 text-espresso text-xs focus:outline-none focus:border-action transition-all @error('discount_price') border-rose-500 @enderror">
                     @error('discount_price')
-                        <p class="text-red-500 text-xs mt-1.5 font-bold">{{ $message }}</p>
+                        <p class="text-rose-600 text-[11px] mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div>
-                    <label for="stock_quantity" class="block text-xs font-bold text-gray-900 mb-2">
-                        {{ __('المخزون المتوفر (الكمية / كجم)') }} <span class="text-red-500">*</span>
+                    <label for="stock_quantity" class="block text-xs font-bold text-espresso mb-1.5">
+                        إجمالي المخزون الافتراضي <span class="text-clay">*</span>
                     </label>
-                    <input type="number" id="stock_quantity" name="stock_quantity" 
-                           class="w-full px-4 py-2.5 rounded-xl border border-orange-100 bg-canvas-base text-gray-900 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none text-xs font-black transition-all @error('stock_quantity') border-red-500 @enderror" 
-                           value="{{ old('stock_quantity', 10) }}" placeholder="0" required>
-                    @error('stock_quantity')
-                        <p class="text-red-500 text-xs mt-1.5 font-bold">{{ $message }}</p>
-                    @enderror
+                    <input type="number" 
+                           id="stock_quantity" 
+                           name="stock_quantity" 
+                           value="{{ old('stock_quantity', 10) }}" 
+                           min="0"
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-sand/60 bg-vanilla/30 text-espresso text-xs focus:outline-none focus:border-action transition-all @error('stock_quantity') border-rose-500 @enderror"
+                           required>
+                    <p class="text-[10px] text-taupe mt-1">إذا قمت بإنشاء تنويعات للمقاسات أدناه، فسيتم احتساب إجمالي المخزون تلقائياً.</p>
                 </div>
             </div>
+        </div>
 
-            {{-- Flags & Switches --}}
-            <div class="p-4 rounded-2xl bg-canvas-base border border-orange-100 flex flex-wrap items-center gap-8">
-                <label class="inline-flex items-center gap-3 cursor-pointer">
-                    <input type="checkbox" name="featured" value="1" class="w-4 h-4 rounded text-red-600 focus:ring-red-500 border-orange-200" {{ old('featured') ? 'checked' : '' }}>
-                    <span class="text-xs font-bold text-gray-900">⭐ تمييز في الصفحة الرئيسية (Featured)</span>
-                </label>
-
-                <label class="inline-flex items-center gap-3 cursor-pointer">
-                    <input type="checkbox" name="is_active" value="1" class="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-orange-200" checked>
-                    <span class="text-xs font-bold text-gray-900">✓ تفعيل المنتج بالمتجر مباشرة</span>
-                </label>
-            </div>
-
-            {{-- Submit Actions --}}
-            <div class="pt-4 border-t border-orange-100 flex items-center justify-end gap-3">
-                <a href="{{ route('admin.products.index') }}" class="px-5 py-2.5 rounded-xl border border-orange-200 bg-canvas-base hover:bg-orange-50 text-gray-800 text-xs font-bold transition-colors">
-                    {{ __('إلغاء') }}
-                </a>
-                <button type="submit" class="px-7 py-3 rounded-2xl bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white text-xs font-black shadow-md shadow-red-500/20 transition-all cursor-pointer">
-                    {{ __('حفظ ونشر المنتج') }}
+        {{-- 4. Variants Matrix Generator --}}
+        <div class="bg-cream border border-sand/40 rounded-2xl p-6 shadow-sm space-y-5">
+            <div class="flex items-center justify-between border-b border-sand/30 pb-2">
+                <div>
+                    <h2 class="text-sm font-bold text-espresso">4. مصفوفة المقاسات والألوان (Product Variants)</h2>
+                    <p class="text-[11px] text-mocha">اختر المقاسات والألوان المتوفرة لتوليد جدول القطع الفرعية</p>
+                </div>
+                <button type="button" 
+                        @click="hasVariants = !hasVariants" 
+                        class="text-xs px-3 py-1.5 rounded-xl border border-sand/60 transition-all font-semibold"
+                        :class="hasVariants ? 'bg-action text-action-ink' : 'bg-vanilla text-espresso hover:bg-beige'">
+                    <span x-text="hasVariants ? 'إلغاء التنويعات' : '+ تفعيل تنويعات المقاسات والألوان'"></span>
                 </button>
             </div>
-        </form>
-    </div>
+
+            <div x-show="hasVariants" x-transition.opacity class="space-y-6">
+                {{-- Attributes Selector --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-vanilla/40 p-4 rounded-xl border border-sand/40">
+                    {{-- Sizes --}}
+                    @php
+                        $sizeAttr = $attributes->firstWhere('code', 'size') ?? $attributes->firstWhere('type', 'button');
+                        $colorAttr = $attributes->firstWhere('code', 'color') ?? $attributes->firstWhere('type', 'color');
+                    @endphp
+
+                    <div>
+                        <span class="text-xs font-bold text-espresso block mb-2">المقاسات المتاحة:</span>
+                        <div class="flex flex-wrap gap-1.5">
+                            @if($sizeAttr)
+                                @foreach($sizeAttr->values as $sVal)
+                                    <button type="button" 
+                                            @click="toggleSize({{ $sVal->id }}, '{{ $sVal->value }}')"
+                                            class="px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer"
+                                            :class="selectedSizes.some(s => s.id === {{ $sVal->id }}) 
+                                                ? 'bg-action text-action-ink border-action shadow-xs' 
+                                                : 'bg-cream text-espresso border-sand/60 hover:border-action'">
+                                        {{ $sVal->value }}
+                                    </button>
+                                @endforeach
+                            @else
+                                <span class="text-xs text-taupe">لم يتم تعريف خاصية المقاس في الكتالوج.</span>
+                            @endif
+                        </div>
+                    </div>
+
+                    {{-- Colors --}}
+                    <div>
+                        <span class="text-xs font-bold text-espresso block mb-2">الألوان المتاحة:</span>
+                        <div class="flex flex-wrap gap-2">
+                            @if($colorAttr)
+                                @foreach($colorAttr->values as $cVal)
+                                    <button type="button" 
+                                            @click="toggleColor({{ $cVal->id }}, '{{ $cVal->value }}', '{{ $cVal->color_code }}')"
+                                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold border transition-all cursor-pointer"
+                                            :class="selectedColors.some(c => c.id === {{ $cVal->id }}) 
+                                                ? 'bg-action text-action-ink border-action shadow-xs' 
+                                                : 'bg-cream text-espresso border-sand/60 hover:border-action'">
+                                        @if($cVal->color_code)
+                                            <span class="w-3 h-3 rounded-full border border-black/10 shrink-0" style="background-color: {{ $cVal->color_code }};"></span>
+                                        @endif
+                                        <span>{{ $cVal->value }}</span>
+                                    </button>
+                                @endforeach
+                            @else
+                                <span class="text-xs text-taupe">لم يتم تعريف خاصية اللون في الكتالوج.</span>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Generated Variants Table --}}
+                <div x-show="variants.length > 0" class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-espresso">القطع الفرعية المتولدة (<span x-text="variants.length"></span> تنويع):</span>
+                        <span class="text-[11px] text-taupe">يمكنك تحديد سعر خاص أو كمية مخزون مستقلة لكل مقاس ولون</span>
+                    </div>
+
+                    <div class="overflow-x-auto border border-sand/40 rounded-xl bg-cream">
+                        <table class="w-full text-right text-xs">
+                            <thead class="bg-linen/60 text-mocha text-[11px] border-b border-sand/40">
+                                <tr>
+                                    <th class="py-2.5 px-3">المقاس / اللون</th>
+                                    <th class="py-2.5 px-3">كود التنويع (SKU)</th>
+                                    <th class="py-2.5 px-3">الباركود</th>
+                                    <th class="py-2.5 px-3">السعر (إذا اختلف)</th>
+                                    <th class="py-2.5 px-3">كمية المخزون</th>
+                                    <th class="py-2.5 px-3 text-center">حذف</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-sand/30">
+                                <template x-for="(v, index) in variants" :key="index">
+                                    <tr class="hover:bg-vanilla/20">
+                                        <td class="py-2 px-3 font-semibold text-espresso">
+                                            <div class="flex items-center gap-1.5">
+                                                <template x-if="v.colorHex">
+                                                    <span class="w-3 h-3 rounded-full border border-black/10 shrink-0" :style="'background-color: ' + v.colorHex"></span>
+                                                </template>
+                                                <span x-text="v.label"></span>
+                                            </div>
+                                            {{-- Hidden attribute value inputs --}}
+                                            <template x-for="attrId in v.attribute_values">
+                                                <input type="hidden" :name="'variants[' + index + '][attribute_values][]'" :value="attrId">
+                                            </template>
+                                        </td>
+                                        <td class="py-2 px-3">
+                                            <input type="text" 
+                                                   :name="'variants[' + index + '][sku]'" 
+                                                   x-model="v.sku" 
+                                                   class="w-36 px-2 py-1 text-xs rounded-lg border border-sand/60 bg-vanilla/30 text-espresso font-mono dir-ltr text-right">
+                                        </td>
+                                        <td class="py-2 px-3">
+                                            <input type="text" 
+                                                   :name="'variants[' + index + '][barcode]'" 
+                                                   x-model="v.barcode" 
+                                                   placeholder="اختياري"
+                                                   class="w-28 px-2 py-1 text-xs rounded-lg border border-sand/60 bg-vanilla/30 text-espresso font-mono dir-ltr text-right">
+                                        </td>
+                                        <td class="py-2 px-3">
+                                            <input type="number" 
+                                                   step="0.01" 
+                                                   :name="'variants[' + index + '][price]'" 
+                                                   x-model="v.price" 
+                                                   :placeholder="basePrice || 'أساسي'"
+                                                   class="w-24 px-2 py-1 text-xs rounded-lg border border-sand/60 bg-vanilla/30 text-espresso">
+                                        </td>
+                                        <td class="py-2 px-3">
+                                            <input type="number" 
+                                                   min="0" 
+                                                   :name="'variants[' + index + '][stock_quantity]'" 
+                                                   x-model="v.stock_quantity" 
+                                                   class="w-20 px-2 py-1 text-xs rounded-lg border border-sand/60 bg-vanilla/30 text-espresso">
+                                        </td>
+                                        <td class="py-2 px-3 text-center">
+                                            <button type="button" @click="removeVariant(index)" class="text-rose-500 hover:text-rose-700 font-bold text-sm cursor-pointer">&times;</button>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- 5. Media & Visibility --}}
+        <div class="bg-cream border border-sand/40 rounded-2xl p-6 shadow-sm space-y-5">
+            <h2 class="text-sm font-bold text-espresso border-b border-sand/30 pb-2">5. صورة المنتج وحالة العرض</h2>
+
+            <div>
+                <label for="image" class="block text-xs font-bold text-espresso mb-1.5">
+                    صورة الموديل الرئيسية (Cover Photo)
+                </label>
+                <input type="file" 
+                       id="image" 
+                       name="image" 
+                       accept="image/*"
+                       class="w-full px-3 py-2 rounded-xl border border-sand/60 bg-vanilla/20 text-espresso text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-action file:text-action-ink hover:file:bg-espresso cursor-pointer @error('image') border-rose-500 @enderror">
+                <p class="text-[11px] text-taupe mt-1">يُفضل رفع صور ذات خلفية نظيفة ونسبة عرض إلى ارتفاع (3:4) للأزياء والملابس.</p>
+                @error('image')
+                    <p class="text-rose-600 text-[11px] mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-6 pt-2">
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" 
+                           id="is_active" 
+                           name="is_active" 
+                           value="1" 
+                           {{ old('is_active', '1') == '1' ? 'checked' : '' }}
+                           class="w-4 h-4 rounded text-action border-sand/80 focus:ring-action">
+                    <label for="is_active" class="text-xs font-bold text-espresso cursor-pointer">
+                        تفعيل المنتج وعرضه للشراء في المتجر
+                    </label>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" 
+                           id="featured" 
+                           name="featured" 
+                           value="1" 
+                           {{ old('featured') == '1' ? 'checked' : '' }}
+                           class="w-4 h-4 rounded text-action border-sand/80 focus:ring-action">
+                    <label for="featured" class="text-xs font-bold text-espresso cursor-pointer">
+                        تمييز المنتج في الواجهة الرئيسية (Featured Piece)
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        {{-- Form Actions --}}
+        <div class="pt-4 flex items-center justify-end gap-3">
+            <a href="{{ route('admin.products.index') }}" 
+               class="px-5 py-2.5 rounded-xl bg-linen hover:bg-beige text-espresso text-xs font-semibold border border-sand/60 transition-all">
+                إلغاء
+            </a>
+            <button type="submit" 
+                    class="px-6 py-2.5 rounded-xl bg-action hover:bg-espresso text-action-ink text-xs font-bold shadow-sm transition-all cursor-pointer">
+                حفظ ونشر قطعة الأزياء
+            </button>
+        </div>
+    </form>
 </div>
 @endsection

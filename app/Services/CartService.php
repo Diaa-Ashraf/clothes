@@ -19,16 +19,17 @@ class CartService
     }
 
     /**
-     * Add single product to cart with support for custom portions, weights, and slicing notes
+     * Add single product to cart with support for clothing variants, custom portions, and notes
      */
     public function addProduct(
         int $productId, 
         int $quantity = 1, 
         ?string $portionType = 'piece', 
         ?float $customAmount = null, 
-        ?string $notes = null
+        ?string $notes = null,
+        ?int $variantId = null
     ): array {
-        $product = Product::active()->inStock()->find($productId);
+        $product = Product::with(['variants.attributeValues.attribute', 'brand'])->active()->inStock()->find($productId);
 
         if (!$product) {
             return [
@@ -41,33 +42,60 @@ class CartService
         $basePrice = (float)$product->final_price;
         $portionLabel = '';
         $unitPrice = $basePrice;
+        $variant = null;
 
-        // Calculate price and label according to portion type or custom amount
-        if ($portionType === '125g') {
-            $unitPrice = round($basePrice * 0.125, 2);
-            $portionLabel = 'ثمن كيلو (125 جم)';
-        } elseif ($portionType === '250g') {
-            $unitPrice = round($basePrice * 0.25, 2);
-            $portionLabel = 'ربع كيلو (250 جم)';
-        } elseif ($portionType === '500g') {
-            $unitPrice = round($basePrice * 0.5, 2);
-            $portionLabel = 'نصف كيلو (500 جم)';
-        } elseif ($portionType === '1000g' || $portionType === '1kg') {
-            $unitPrice = $basePrice;
-            $portionLabel = 'كيلو كامل (1000 جم)';
-        } elseif ($portionType === 'custom_price' && $customAmount && $customAmount > 0) {
-            $unitPrice = (float)$customAmount;
-            $approxGrams = $basePrice > 0 ? round(($customAmount / $basePrice) * 1000) : 0;
-            $portionLabel = "بمبلغ {$customAmount} ج.م (حوالي {$approxGrams} جم)";
-        } else {
-            $portionType = 'piece';
-            $portionLabel = $product->is_weighted ? '1 كيلو' : 'قطعة / عبوة';
+        // If specific clothing variant is selected
+        if ($variantId) {
+            $variant = $product->variants->firstWhere('id', $variantId);
+            if ($variant) {
+                if ($variant->stock_quantity <= 0) {
+                    return [
+                        'success' => false,
+                        'message' => __('عذراً، هذا المقاس/اللون نفد من المخزون حالياً.'),
+                    ];
+                }
+                $unitPrice = $variant->effective_price;
+                $attrs = $variant->attributeValues->map(function ($val) {
+                    $attrName = $val->attribute->name ?? '';
+                    return $attrName ? "{$attrName}: {$val->value}" : $val->value;
+                })->filter()->implode(' | ');
+                $portionLabel = $attrs ?: ($variant->sku ? "المقاس: {$variant->sku}" : 'القطعة المحددة');
+            }
+        }
+
+        // Calculate price and label according to portion type or custom amount (if applicable)
+        if (!$variant) {
+            if ($portionType === '125g') {
+                $unitPrice = round($basePrice * 0.125, 2);
+                $portionLabel = 'ثمن كيلو (125 جم)';
+            } elseif ($portionType === '250g') {
+                $unitPrice = round($basePrice * 0.25, 2);
+                $portionLabel = 'ربع كيلو (250 جم)';
+            } elseif ($portionType === '500g') {
+                $unitPrice = round($basePrice * 0.5, 2);
+                $portionLabel = 'نصف كيلو (500 جم)';
+            } elseif ($portionType === '1000g' || $portionType === '1kg') {
+                $unitPrice = $basePrice;
+                $portionLabel = 'كيلو كامل (1000 جم)';
+            } elseif ($portionType === 'custom_price' && $customAmount && $customAmount > 0) {
+                $unitPrice = (float)$customAmount;
+                $approxGrams = $basePrice > 0 ? round(($customAmount / $basePrice) * 1000) : 0;
+                $portionLabel = "بمبلغ {$customAmount} ج.م (حوالي {$approxGrams} جم)";
+            } else {
+                $portionType = 'piece';
+                $portionLabel = $product->is_weighted ? '1 كيلو' : 'قطعة واحدة';
+            }
         }
 
         $cart = $this->getItems();
         
-        // Generate distinct key per portion & notes to allow ordering both 1/4 kg and 1/2 kg of same product
-        $suffix = $portionType !== 'piece' ? '_' . $portionType : '';
+        // Generate distinct key per variant / portion / notes
+        $suffix = '';
+        if ($variantId) {
+            $suffix .= '_v' . $variantId;
+        } elseif ($portionType !== 'piece') {
+            $suffix .= '_' . $portionType;
+        }
         if ($portionType === 'custom_price') {
             $suffix .= '_' . (int)$customAmount;
         }
@@ -79,17 +107,19 @@ class CartService
         $currentQty = isset($cart[$key]) ? (int)$cart[$key]['quantity'] : 0;
         $newQty = $currentQty + $quantity;
 
-        // Stock checks for regular piece products
-        if ($portionType === 'piece' && $product->available_stock <= 5 && $newQty > 1) {
+        // Stock checks
+        $availableStock = $variant ? (int)$variant->stock_quantity : (int)$product->available_stock;
+        if ($availableStock > 0 && $newQty > $availableStock) {
             return [
                 'success' => false,
-                'message' => __('عذراً، هذا المنتج ذو كمية محدودة في المخزون (5 قطع أو أقل)، الحد الأقصى المسموح به هو قطعة واحدة فقط.'),
+                'message' => __('عذراً، الكمية المطلوبة غير متوفرة بالكامل في المخزون (المتاح: :qty).', ['qty' => $availableStock]),
             ];
         }
 
         $cart[$key] = [
             'type' => 'product',
             'id' => $product->id,
+            'variant_id' => $variantId,
             'name' => $product->name,
             'price' => $unitPrice,
             'original_price' => (float)$product->price,
@@ -100,8 +130,8 @@ class CartService
             'custom_amount' => $customAmount,
             'notes' => $notes ? trim($notes) : null,
             'is_weighted' => (bool)$product->is_weighted,
-            'available_stock' => (int)$product->available_stock,
-            'is_limited_stock' => $product->available_stock <= 5,
+            'available_stock' => $availableStock,
+            'is_limited_stock' => $availableStock <= 5,
             'total' => $unitPrice * $newQty,
         ];
 
@@ -321,6 +351,18 @@ class CartService
             $count += (int)($item['quantity'] ?? 0);
         }
         return $count;
+    }
+
+    /**
+     * Get cart subtotal amount
+     */
+    public function getSubtotal(): float
+    {
+        $subtotal = 0.0;
+        foreach ($this->getItems() as $item) {
+            $subtotal += (float)($item['total'] ?? 0);
+        }
+        return $subtotal;
     }
 
     /**

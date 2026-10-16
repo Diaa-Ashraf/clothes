@@ -4,7 +4,7 @@
         items: [],
         totals: { formatted_subtotal: '0.00 ج.م', formatted_total: '0.00 ج.م', total: 0, subtotal: 0, count: 0 },
         loading: false,
-        freeDeliveryThreshold: {{ (float) settings('free_delivery_threshold', 300) }},
+        freeDeliveryThreshold: {{ (float) settings('free_delivery_threshold', 500) }},
 
         get progressPercent() {
             const sub = parseFloat(this.totals.subtotal) || 0;
@@ -79,7 +79,7 @@
             .then(data => {
                 this.fetchCartData(false);
                 window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cart_count } }));
-                toastr.success('تم حذف الصنف من السلة');
+                toastr.success('تم حذف القطعة من حقيبة التسوق');
             });
         }
     }"
@@ -96,9 +96,9 @@
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
          @click="open = false"
-         class="fixed inset-0 bg-gray-950/60 backdrop-blur-xs"></div>
+         class="fixed inset-0 bg-[#2B2118]/60 backdrop-blur-xs"></div>
 
-    <!-- Drawer Panel (Slides from left/right) -->
+    <!-- Drawer Panel -->
     <div x-show="open" 
          x-transition:enter="transition ease-in-out duration-300 transform"
          x-transition:enter-start="translate-x-full"
@@ -110,105 +110,110 @@
          dir="rtl">
         
         <!-- Header -->
-        <div class="p-4 sm:p-5 bg-gradient-to-r from-red-700 via-red-600 to-orange-500 text-white flex items-center justify-between shadow-md">
-            <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center font-black text-sm">
+        <div class="p-5 bg-[#AC9653] text-white flex items-center justify-between border-b border-[#BDAB75]/40">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-none bg-white/20 text-white flex items-center justify-center font-bold text-sm border border-white/30">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                     </svg>
                 </div>
                 <div>
-                    <h3 class="font-black text-sm sm:text-base">سلة طلباتك السريعة</h3>
-                    <p class="text-[10px] text-amber-200">ألبان وسوبرماركت التوحيد • العامرية</p>
+                    <h3 class="font-serif font-bold text-base text-[#FBF6EA]">حقيبة المشتريات</h3>
+                    <p class="text-[11px] text-[#CDB78F]">{{ settings('site_name', 'أزياء لافيستا') }}</p>
                 </div>
             </div>
 
             <button type="button" 
                     @click="open = false" 
-                    class="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer">
+                    class="p-2 rounded-xl bg-[#382416] text-[#EADFC8] hover:text-white transition-colors cursor-pointer"
+                    aria-label="إغلاق حقيبة التسوق">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </button>
         </div>
 
-        <!-- Dynamic Free Delivery Progress Bar -->
-        <div class="p-3.5 bg-gradient-to-br from-amber-50 to-orange-50 border-b border-orange-100 text-xs space-y-1.5">
-            <div class="flex items-center justify-between font-bold">
-                <span class="text-gray-900" x-show="remainingForFreeDelivery > 0">
-                    أضف بقيمة <strong class="text-red-600 tabular-nums" x-text="remainingForFreeDelivery.toFixed(1) + ' ج.م'"></strong> لتحصل على <strong>توصيل مجاني</strong>
-                </span>
-                <span class="text-emerald-700 font-black flex items-center gap-1" x-show="remainingForFreeDelivery <= 0">
-                    <span>مبروك! حصلت على توصيل مجاني بالعامرية</span>
-                </span>
-                <span class="text-[10px] text-gray-500 font-bold tabular-nums" x-text="progressPercent + '%'"></span>
+        <!-- Free Delivery Dynamic Progress Bar -->
+        <div class="p-4 bg-[#FBF6EA] border-b border-[#EADFC8] text-xs space-y-2">
+            <div class="flex items-center justify-between font-medium">
+                <div class="flex items-center gap-1.5" x-show="remainingForFreeDelivery > 0">
+                    <svg class="w-4 h-4 text-[#AC9653] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
+                    </svg>
+                    <span class="text-[#2B2118]">
+                        أضف بقيمة <strong class="text-[#A9552F] tabular-nums font-bold" x-text="remainingForFreeDelivery.toFixed(1) + ' ج.م'"></strong> للشحن المجاني
+                    </span>
+                </div>
+                <div class="flex items-center gap-1.5 text-emerald-800 font-bold" x-show="remainingForFreeDelivery <= 0">
+                    <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>مبروك! طلبيتك مؤهلة للشحن المجاني</span>
+                </div>
+                <span class="text-[11px] text-[#8F7B63] font-bold tabular-nums" x-text="progressPercent + '%'"></span>
             </div>
 
-            <div class="w-full h-2 rounded-full bg-gray-200 overflow-hidden">
-                <div class="h-full bg-gradient-to-r from-orange-500 to-emerald-500 transition-all duration-500 rounded-full"
+            <div class="w-full h-2 rounded-full bg-[#EADFC8] overflow-hidden p-0.5">
+                <div class="h-full transition-all duration-500 rounded-full"
+                     :class="progressPercent >= 100 ? 'bg-emerald-600' : 'bg-gradient-to-l from-[#AC9653] to-[#CBA367]'"
                      :style="'width: ' + progressPercent + '%'"></div>
             </div>
         </div>
 
         <!-- Items Scroll Area -->
-        <div class="flex-1 overflow-y-auto p-4 divide-y divide-gray-100">
+        <div class="flex-1 overflow-y-auto p-4 divide-y divide-[#EADFC8]">
             <template x-if="items.length > 0">
                 <div>
                     <template x-for="item in items" :key="item.key">
                         <div class="py-3.5 first:pt-0 last:pb-0 flex items-start gap-3">
                             <!-- Image -->
-                            <div class="w-14 h-14 rounded-2xl bg-orange-50/50 border border-orange-100 p-1 shrink-0 overflow-hidden flex items-center justify-center">
+                            <div class="w-16 h-16 rounded-xl bg-[#F3E9D2] border border-[#EADFC8] p-0.5 shrink-0 overflow-hidden flex items-center justify-center">
                                 <template x-if="item.image">
-                                    <img :src="item.image" :alt="item.name" class="w-full h-full object-contain">
+                                    <img :src="item.image" :alt="item.name" class="w-full h-full object-cover rounded-lg">
                                 </template>
                                 <template x-if="!item.image">
-                                    <svg class="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                    <svg class="w-6 h-6 text-[#A9552F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                                     </svg>
                                 </template>
                             </div>
 
                             <!-- Details -->
                             <div class="flex-1 min-w-0 space-y-1">
-                                <h4 class="font-black text-xs text-gray-900 truncate" x-text="item.name"></h4>
+                                <h4 class="font-bold text-xs text-[#2B2118] truncate" x-text="item.name"></h4>
                                 
-                                <!-- Portion label -->
+                                <!-- Variant preview: Size / Color -->
                                 <template x-if="item.portion_label">
-                                    <div class="inline-block px-1.5 py-0.2 rounded text-[10px] font-black bg-orange-100 text-orange-900">
+                                    <div class="inline-block px-2 py-0.5 rounded text-[10px] font-medium bg-[#F3E9D2] text-[#2B2118] border border-[#EADFC8]">
                                         <span x-text="item.portion_label"></span>
                                     </div>
                                 </template>
 
-                                <!-- Notes -->
-                                <template x-if="item.notes">
-                                    <p class="text-[10px] text-gray-500 truncate" x-text="'ملاحظة: ' + item.notes"></p>
-                                </template>
-
                                 <div class="flex items-center justify-between pt-1">
                                     <!-- Stepper -->
-                                    <div class="flex items-center border border-gray-200 rounded-lg bg-gray-50 p-0.5 text-xs">
+                                    <div class="flex items-center border border-[#EADFC8] rounded-lg bg-[#FDFBF7] p-0.5 text-xs">
                                         <button type="button" 
                                                 @click="updateQty(item.key, item.quantity - 1)" 
-                                                class="w-5 h-5 flex items-center justify-center bg-white rounded text-gray-800 font-black shadow-2xs hover:bg-orange-50">
+                                                class="w-5 h-5 flex items-center justify-center bg-white rounded text-[#2B2118] font-bold shadow-2xs hover:bg-[#F3E9D2]">
                                             -
                                         </button>
-                                        <span class="w-6 text-center font-black tabular-nums text-xs" x-text="item.quantity"></span>
+                                        <span class="w-6 text-center font-bold tabular-nums text-xs" x-text="item.quantity"></span>
                                         <button type="button" 
                                                 @click="updateQty(item.key, item.quantity + 1)" 
-                                                class="w-5 h-5 flex items-center justify-center bg-white rounded text-gray-800 font-black shadow-2xs hover:bg-orange-50">
+                                                class="w-5 h-5 flex items-center justify-center bg-white rounded text-[#2B2118] font-bold shadow-2xs hover:bg-[#F3E9D2]">
                                             +
                                         </button>
                                     </div>
 
                                     <!-- Price -->
-                                    <span class="font-black text-xs text-red-600 tabular-nums" x-text="(item.price_usd * item.quantity).toFixed(2) + ' ج.م'"></span>
+                                    <span class="font-bold text-xs text-[#A9552F] tabular-nums" x-text="(item.price_usd * item.quantity).toFixed(2) + ' ج.م'"></span>
                                 </div>
                             </div>
 
                             <!-- Delete -->
                             <button type="button" 
                                     @click="removeItem(item.key)"
-                                    class="text-gray-400 hover:text-red-600 p-1 rounded-lg">
+                                    class="text-[#8F7B63] hover:text-[#A9552F] p-1 rounded-lg transition-colors">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
@@ -218,39 +223,39 @@
                 </div>
             </template>
 
-            <!-- Empty Drawer State -->
+            <!-- Empty State -->
             <template x-if="items.length === 0">
                 <div class="py-16 text-center space-y-3">
-                    <div class="w-16 h-16 rounded-3xl bg-orange-50 text-red-600 flex items-center justify-center mx-auto border border-orange-200">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    <div class="w-16 h-16 rounded-3xl bg-[#F3E9D2] text-[#8F7B63] flex items-center justify-center mx-auto border border-[#EADFC8]">
+                        <svg class="w-7 h-7 text-[#A9552F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                         </svg>
                     </div>
-                    <h4 class="font-black text-sm text-gray-900">سلة التسوق فارغة</h4>
-                    <p class="text-xs text-gray-500 max-w-xs mx-auto">تصفح منتجات الألبان والأجبان الطازجة وأضف طلباتك الآن!</p>
+                    <h4 class="font-serif font-bold text-base text-[#2B2118]">حقيبة التسوق فارغة</h4>
+                    <p class="text-xs text-[#6B5642] max-w-xs mx-auto">تصفحي أحدث تشكيلات الأزياء الراقية وأضيفي قطعك المفضلة للحقيبة الآن!</p>
                 </div>
             </template>
         </div>
 
         <!-- Footer Checkout Actions -->
-        <div class="p-4 sm:p-5 bg-gray-50 border-t border-gray-200 space-y-3" x-show="items.length > 0">
+        <div class="p-4 sm:p-5 bg-[#FBF6EA] border-t border-[#EADFC8] space-y-3" x-show="items.length > 0">
             <div class="flex items-center justify-between text-xs">
-                <span class="text-gray-600 font-bold">المجموع الفرعي:</span>
-                <span class="font-black text-base text-gray-900 tabular-nums" x-text="totals.formatted_subtotal"></span>
+                <span class="text-[#6B5642] font-medium">المجموع الفرعي:</span>
+                <span class="font-bold text-base text-[#2B2118] tabular-nums" x-text="totals.formatted_subtotal"></span>
             </div>
 
             <div class="grid grid-cols-2 gap-2">
                 <a href="{{ route('cart') }}" 
                    @click="open = false"
-                   class="py-3 px-4 rounded-xl border-2 border-orange-300 hover:bg-orange-50 text-gray-900 font-black text-xs text-center transition-all">
-                    عرض السلة الكاملة
+                   class="py-3 px-4 border border-[#BDAB75]/40 bg-white hover:bg-[#FDFBF7] text-[#2B2118] font-bold text-xs text-center transition-all">
+                    عرض الحقيبة
                 </a>
 
                 <a href="{{ route('checkout.index') }}" 
                    @click="open = false"
-                   class="py-3 px-4 rounded-xl bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white font-black text-xs text-center shadow-md transition-all flex items-center justify-center gap-1.5">
-                    <span>إتمام الطلب الآن</span>
-                    <span class="rotate-180">←</span>
+                   class="py-3 px-4 bg-[#CBA367] hover:bg-[#b88f55] text-white font-bold text-xs tracking-wider text-center shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                    <span>إتمام الطلب الفاخر</span>
+                    <span>←</span>
                 </a>
             </div>
         </div>

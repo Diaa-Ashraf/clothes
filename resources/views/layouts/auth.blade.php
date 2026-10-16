@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() == 'ar' ? 'rtl' : 'ltr' }}">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Store') }} - @yield('title', 'Welcome')</title>
+    <title>{{ settings('site_name', 'دار الأناقة للأزياء') }} - @yield('title', 'تسجيل الدخول')</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Alexandria:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
         * {
@@ -20,49 +20,32 @@
         }
 
         body {
-            font-family: {{ app()->getLocale() == 'ar' ? "'Cairo', sans-serif" : "'Inter', sans-serif" }};
+            font-family: 'IBM Plex Sans Arabic', 'Alexandria', sans-serif;
             min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-            background-size: 400% 400%;
-            animation: gradientShift 15s ease infinite;
+            background-color: #F3E9D2;
+            color: #2B2118;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
         }
 
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
         .auth-container {
             width: 100%;
-            max-width: 1000px;
+            max-width: 950px;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            background: #ffffff;
-            border-radius: 24px;
+            background: #FBF6EA;
+            border: 1px solid #CDB78F;
+            border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 25px 80px -12px rgba(0, 0, 0, 0.3);
-            animation: slideUp 0.6s ease-out;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            box-shadow: 0 10px 40px -10px rgba(43, 33, 24, 0.12);
         }
 
         .auth-banner {
-            background: linear-gradient(135deg, #1a1c2c 0%, #2d3561 100%);
-            padding: 60px 40px;
+            background-color: #382416;
+            color: #FBF6EA;
+            padding: 50px 40px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -70,152 +53,123 @@
             text-align: center;
             position: relative;
             overflow: hidden;
-        }
-
-        .auth-banner::before {
-            content: '';
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%);
-            border-radius: 50%;
-            top: -100px;
-            right: -100px;
-        }
-
-        .auth-banner::after {
-            content: '';
-            position: absolute;
-            width: 200px;
-            height: 200px;
-            background: linear-gradient(135deg, rgba(240, 147, 251, 0.2) 0%, rgba(245, 87, 108, 0.2) 100%);
-            border-radius: 50%;
-            bottom: -50px;
-            left: -50px;
-        }
-
-        .auth-banner h1 {
-            color: #ffffff;
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 16px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .auth-banner p {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 1.1rem;
-            line-height: 1.6;
-            max-width: 320px;
-            position: relative;
-            z-index: 1;
+            border-inline-end: 1px solid #40372E;
         }
 
         .auth-banner .logo-icon {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 20px;
+            width: 72px;
+            height: 72px;
+            background: #25170D;
+            border: 1px solid #CDB78F;
+            border-radius: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 32px;
-            position: relative;
-            z-index: 1;
+            margin-bottom: 24px;
+            font-size: 2rem;
         }
 
-        .auth-banner .logo-icon svg {
-            width: 48px;
-            height: 48px;
-            fill: #ffffff;
+        .auth-banner h1 {
+            color: #FBF6EA;
+            font-size: 1.85rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .auth-banner p {
+            color: #CDB78F;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            max-width: 300px;
         }
 
         .auth-form-section {
-            padding: 60px 50px;
+            padding: 50px 45px;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            background-color: #FBF6EA;
         }
 
         .auth-form-header {
-            margin-bottom: 32px;
+            margin-bottom: 28px;
         }
 
         .auth-form-header h2 {
-            font-size: 1.875rem;
+            font-size: 1.6rem;
             font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 8px;
+            color: #1A110A;
+            margin-bottom: 6px;
         }
 
         .auth-form-header p {
-            color: #64748b;
-            font-size: 0.9375rem;
+            color: #6B5642;
+            font-size: 0.9rem;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         .form-group label {
             display: block;
-            color: #374151;
+            color: #2B2118;
             font-weight: 500;
-            margin-bottom: 8px;
-            font-size: 0.875rem;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
         }
 
         .form-control {
             width: 100%;
-            padding: 14px 16px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            background: #f8fafc;
-            color: #1e293b;
+            padding: 12px 14px;
+            border: 1px solid #CDB78F;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            background: #F3E9D2;
+            color: #2B2118;
         }
 
         .form-control:focus {
             outline: none;
-            border-color: #667eea;
-            background: #ffffff;
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            border-color: #382416;
+            background: #FBF6EA;
+            box-shadow: 0 0 0 3px rgba(56, 36, 22, 0.12);
         }
 
         .form-control::placeholder {
-            color: #94a3b8;
+            color: #8F7B63;
         }
 
         .form-control.is-invalid {
-            border-color: #ef4444;
+            border-color: #9E3B2E;
         }
 
         .invalid-feedback {
-            color: #ef4444;
-            font-size: 0.8125rem;
-            margin-top: 6px;
+            color: #9E3B2E;
+            font-size: 0.8rem;
+            margin-top: 5px;
             display: block;
         }
 
         .form-check {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 24px;
+            gap: 8px;
+            margin-bottom: 20px;
         }
 
         .form-check input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            accent-color: #667eea;
+            width: 16px;
+            height: 16px;
+            accent-color: #382416;
             cursor: pointer;
         }
 
         .form-check label {
-            color: #64748b;
-            font-size: 0.875rem;
+            color: #6B5642;
+            font-size: 0.85rem;
             cursor: pointer;
         }
 
@@ -223,98 +177,71 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            padding: 14px 28px;
+            gap: 8px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 12px;
-            font-size: 1rem;
+            border-radius: 36px;
+            font-size: 0.95rem;
             font-weight: 600;
+            font-family: inherit;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             text-decoration: none;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #ffffff;
+            background-color: #382416;
+            color: #FBF6EA;
             width: 100%;
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px -5px rgba(102, 126, 234, 0.5);
-        }
-
-        .btn-primary:active {
-            transform: translateY(0);
+            background-color: #25170D;
+            transform: translateY(-1px);
         }
 
         .auth-footer {
-            margin-top: 24px;
+            margin-top: 22px;
             text-align: center;
         }
 
         .auth-footer p {
-            color: #64748b;
-            font-size: 0.9375rem;
+            color: #6B5642;
+            font-size: 0.85rem;
         }
 
         .auth-footer a {
-            color: #667eea;
+            color: #A9552F;
             text-decoration: none;
             font-weight: 600;
-            transition: color 0.3s ease;
+            transition: color 0.2s ease;
         }
 
         .auth-footer a:hover {
-            color: #764ba2;
+            color: #382416;
         }
 
         .forgot-password {
-            text-align: right;
-            margin-bottom: 24px;
-        }
-
-        html[dir="rtl"] .forgot-password {
             text-align: left;
+            margin-bottom: 20px;
         }
 
         .forgot-password a {
-            color: #667eea;
-            font-size: 0.875rem;
+            color: #A9552F;
+            font-size: 0.85rem;
             text-decoration: none;
-            transition: color 0.3s ease;
+            transition: color 0.2s ease;
         }
 
         .forgot-password a:hover {
-            color: #764ba2;
-        }
-
-        .social-divider {
-            display: flex;
-            align-items: center;
-            margin: 24px 0;
-        }
-
-        .social-divider::before,
-        .social-divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: #e2e8f0;
-        }
-
-        .social-divider span {
-            padding: 0 16px;
-            color: #94a3b8;
-            font-size: 0.875rem;
+            color: #382416;
         }
 
         /* Responsive */
         @media (max-width: 768px) {
             .auth-container {
                 grid-template-columns: 1fr;
-                max-width: 450px;
+                max-width: 440px;
             }
 
             .auth-banner {
@@ -322,30 +249,31 @@
             }
 
             .auth-form-section {
-                padding: 40px 30px;
+                padding: 35px 25px;
             }
         }
 
         /* Alert Messages */
         .alert {
-            padding: 14px 18px;
+            padding: 12px 16px;
             border-radius: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
             display: flex;
             align-items: flex-start;
-            gap: 12px;
+            gap: 10px;
+            font-size: 0.85rem;
         }
 
         .alert-danger {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            color: #dc2626;
+            background: #EADFC8;
+            border: 1px solid #9E3B2E;
+            color: #9E3B2E;
         }
 
         .alert-success {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            color: #059669;
+            background: #EADFC8;
+            border: 1px solid #5F6B3A;
+            color: #5F6B3A;
         }
 
         .password-wrapper {
@@ -354,23 +282,18 @@
 
         .password-toggle {
             position: absolute;
-            right: 16px;
+            left: 14px;
             top: 50%;
             transform: translateY(-50%);
             background: none;
             border: none;
-            color: #94a3b8;
+            color: #8F7B63;
             cursor: pointer;
             padding: 0;
         }
 
-        html[dir="rtl"] .password-toggle {
-            right: auto;
-            left: 16px;
-        }
-
         .password-toggle:hover {
-            color: #667eea;
+            color: #382416;
         }
     </style>
 </head>

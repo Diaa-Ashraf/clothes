@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Alexandria:wght@300;400;500;600;700;800&family=Readex+Pro:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Alexandria:wght@300;400;500;600;700&family=Cairo:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,42 +6,70 @@
 
 @layer base {
     :root {
-        --primary-red: #DC2626;
-        --primary-red-light: #EF4444;
-        --primary-red-dark: #991B1B;
-        --accent-orange: #F97316;
-        --accent-orange-light: #FB923C;
-        --canvas-base: #FFFDF9;
-        --canvas-subtle: #FDF4EB;
-        --surface-card: #FFFFFF;
-        --surface-border: #FEE2E2;
-        --text-charcoal: #1F2937;
-        --text-heading: #111827;
-        --text-muted: #6B7280;
+        /* Section 5.2 Atelier Design Tokens */
+        --color-vanilla: #F3E9D2;  /* page canvas */
+        --color-cream: #FBF6EA;    /* cards, inputs, modals */
+        --color-linen: #EADFC8;    /* subtle sections, table stripes */
+        --color-beige: #E2D2B3;    /* hover surfaces, chips */
+        --color-sand: #CDB78F;     /* borders, dividers */
+
+        /* text */
+        --color-espresso: #2B2118;  /* primary text */
+        --color-mocha: #6B5642;     /* secondary text */
+        --color-taupe: #8F7B63;     /* muted/placeholder */
+
+        /* accent */
+        --color-clay: #A9552F;      /* terracotta */
+        --color-clay-soft: #E9CDB8;
+
+        /* primary action */
+        --color-action: #382416;
+        --color-action-ink: #FBF6EA;
+
+        /* status */
+        --color-success: #5F6B3A;  /* olive */
+        --color-warning: #B8862B;  /* ochre */
+        --color-danger: #9E3B2E;   /* brick */
+        --color-neutral: #8F7B63;  /* taupe */
+
+        /* Backward-compatible variables */
+        --canvas-base: #F3E9D2;
+        --canvas-subtle: #EADFC8;
+        --surface-card: #FBF6EA;
+        --surface-border: #CDB78F;
+        --text-charcoal: #2B2118;
+        --text-heading: #1A110A;
+        --text-muted: #8F7B63;
     }
 
     html {
         direction: rtl;
         text-align: right;
         scroll-behavior: smooth;
-    }
-
-    html, body {
-        overflow-x: clip;
+        background-color: var(--color-vanilla);
+        color: var(--color-espresso);
     }
 
     body {
-        background-color: #FFFDF9;
-        color: #1F2937;
-        font-family: 'Cairo', 'Alexandria', 'Readex Pro', sans-serif;
+        background-color: var(--color-vanilla);
+        color: var(--color-espresso);
+        font-family: 'IBM Plex Sans Arabic', 'Alexandria', 'Cairo', sans-serif;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
+        line-height: 1.6;
     }
 
     h1, h2, h3, h4, h5, h6 {
-        color: #111827;
-        font-family: 'Cairo', 'Alexandria', sans-serif;
-        font-weight: 700;
+        color: var(--color-espresso);
+        font-family: 'IBM Plex Sans Arabic', 'Alexandria', sans-serif;
+        font-weight: 600;
+        line-height: 1.25;
+    }
+
+    /* Style rules from section 5.3 */
+    hr {
+        border: none;
+        border-top: 1px dashed var(--color-sand);
     }
 
     /* Tabular figures for pricing numbers */
@@ -50,76 +78,98 @@
     }
 }
 
+@layer components {
+    /* Section 5.3 Atelier Primary Button */
+    .btn-atelier-primary {
+        background-color: var(--color-action);
+        color: var(--color-action-ink);
+        border-radius: 36px;
+        font-weight: 500;
+        padding: 0.625rem 1.5rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: background-color 0.2s ease, transform 0.15s ease;
+    }
+    .btn-atelier-primary:hover {
+        background-color: #25170D;
+    }
+
+    /* Atelier Ghost Button */
+    .btn-atelier-ghost {
+        background-color: transparent;
+        color: var(--color-espresso);
+        border: 1px solid var(--color-sand);
+        border-radius: 22px;
+        font-weight: 500;
+        padding: 0.5rem 1.25rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+    .btn-atelier-ghost:hover {
+        background-color: var(--color-beige);
+        border-color: var(--color-mocha);
+    }
+
+    /* Atelier Card */
+    .card-atelier {
+        background-color: var(--color-cream);
+        border: 1px solid var(--color-sand);
+        border-radius: 12px;
+    }
+
+    /* Dashed Section Divider */
+    .divider-dashed {
+        border-top: 1px dashed var(--color-sand);
+    }
+
+    /* Solid hairline */
+    .divider-hairline {
+        border-top: 1px solid var(--color-sand);
+    }
+
+    /* Badges */
+    .badge-clay {
+        background-color: var(--color-clay);
+        color: var(--color-cream);
+    }
+    .badge-olive {
+        background-color: var(--color-success);
+        color: var(--color-cream);
+    }
+    .badge-ochre {
+        background-color: var(--color-warning);
+        color: var(--color-cream);
+    }
+    .badge-brick {
+        background-color: var(--color-danger);
+        color: var(--color-cream);
+    }
+    .badge-taupe {
+        background-color: var(--color-linen);
+        color: var(--color-mocha);
+    }
+}
+
 @layer utilities {
-    /* Tawheed Signature Fiery Red Gradient */
-    .bg-gradient-tawheed {
-        background: linear-gradient(135deg, #EF4444 0%, #DC2626 50%, #991B1B 100%);
+    /* Custom Atelier scrollbar */
+    .admin-scrollbar::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
     }
-
-    .bg-gradient-maroon {
-        background: linear-gradient(135deg, #EF4444 0%, #DC2626 50%, #991B1B 100%);
+    .admin-scrollbar::-webkit-scrollbar-track {
+        background: var(--color-vanilla);
     }
-
-    /* Tawheed Electric Orange / Amber Gradient */
-    .bg-gradient-orange {
-        background: linear-gradient(135deg, #FB923C 0%, #F97316 50%, #EA580C 100%);
+    .admin-scrollbar::-webkit-scrollbar-thumb {
+        background: var(--color-sand);
+        border-radius: 4px;
     }
-
-    .bg-gradient-amber {
-        background: linear-gradient(135deg, #FB923C 0%, #F97316 50%, #EA580C 100%);
-    }
-
-    /* Fiery Signboard Dual Gradient */
-    .bg-gradient-signboard {
-        background: linear-gradient(135deg, #DC2626 0%, #EA580C 100%);
-    }
-
-    /* Signboard Text Gradient */
-    .text-signboard-gradient {
-        background: linear-gradient(135deg, #DC2626 0%, #F97316 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-
-    .text-gold-gradient {
-        background: linear-gradient(135deg, #EA580C 0%, #F97316 50%, #D97706 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-
-    /* Soft Warm Ambient Radial Glow */
-    .ambient-glow-warm {
-        background: radial-gradient(circle at 50% 0%, rgba(249, 115, 22, 0.12) 0%, transparent 70%);
-    }
-
-    .ambient-glow-red {
-        background: radial-gradient(circle at 50% 0%, rgba(220, 38, 38, 0.12) 0%, transparent 70%);
-    }
-
-    /* Card Borders */
-    .border-cream {
-        border-color: #EDE7DC;
-    }
-
-    .border-maroon-hover:hover {
-        border-color: #730E1F;
-    }
-
-    /* Line clamps */
-    .line-clamp-1 {
-        display: -webkit-box;
-        -webkit-line-clamp: 1;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-
-    .line-clamp-2 {
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
+    .admin-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: var(--color-taupe);
     }
 
     /* Hide scrollbar */
@@ -130,51 +180,4 @@
         -ms-overflow-style: none;
         scrollbar-width: none;
     }
-
-    /* Glow and Float Micro-animations */
-    .animate-float-slow {
-        animation: float-slow 4s ease-in-out infinite;
-    }
-
-    .animate-glow-red {
-        animation: glow-red 2.5s infinite alternate;
-    }
-
-    .animate-glow-orange {
-        animation: glow-orange 2.5s infinite alternate;
-    }
-
-    .hover-lift {
-        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
-    }
-    .hover-lift:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 30px -5px rgba(220, 38, 38, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    }
-}
-
-@keyframes float-slow {
-    0%, 100% { transform: translateY(0px) rotate(0deg); }
-    50% { transform: translateY(-8px) rotate(1deg); }
-}
-
-@keyframes glow-red {
-    0% { box-shadow: 0 0 10px rgba(220, 38, 38, 0.2); }
-    100% { box-shadow: 0 0 25px rgba(220, 38, 38, 0.6); }
-}
-
-@keyframes glow-orange {
-    0% { box-shadow: 0 0 10px rgba(249, 115, 22, 0.2); }
-    100% { box-shadow: 0 0 25px rgba(249, 115, 22, 0.6); }
-}
-
-/* Custom Swiper Continuous Auto-scroll Styling */
-.swiper-free-mode > .swiper-wrapper {
-    transition-timing-function: linear !important;
-}
-
-/* Swiper navigation buttons */
-.swiper-button-prev-custom, .swiper-button-next-custom {
-    cursor: pointer;
-    user-select: none;
 }

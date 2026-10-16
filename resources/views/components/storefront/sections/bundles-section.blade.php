@@ -2,61 +2,63 @@
 @props(['bundles' => collect()])
 
 @if($bundles->isNotEmpty())
-<section class="py-10 sm:py-14 bg-gradient-to-b from-white to-canvas-base border-b border-orange-100">
-    <div class="container mx-auto px-4">
+<section class="py-10 sm:py-14 bg-gradient-to-b from-[#FDFBF7] to-[#FBF6EA] border-b border-[#EADFC8]">
+    <div class="container mx-auto px-4" dir="rtl">
         <!-- Section Header -->
         <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-8">
             <div>
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-red-50 text-red-700 border border-red-200 mb-2">
-                    <span>✨</span>
-                    <span>توفير حقيقي للعائلات</span>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#F3E9D2] text-[#382416] border border-[#CDB78F] mb-2">
+                    <svg class="w-3.5 h-3.5 text-[#CBA367]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                    </svg>
+                    <span>تنسيقات متكاملة وتوفير ذكي</span>
                 </span>
-                <h2 class="text-xl sm:text-3xl font-black text-gray-900 tracking-tight">عروض التوحيد المجمعة (Bundles)</h2>
-                <p class="text-xs sm:text-sm text-gray-500 font-medium mt-1">باقات توفيرية مجمعة مختارة بعناية لأفضل المنتجات بأسعار جملة مخفضة</p>
+                <h2 class="text-xl sm:text-3xl font-serif font-black text-[#2B2118] tracking-tight">أطقم وتنسيقات الأزياء الكاملة (Bundles)</h2>
+                <p class="text-xs sm:text-sm text-[#8F7B63] font-medium mt-1">تنسيقات ملابس متناسقة ومختارة بعناية لأناقة متكاملة بسعر موفر</p>
             </div>
-            <a href="{{ route('site.products') }}" class="text-xs font-black text-red-600 hover:text-red-700 flex items-center gap-1 group self-start sm:self-auto">
+            <a href="{{ route('site.products') }}" class="text-xs font-bold text-[#382416] hover:text-[#A9552F] flex items-center gap-1 group self-start sm:self-auto">
                 <span>تصفح جميع المنتجات</span>
-                <span class="group-hover:translate-x-1 transition-transform rotate-180">←</span>
+                <span class="rotate-180">←</span>
             </a>
         </div>
 
         <!-- Bundles Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach($bundles as $bundle)
-            <div class="bg-white border-2 border-orange-100/80 hover:border-red-500/50 rounded-3xl p-5 flex flex-col justify-between shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group overflow-hidden">
+            <div class="bg-[#FDFBF7] border border-[#EADFC8] hover:border-[#CDB78F] rounded-3xl p-5 flex flex-col justify-between shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group overflow-hidden">
                 <div class="space-y-4">
                     
                     {{-- 1. Bundle Visual / Image Header --}}
                     @if($bundle->image_url)
-                        <div class="relative w-full h-48 rounded-2xl overflow-hidden bg-canvas-base border border-orange-100/60 shadow-inner group-hover:scale-[1.02] transition-transform duration-300">
+                        <div class="relative w-full h-48 rounded-2xl overflow-hidden bg-[#F3E9D2] border border-[#EADFC8] shadow-inner group-hover:scale-[1.01] transition-transform duration-300">
                             <img src="{{ $bundle->image_url }}" 
                                  alt="{{ $bundle->name }}" 
                                  class="w-full h-full object-cover object-center">
                             
                             @if($bundle->discount_percent > 0)
-                                <span class="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-black bg-gradient-to-r from-red-600 to-rose-500 text-white shadow-md shadow-red-500/30">
+                                <span class="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold bg-[#A9552F] text-[#FBF6EA] shadow-md">
                                     وفر {{ $bundle->discount_percent }}%
                                 </span>
                             @endif
                         </div>
                     @else
-                        {{-- Fallback Multi-product Visual Collage when no main banner image --}}
-                        <div class="relative w-full rounded-2xl bg-canvas-base border border-orange-100 p-3 shadow-inner">
+                        {{-- Fallback Multi-product Visual Collage --}}
+                        <div class="relative w-full rounded-2xl bg-[#F3E9D2]/50 border border-[#EADFC8] p-3 shadow-inner">
                             <div class="flex items-center justify-center gap-2 flex-wrap py-2">
                                 @foreach($bundle->products->take(4) as $product)
-                                    <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-white p-1 border border-orange-200/80 shadow-2xs flex items-center justify-center overflow-hidden">
-                                        <img src="{{ $product->image_url ?? asset('assets/site/img/product/product-1.jpg') }}" 
+                                    <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-white p-1 border border-[#EADFC8] shadow-2xs flex items-center justify-center overflow-hidden">
+                                        <img src="{{ $product->image_url ?? asset('assets/site/img/product-placeholder.png') }}" 
                                              alt="{{ $product->name }}" 
                                              class="w-full h-full object-cover rounded-lg"
                                              title="{{ $product->name }}">
                                     </div>
                                     @if(!$loop->last)
-                                        <span class="text-orange-400 font-black text-sm select-none">+</span>
+                                        <span class="text-[#CDB78F] font-black text-sm select-none">+</span>
                                     @endif
                                 @endforeach
                             </div>
                             @if($bundle->discount_percent > 0)
-                                <span class="absolute top-2 right-2 px-2.5 py-0.5 rounded-full text-[11px] font-black bg-gradient-to-r from-red-600 to-rose-500 text-white shadow-sm">
+                                <span class="absolute top-2 right-2 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#A9552F] text-[#FBF6EA] shadow-xs">
                                     وفر {{ $bundle->discount_percent }}%
                                 </span>
                             @endif
@@ -65,94 +67,59 @@
 
                     {{-- 2. Bundle Title & Description --}}
                     <div>
-                        <div class="flex items-start justify-between gap-2">
-                            <h3 class="font-black text-base sm:text-lg text-gray-900 group-hover:text-red-600 transition-colors leading-snug">
-                                {{ $bundle->name }}
-                            </h3>
-                            @if(!$bundle->image_url && $bundle->discount_percent > 0)
-                                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-black bg-red-600 text-white shrink-0">
-                                    وفر {{ $bundle->discount_percent }}%
-                                </span>
-                            @endif
-                        </div>
+                        <h3 class="font-serif font-black text-base sm:text-lg text-[#2B2118] group-hover:text-[#A9552F] transition-colors line-clamp-1">
+                            {{ $bundle->name }}
+                        </h3>
                         @if($bundle->description)
-                            <p class="text-xs text-gray-500 font-medium mt-1.5 line-clamp-2 leading-relaxed">{{ $bundle->description }}</p>
+                            <p class="text-xs text-[#8F7B63] font-medium mt-1 line-clamp-2 leading-relaxed">
+                                {{ $bundle->description }}
+                            </p>
                         @endif
                     </div>
 
-                    {{-- 3. Products List in Bundle --}}
-                    @if($bundle->products->isNotEmpty())
-                    <div class="p-3.5 rounded-2xl bg-canvas-base border border-orange-100/90 space-y-2">
-                        <span class="block text-[11px] font-black text-orange-900 flex items-center gap-1.5">
-                            <span>🛍️</span>
-                            <span>محتويات هذه الباقة:</span>
-                        </span>
-                        <div class="space-y-1.5 divide-y divide-orange-100/60">
-                            @foreach($bundle->products as $bp)
-                            <div class="flex items-center justify-between text-xs pt-1.5 first:pt-0">
-                                <div class="flex items-center gap-2 min-w-0">
-                                    @if($bp->image_url)
-                                        <img src="{{ $bp->image_url }}" alt="" class="w-5 h-5 rounded-md object-cover border border-orange-100 shrink-0">
-                                    @endif
-                                    <span class="text-gray-800 font-bold truncate max-w-[200px]">{{ $bp->name }}</span>
-                                </div>
-                                <span class="px-2 py-0.5 rounded-md bg-white border border-orange-200 font-black text-[11px] text-red-600 shrink-0 shadow-2xs">
-                                    {{ $bp->pivot->quantity ?? 1 }}x
+                    {{-- 3. Products List Included in Bundle --}}
+                    <div class="space-y-1.5 bg-[#F3E9D2]/30 rounded-2xl p-3 border border-[#EADFC8]">
+                        <span class="text-[11px] font-bold text-[#382416] block mb-1">قطع الطقم المتضمنة:</span>
+                        @foreach($bundle->products as $product)
+                            <div class="flex items-center justify-between text-xs text-[#2B2118]">
+                                <span class="font-medium line-clamp-1 flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#A9552F]"></span>
+                                    <span>{{ $product->name }}</span>
+                                </span>
+                                <span class="text-[11px] text-[#8F7B63] font-bold tabular-nums shrink-0">
+                                    {{ format_currency($product->pivot->custom_price ?? $product->price) }}
                                 </span>
                             </div>
-                            @endforeach
-                        </div>
+                        @endforeach
                     </div>
-                    @endif
                 </div>
 
-                {{-- 4. Price & Add To Cart CTA --}}
-                <div class="pt-4 mt-4 border-t border-orange-100 flex items-center justify-between gap-3">
+                {{-- 4. Pricing & Add to Cart Action --}}
+                <div class="pt-4 mt-4 border-t border-[#EADFC8] flex items-center justify-between gap-3">
                     <div>
-                        <span class="text-[10px] text-gray-400 font-bold block">السعر الإجمالي للباقة:</span>
                         <div class="flex items-baseline gap-2">
-                            <span class="text-lg sm:text-xl font-black text-red-600 tabular-nums">
-                                {{ format_currency($bundle->bundle_price) }}
+                            <span class="text-lg sm:text-xl font-black text-[#382416] tabular-nums">
+                                {{ format_currency($bundle->price) }}
                             </span>
-                            @if($bundle->original_total > $bundle->bundle_price)
-                            <span class="text-xs text-gray-400 line-through tabular-nums">
-                                {{ format_currency($bundle->original_total) }}
-                            </span>
+                            @if($bundle->original_price > $bundle->price)
+                                <span class="text-xs text-[#8F7B63] line-through tabular-nums">
+                                    {{ format_currency($bundle->original_price) }}
+                                </span>
                             @endif
                         </div>
+                        <span class="text-[10px] text-[#A9552F] font-bold block">
+                            سعر الطقم بالكامل
+                        </span>
                     </div>
 
-                    <form action="{{ route('bundle.add-to-cart') }}" method="POST" 
-                          onsubmit="event.preventDefault(); 
-                          const btn = this.querySelector('button');
-                          const origText = btn.innerHTML;
-                          btn.disabled = true;
-                          btn.innerHTML = 'جاري الإضافة...';
-                          fetch(this.action, {
-                              method: 'POST',
-                              headers: {'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept': 'application/json'},
-                              body: new FormData(this)
-                          })
-                          .then(res => res.json())
-                          .then(data => {
-                              toastr.success(data.message || 'تمت إضافة العرض المجمع للسلة بنجاح');
-                              window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cart_count } }));
-                              btn.disabled = false;
-                              btn.innerHTML = '✓ تمت الإضافة';
-                              setTimeout(() => { btn.innerHTML = origText; }, 2000);
-                          })
-                          .catch(() => {
-                              toastr.error('حدث خطأ أثناء الإضافة');
-                              btn.disabled = false;
-                              btn.innerHTML = origText;
-                          });">
-                        @csrf
-                        <input type="hidden" name="bundle_id" value="{{ $bundle->id }}">
-                        <button type="submit" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white font-black text-xs shadow-md shadow-red-500/20 hover:shadow-red-500/30 active:scale-95 transition-all cursor-pointer flex items-center gap-1.5">
-                            <span>🛒</span>
-                            <span>أضف العرض</span>
-                        </button>
-                    </form>
+                    <button type="button" 
+                            onclick="window.addBundleToCart({{ $bundle->id }}, this)"
+                            class="py-2.5 px-4 rounded-xl bg-[#382416] hover:bg-[#2B2118] active:scale-95 text-[#FBF6EA] font-bold text-xs shadow-xs hover:shadow-md transition-all flex items-center gap-1.5 cursor-pointer">
+                        <svg class="w-4 h-4 text-[#CDB78F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                        </svg>
+                        <span>أضف الطقم للسلة</span>
+                    </button>
                 </div>
             </div>
             @endforeach

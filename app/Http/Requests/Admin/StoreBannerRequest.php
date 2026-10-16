@@ -15,24 +15,30 @@ class StoreBannerRequest extends FormRequest
     {
         return [
             'image' => ['required', 'image', 'mimes:jpeg,png,jpg,gif,webp,svg,avif', 'max:10240'],
-            'position' => ['required', 'integer', 'in:1,2,3,4'],
-            'title' => ['nullable', 'string', 'max:255'],
+            'position' => ['required', 'string', 'max:50'],
+            'title' => ['required', 'string', 'max:255'],
+            'subtitle' => ['nullable', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:1000'],
             'url' => ['nullable', 'string', 'max:500'],
-            'is_active' => ['nullable', 'boolean'],
+            'button_text' => ['nullable', 'string', 'max:100'],
+            'bg_color' => ['nullable', 'string', 'max:30'],
+            'status' => ['nullable', 'boolean'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'image.required' => 'يرجى اختيار صورة للبانر الإعلاني.',
+            'image.required' => 'يرجى اختيار صورة للبانر أو الكولكشن.',
             'image.image' => 'الملف المرفوع يجب أن يكون صورة صالحة.',
             'image.mimes' => 'صيغ الصور المسموح بها هي: JPG, JPEG, PNG, WEBP, GIF, SVG, AVIF.',
-            'image.max' => 'حجم صورة البانر كبير جداً، الحد الأقصى المسموح به هو 10 ميغابايت.',
-            'position.required' => 'يرجى تحديد موضع البانر في السلايدر.',
-            'position.in' => 'موضع البانر المحدد غير صالح.',
+            'image.max' => 'حجم الصورة كبير جداً، الحد الأقصى المسموح به هو 10 ميغابايت.',
+            'position.required' => 'يرجى تحديد موضع العرض.',
+            'title.required' => 'يرجى إدخال عنوان الكولكشن أو البانر.',
             'title.max' => 'عنوان البانر يجب ألا يتجاوز 255 حرفاً.',
-            'url.max' => 'رابط توجيه البانر طويل جداً.',
+            'subtitle.max' => 'الوسم أو العنوان الفرعي يجب ألا يتجاوز 255 حرفاً.',
+            'url.max' => 'رابط التوجيه طويل جداً.',
+            'button_text.max' => 'نص زر التوجيه يجب ألا يتجاوز 100 حرف.',
         ];
     }
 }

@@ -1,4 +1,3 @@
-{{-- resources/views/layouts/storefront.blade.php --}}
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 
@@ -8,348 +7,278 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', settings('site_name', 'ألبان وسوبرماركت التوحيد')) | العامرية - الإسكندرية</title>
-    <meta name="description" content="@yield('meta_description', 'ألبان وسوبرماركت التوحيد في العامرية، الإسكندرية. أجود منتجات الألبان والأجبان الطبيعية والسلع الغذائية وخدمة توصيل فورية.')">
-    <meta name="keywords" content="@yield('meta_keywords', 'ألبان التوحيد, سوبرماركت التوحيد, جبن بلدي, ألبان العامرية, توصيل طلبات العامرية, سوبرماركت الإسكندرية, كينج مريوط')">
+    <title>@yield('title', settings('site_name', 'أزياء لافيستا') . ' | متجر الملابس والأزياء العصرية')</title>
+    <meta name="description" content="@yield('meta_description', settings('site_tagline', 'أزياء لافيستا — متجر الملابس والأزياء المصرية العصرية لكافة أفراد الأسرة. أحدث تشكيلات الملابس الرجالية، الحريمية، والأطفال مع معاينة وقياس قبل الاستلام وشحن سريع لجميع المحافظات.'))">
+    <meta name="keywords" content="@yield('meta_keywords', 'أزياء لافيستا, ملابس رجالي, ملابس حريمي, ملابس أطفال, قمصان, بناطيل, فساتين, جواكت, شحن لجميع المحافظات, دفع عند الاستلام, مصر')">
     <link rel="canonical" href="{{ url()->current() }}" />
 
-    <!-- Open Graph / Facebook / WhatsApp -->
+    <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="ar_EG" />
-    <meta property="og:site_name" content="ألبان وسوبرماركت التوحيد" />
+    <meta property="og:site_name" content="{{ settings('site_name', 'أزياء لافيستا') }}" />
     <meta property="og:url" content="{{ url()->current() }}" />
-    <meta property="og:title" content="@yield('title', settings('site_name', 'ألبان وسوبرماركت التوحيد')) | العامرية - الإسكندرية" />
-    <meta property="og:description" content="@yield('meta_description', 'ألبان وسوبرماركت التوحيد في العامرية، الإسكندرية. أجود منتجات الألبان والأجبان الطبيعية والسلع الغذائية والعروض الحصرية.')" />
-    <meta property="og:image" content="@yield('og_image', asset('assets/site/img/og-cover.png'))" />
+    <meta property="og:title" content="@yield('title', settings('site_name', 'أزياء لافيستا'))" />
+    <meta property="og:description" content="@yield('meta_description', settings('site_tagline', 'تسوق أرقى الملابس المصرية بأسعار مميزة وجودة عالية مع الدفع عند الاستلام.'))" />
+    @if(settings('og_image'))
+        <meta property="og:image" content="{{ asset('storage/' . settings('og_image')) }}" />
+    @elseif(settings('site_logo'))
+        <meta property="og:image" content="{{ asset('storage/' . settings('site_logo')) }}" />
+    @endif
 
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="@yield('title', settings('site_name', 'ألبان وسوبرماركت التوحيد')) | العامرية" />
-    <meta name="twitter:description" content="@yield('meta_description', 'ألبان وسوبرماركت التوحيد في العامرية، الإسكندرية.')" />
-    <meta name="twitter:image" content="@yield('og_image', asset('assets/site/img/og-cover.png'))" />
-
-    @yield('meta')
-
-    <!-- Global Schema.org JSON-LD (GroceryStore / LocalBusiness) -->
+    <!-- Schema.org JSON-LD Structured Data for Google Rich Snippets -->
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
-        "@type": "GroceryStore",
-        "name": "ألبان وسوبرماركت التوحيد",
-        "image": "{{ asset('assets/site/img/og-cover.png') }}",
-        "telephone": "{{ settings('store_phone', '01000000000') }}",
-        "address": {
-            "@type": "PostalAddress",
-            "streetAddress": "شارع المستشفى - بجوار الإسعاف",
-            "addressLocality": "العامرية",
-            "addressRegion": "الإسكندرية",
-            "addressCountry": "EG"
-        },
-        "priceRange": "EGP",
-        "currenciesAccepted": "EGP",
-        "paymentAccepted": "Cash, InstaPay",
-        "openingHours": "Mo-Su 08:00-00:00",
-        "url": "{{ url('/') }}"
+        "@graph": [
+            {
+                "@type": "WebSite",
+                "@id": "{{ url('/') }}#website",
+                "url": "{{ url('/') }}",
+                "name": "{{ settings('site_name', 'أزياء لافيستا') }}",
+                "description": "{{ settings('site_tagline', 'متجر الملابس والأزياء العصرية الراقية') }}",
+                "inLanguage": "ar-EG",
+                "potentialAction": {
+                    "@type": "SearchAction",
+                    "target": "{{ route('site.products') }}?search={search_term_string}",
+                    "query-input": "required name=search_term_string"
+                }
+            },
+            {
+                "@type": "ClothingStore",
+                "@id": "{{ url('/') }}#store",
+                "name": "{{ settings('site_name', 'أزياء لافيستا') }}",
+                "url": "{{ url('/') }}",
+                "logo": "{{ settings('site_logo') ? asset('storage/' . settings('site_logo')) : asset('assets/site/img/logo.png') }}",
+                "image": "{{ settings('og_image') ? asset('storage/' . settings('og_image')) : (settings('site_logo') ? asset('storage/' . settings('site_logo')) : '') }}",
+                "description": "{{ settings('site_tagline', 'متجر الملابس والأزياء العصرية الراقية لكافة أفراد الأسرة') }}",
+                "telephone": "{{ settings('topbar_phone', '01000000000') }}",
+                "priceRange": "$$",
+                "currenciesAccepted": "EGP",
+                "paymentAccepted": "Cash, InstaPay, Vodafone Cash, Credit Card",
+                "address": {
+                    "@type": "PostalAddress",
+                    "addressCountry": "EG"
+                }
+            }
+        ]
     }
     </script>
 
-    @php
-        $siteFavicon = get_site_favicon();
-    @endphp
-    @if($siteFavicon)
-        <link rel="icon" href="{{ $siteFavicon }}">
-        <link rel="shortcut icon" href="{{ $siteFavicon }}">
-        <link rel="apple-touch-icon" href="{{ $siteFavicon }}">
-    @else
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥛</text></svg>">
-    @endif
-
-    <!-- Google Arabic Fonts (Cairo, Alexandria, Readex Pro) -->
+    <!-- Google Fonts: Alexandria & Cairo (Modern Clean Arabic Typography) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800&family=Cairo:wght@400;600;700;800;900&family=Readex+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800;900&family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <!-- Swiper & Toastr CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 
-    <!-- Vite Assets (Tailwind & Alpine) -->
+    <!-- Vite Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
+        :root {
+            --brand-primary: #AC9653;
+            --brand-secondary: #BDAB75;
+            --brand-beige: #C2B280;
+            --brand-camel: #CBA367;
+            --brand-white: #FFFFFF;
+        }
+
         [x-cloak] {
             display: none !important;
         }
 
-        /* Toastr customization for Tawheed brand */
-        #toast-container > div {
-            opacity: 1 !important;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15) !important;
-            border-radius: 12px !important;
-            font-family: 'Cairo', sans-serif !important;
-            text-align: right !important;
-            direction: rtl !important;
-        }
-        .toast-success {
-            background-color: #065F46 !important;
-        }
-        .toast-error {
-            background-color: #730E1F !important;
+        body {
+            font-family: 'Alexandria', 'Cairo', system-ui, -apple-system, sans-serif;
+            background-color: #FFFFFF;
+            color: #1F2937;
         }
 
-        /* Prevent unwanted iOS Safari automatic zoom on form input focus */
-        @media screen and (max-width: 768px) {
-            input, select, textarea {
-                font-size: 16px !important;
-            }
+        /* Color utilities matching the approved palette */
+        .bg-brand-primary { background-color: #AC9653; }
+        .bg-brand-secondary { background-color: #BDAB75; }
+        .bg-brand-beige { background-color: #C2B280; }
+        .bg-brand-camel { background-color: #CBA367; }
+        .text-brand-primary { color: #AC9653; }
+        .text-brand-secondary { color: #BDAB75; }
+        .text-brand-camel { color: #CBA367; }
+        .border-brand-primary { border-color: #AC9653; }
+        .border-brand-secondary { border-color: #BDAB75; }
+        .border-brand-camel { border-color: #CBA367; }
+
+        /* Toastr Customization */
+        #toast-container > div {
+            opacity: 1 !important;
+            box-shadow: 0 10px 30px rgba(172, 150, 83, 0.25) !important;
+            border-radius: 10px !important;
+            font-family: 'Alexandria', sans-serif !important;
+            text-align: right !important;
+            direction: rtl !important;
+            border: 1px solid #BDAB75 !important;
+            background-color: #AC9653 !important;
+            color: #FFFFFF !important;
+        }
+
+        /* Smooth scroll */
+        html { scroll-behavior: smooth; }
+
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F3F4F6;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #BDAB75;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #AC9653;
+        }
+
+        /* Micro-Animations & Interactivity */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+        }
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(203, 163, 103, 0.5); }
+            50% { box-shadow: 0 0 0 8px rgba(203, 163, 103, 0); }
+        }
+        .animate-pulse-glow {
+            animation: pulse-glow 2.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        .shimmer-badge {
+            position: relative;
+            overflow: hidden;
+        }
+        .shimmer-badge::after {
+            content: '';
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+            animation: shimmer 2.5s infinite;
+        }
+
+        /* Animated Navigation Underline */
+        .nav-link-indicator {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            transition: color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .nav-link-indicator::after {
+            content: '';
+            position: absolute;
+            bottom: 0px;
+            right: 50%;
+            transform: translateX(50%);
+            width: 0;
+            height: 3px;
+            background-color: #CBA367;
+            border-radius: 3px 3px 0 0;
+            transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .nav-link-indicator:hover::after,
+        .nav-link-indicator.active::after {
+            width: 80%;
+        }
+
+        /* Glassmorphic Dropdown Panels */
+        .dropdown-glass {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 45px -10px rgba(43, 33, 24, 0.2), 0 0 0 1px rgba(189, 171, 117, 0.35);
+        }
+
+        /* Smooth card lift */
+        .card-lift {
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+        }
+        .card-lift:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 32px -8px rgba(172, 150, 83, 0.2);
+            border-color: #AC9653;
+        }
+
+        html, body {
+            max-width: 100vw;
+            overflow-x: hidden;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
     </style>
 
     @stack('styles')
 </head>
 
-<body class="bg-canvas-base text-charcoal font-sans antialiased min-h-screen flex flex-col overflow-x-clip selection:bg-primary-700 selection:text-white">
-    
-    <!-- Top Information Bar -->
-    <x-storefront.layout.top-bar />
+<body class="bg-[#FFFFFF] text-[#1F2937] antialiased min-h-screen flex flex-col selection:bg-[#AC9653] selection:text-white pb-20 lg:pb-0 overflow-x-hidden w-full max-w-full" dir="rtl">
 
-    <!-- Main Navigation Header -->
+    <!-- Main Navigation Header (Includes Top Bar + Main Bar + Category Nav) -->
     <x-storefront.layout.header />
 
     <!-- Mobile Slide-over Menu -->
     <x-storefront.layout.mobile-menu />
 
-    <!-- Main Body Content -->
-    <main class="flex-grow">
+    <!-- Slide-over Cart Drawer -->
+    <x-storefront.layout.cart-drawer />
+
+    <!-- Main Dynamic Content (Pure White Canvas) -->
+    <main class="flex-grow bg-[#FFFFFF]">
         @yield('content')
     </main>
+
+    <!-- Global Floating WhatsApp Help Button -->
+    <x-storefront.layout.whatsapp-float />
+
+    <!-- App-Like Mobile Sticky Bottom Navigation -->
+    <x-storefront.layout.mobile-bottom-nav />
 
     <!-- Global Footer -->
     <x-storefront.layout.footer />
 
-    <!-- Slide-over Cart Drawer -->
-    <x-storefront.layout.cart-drawer />
-
-    <!-- WhatsApp Floating Action Button -->
-    <x-storefront.layout.whatsapp-float />
-
-    <!-- Custom Tawheed Modal Dialog -->
-    <div id="tawheedModal" 
-         class="fixed inset-0 z-[99999] bg-charcoal-heading/60 backdrop-blur-xs flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300"
-         dir="rtl">
-        <div id="tawheedModalCard" 
-             class="bg-white rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl border border-cream transform scale-95 transition-all duration-300 space-y-4">
-            
-            <div id="tawheedModalIcon" class="w-12 h-12 rounded-2xl bg-primary-50 text-primary-800 border border-primary-200 flex items-center justify-center text-xl mx-auto shadow-inner">
-                🔔
-            </div>
-
-            <div class="space-y-1.5">
-                <h3 id="tawheedModalTitle" class="text-base font-bold text-charcoal-heading">
-                    تأكيد الإجراء
-                </h3>
-                <p id="tawheedModalDesc" class="text-xs text-charcoal-muted leading-relaxed">
-                    هل أنت متأكد من المتابعة؟
-                </p>
-            </div>
-
-            <div class="flex items-center gap-2.5 pt-2">
-                <button type="button" 
-                        id="tawheedModalCancelBtn"
-                        class="flex-1 py-2.5 px-4 rounded-xl bg-gray-100 hover:bg-gray-200 text-charcoal text-xs font-bold transition-colors cursor-pointer">
-                    إلغاء
-                </button>
-                <button type="button" 
-                        id="tawheedModalConfirmBtn"
-                        class="flex-1 py-2.5 px-4 rounded-xl bg-primary-800 hover:bg-primary-900 text-white text-xs font-bold transition-all shadow-sm cursor-pointer">
-                    تأكيد
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Scripts -->
+    <!-- Scripts CDN -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
     <script>
-        // Setup CSRF token for jQuery AJAX
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
-        });
-
-        // Toastr Defaults
         toastr.options = {
             "closeButton": true,
             "progressBar": true,
             "positionClass": "toast-bottom-left",
-            "timeOut": "3500",
-            "rtl": true
+            "timeOut": "4000",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
         };
 
-        // Flash message toasts
         @if(session('success'))
-            toastr.success(@json(session('success')));
+            toastr.success("{{ session('success') }}");
         @endif
         @if(session('error'))
-            toastr.error(@json(session('error')));
+            toastr.error("{{ session('error') }}");
         @endif
-        @if(session('status'))
-            toastr.info(@json(session('status')));
+        @if(session('info'))
+            toastr.info("{{ session('info') }}");
         @endif
-
-        // Global Tawheed Modal Helper
-        window.tawheedConfirm = function(title, message, onConfirm, onCancel, options = {}) {
-            const modal = document.getElementById('tawheedModal');
-            const card = document.getElementById('tawheedModalCard');
-            const titleEl = document.getElementById('tawheedModalTitle');
-            const descEl = document.getElementById('tawheedModalDesc');
-            const confirmBtn = document.getElementById('tawheedModalConfirmBtn');
-            const cancelBtn = document.getElementById('tawheedModalCancelBtn');
-            const iconEl = document.getElementById('tawheedModalIcon');
-
-            if (!modal) return;
-
-            titleEl.textContent = title || 'تأكيد';
-            descEl.textContent = message || '';
-            confirmBtn.textContent = options.confirmText || 'تأكيد';
-            cancelBtn.textContent = options.cancelText || 'إلغاء';
-            if (options.icon) iconEl.textContent = options.icon;
-
-            const closeModal = () => {
-                modal.classList.add('opacity-0', 'pointer-events-none');
-                card.classList.remove('scale-100');
-                card.classList.add('scale-95');
-            };
-
-            const newConfirm = confirmBtn.cloneNode(true);
-            confirmBtn.parentNode.replaceChild(newConfirm, confirmBtn);
-
-            const newCancel = cancelBtn.cloneNode(true);
-            cancelBtn.parentNode.replaceChild(newCancel, cancelBtn);
-
-            newConfirm.addEventListener('click', () => {
-                closeModal();
-                if (typeof onConfirm === 'function') onConfirm();
-            });
-
-            newCancel.addEventListener('click', () => {
-                closeModal();
-                if (typeof onCancel === 'function') onCancel();
-            });
-
-            modal.onclick = (e) => {
-                if (e.target === modal) {
-                    closeModal();
-                    if (typeof onCancel === 'function') onCancel();
-                }
-            };
-
-            modal.classList.remove('opacity-0', 'pointer-events-none');
-            card.classList.remove('scale-95');
-            card.classList.add('scale-100');
-        };
-
-        // Custom Event listener for cart count updates
-        window.addEventListener('cart-updated', function(event) {
-            const count = event.detail?.count ?? event.detail;
-            const badge = document.getElementById('cart-badge-count');
-            if (badge && count !== undefined) {
-                badge.textContent = count;
-            }
-        });
-
-        // Global Wishlist toggle handler
-        window.toggleWishlist = function(productId, btnEl) {
-            fetch('/wishlist/toggle/' + productId, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Accept': 'application/json'
-                }
-            })
-            .then(res => {
-                if (res.status === 401) {
-                    toastr.info('يرجى تسجيل الدخول لحفظ المنتج في المفضلة');
-                    return null;
-                }
-                return res.json();
-            })
-            .then(data => {
-                if (!data) return;
-                if (data.success) {
-                    toastr.success(data.message || 'تم تحديث المفضلة بنجاح');
-                    if (btnEl) {
-                        const svg = btnEl.querySelector('svg');
-                        if (data.in_wishlist) {
-                            btnEl.classList.add('text-rose-600');
-                            if (svg) svg.setAttribute('fill', 'currentColor');
-                        } else {
-                            btnEl.classList.remove('text-rose-600');
-                            if (svg) svg.setAttribute('fill', 'none');
-                        }
-                    }
-                } else {
-                    toastr.error(data.message || 'تعذر تحديث المفضلة');
-                }
-            })
-            .catch(() => {
-                toastr.error('حدث خطأ أثناء تحديث المفضلة');
-            });
-        };
-
-        // Global Add To Cart AJAX Helper (Supports: addToCart(id, btn) or addToCart(id, quantity, btn))
-        window.addToCart = function(productId, quantityOrBtn = 1, btnEl = null) {
-            let quantity = 1;
-            if (quantityOrBtn instanceof HTMLElement || (typeof quantityOrBtn === 'object' && quantityOrBtn !== null && quantityOrBtn.nodeType)) {
-                btnEl = quantityOrBtn;
-                quantity = 1;
-            } else {
-                quantity = parseInt(quantityOrBtn) || 1;
-            }
-
-            let originalContent = '';
-            if (btnEl) {
-                originalContent = btnEl.innerHTML;
-                btnEl.disabled = true;
-                btnEl.innerHTML = '<svg class="w-4 h-4 animate-spin mx-auto" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>';
-            }
-
-            return fetch('/add-to-cart/' + productId, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({ quantity: quantity })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (btnEl) {
-                    btnEl.disabled = false;
-                    btnEl.innerHTML = originalContent;
-                }
-                if (data.success || data.status) {
-                    toastr.success(data.message || 'تمت إضافة المنتج إلى السلة بنجاح');
-                    window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cart_count ?? data.count } }));
-                } else {
-                    toastr.error(data.message || 'تعذر إضافة المنتج للسلة');
-                }
-                return data;
-            })
-            .catch(err => {
-                if (btnEl) {
-                    btnEl.disabled = false;
-                    btnEl.innerHTML = originalContent;
-                }
-                toastr.error('حدث خطأ أثناء إضافة المنتج للسلة');
-                throw err;
-            });
-        };
     </script>
 
     @stack('scripts')

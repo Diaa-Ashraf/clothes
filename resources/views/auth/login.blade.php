@@ -4,17 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>تسجيل الدخول | ألبان وسوبرماركت التوحيد بالعامرية</title>
-    <meta name="description" content="تسجيل الدخول إلى لوحة تحكم ألبان وسوبرماركت التوحيد بالعامرية، الإسكندرية.">
-    
-    <!-- Open Graph / Facebook / WhatsApp -->
-    <meta property="og:type" content="website" />
-    <meta property="og:locale" content="ar_EG" />
-    <meta property="og:site_name" content="ألبان وسوبرماركت التوحيد" />
-    <meta property="og:url" content="{{ url()->current() }}" />
-    <meta property="og:title" content="تسجيل الدخول | ألبان وسوبرماركت التوحيد" />
-    <meta property="og:description" content="بوابة الدخول إلى لوحة التحكم ومتجر ألبان وسوبرماركت التوحيد - العامرية، الإسكندرية." />
-    <meta property="og:image" content="{{ asset('assets/site/img/og-cover.png') }}" />
+    <title>تسجيل الدخول | {{ settings('site_name', 'أزياء لافيستا') }}</title>
+    <meta name="description" content="تسجيل الدخول إلى لوحة تحكم {{ settings('site_name', 'أزياء لافيستا') }}.">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,7 +17,7 @@
 
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Cairo', 'Alexandria', sans-serif; }
+        body { font-family: 'Cairo', 'Alexandria', sans-serif; background-color: #FBF6EA; }
         
         .split-wrapper {
             display: flex;
@@ -49,22 +40,13 @@
             flex: 1 1 50%;
             width: 50%;
             position: relative;
-            background: linear-gradient(135deg, #7F1D1D 0%, #DC2626 50%, #EA580C 100%);
+            background: linear-gradient(135deg, #2B2118 0%, #382416 60%, #543924 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 48px;
             overflow: hidden;
             min-height: 100vh;
-        }
-
-        .split-image-bg {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0.35;
         }
 
         @media (max-width: 1024px) {
@@ -82,7 +64,7 @@
         }
     </style>
 </head>
-<body class="bg-canvas-base text-charcoal antialiased">
+<body class="bg-[#FBF6EA] text-[#2B2118] antialiased">
 
     <div class="split-wrapper">
         
@@ -92,26 +74,20 @@
             {{-- Top Header --}}
             <div class="flex items-center justify-between mb-6">
                 <a href="{{ route('site.home') }}" class="flex items-center gap-3 group">
-                    @if(get_site_logo())
-                        <div class="w-10 h-10 rounded-2xl bg-white p-1 flex items-center justify-center shadow-md border border-orange-200 overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
-                            <img src="{{ get_site_logo() }}" alt="{{ settings('site_name', 'ألبان التوحيد') }}" class="w-full h-full object-contain">
-                        </div>
-                    @else
-                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-red-700 via-red-600 to-orange-500 text-white flex items-center justify-center font-black text-xl shadow-md border border-orange-200 shrink-0">
-                            🥛
-                        </div>
-                    @endif
+                    <div class="w-10 h-10 rounded-2xl bg-[#382416] text-[#FBF6EA] flex items-center justify-center font-black text-xl shadow-md border border-[#CDB78F]/30 shrink-0">
+                        {{ mb_substr(settings('site_name', 'أزياء لافيستا'), 0, 1) }}
+                    </div>
                     <div class="flex flex-col">
                         <div class="flex items-center gap-1.5">
-                            <span class="text-base font-black text-red-600">{{ settings('site_name', 'ألبان التوحيد') }}</span>
-                            <span class="px-1.5 py-0.2 rounded text-[8px] font-black bg-orange-500 text-white uppercase">ماركت</span>
+                            <span class="text-base font-black text-[#2B2118]">{{ settings('site_name', 'أزياء لافيستا') }}</span>
+                            <span class="px-1.5 py-0.2 rounded text-[8px] font-black bg-[#A9552F] text-white">بوتيك</span>
                         </div>
-                        <span class="text-[10px] text-gray-400 font-bold">العامرية • الإسكندرية</span>
+                        <span class="text-[10px] text-[#8F7B63] font-bold">ملابس وأزياء راقية</span>
                     </div>
                 </a>
                 
-                <a href="{{ route('site.home') }}" class="inline-flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-red-600 transition-colors">
-                    <span>العودة للمتجر</span>
+                <a href="{{ route('site.home') }}" class="inline-flex items-center gap-1.5 text-xs font-bold text-[#8F7B63] hover:text-[#2B2118] transition-colors">
+                    <span>العودة للبوتيك</span>
                     <span class="rotate-180">←</span>
                 </a>
             </div>
@@ -120,38 +96,38 @@
             <div class="max-w-md w-full mx-auto my-auto py-4">
                 
                 <div class="mb-7 text-right">
-                    <h1 class="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
+                    <h1 class="text-2xl sm:text-3xl font-black text-[#2B2118] tracking-tight">
                         تسجيل الدخول
                     </h1>
-                    <p class="text-xs sm:text-sm text-gray-500 mt-1.5 leading-relaxed font-medium">
-                        أدخل بياناتك للدخول إلى حسابك أو لوحة التحكم ومتابعة الطلبات.
+                    <p class="text-xs sm:text-sm text-[#8F7B63] mt-1.5 leading-relaxed font-medium">
+                        أدخل بياناتك للدخول إلى حسابك أو لوحة تحكم إدارة المتجر.
                     </p>
                 </div>
 
                 {{-- Status / Error Alerts --}}
                 @if (session('status'))
-                    <div class="p-3 mb-5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold">
+                    <div class="p-3 mb-5 rounded-2xl bg-[#F3E9D2] border border-[#CDB78F] text-[#2B2118] text-xs font-bold">
                         {{ session('status') }}
                     </div>
                 @endif
 
                 @if (session('success'))
-                    <div class="p-3.5 mb-5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold flex items-center gap-2">
-                        <svg class="w-4 h-4 shrink-0 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <div class="p-3.5 mb-5 rounded-2xl bg-[#F3E9D2] border border-[#CDB78F] text-[#2B2118] text-xs font-bold flex items-center gap-2">
+                        <span>✓</span>
                         <span>{{ session('success') }}</span>
                     </div>
                 @endif
 
                 @if (session('error'))
-                    <div class="p-3.5 mb-5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold flex items-center gap-2">
-                        <svg class="w-4 h-4 shrink-0 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <div class="p-3.5 mb-5 rounded-2xl bg-[#FBF6EA] border border-[#A9552F] text-[#A9552F] text-xs font-bold flex items-center gap-2">
+                        <span>•</span>
                         <span>{{ session('error') }}</span>
                     </div>
                 @endif
 
                 @if ($errors->any())
-                    <div class="p-3.5 mb-5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold flex items-center gap-2">
-                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <div class="p-3.5 mb-5 rounded-2xl bg-[#FBF6EA] border border-[#A9552F] text-[#A9552F] text-xs font-bold flex items-center gap-2">
+                        <span>•</span>
                         <span>{{ $errors->first() }}</span>
                     </div>
                 @endif
@@ -161,7 +137,7 @@
 
                     {{-- Email --}}
                     <div>
-                        <label for="email" class="block text-xs font-bold text-gray-700 mb-1.5 text-right">
+                        <label for="email" class="block text-xs font-bold text-[#2B2118] mb-1.5 text-right">
                             البريد الإلكتروني
                         </label>
                         <div class="relative">
@@ -172,18 +148,18 @@
                                    required 
                                    autofocus 
                                    placeholder="name@example.com"
-                                   class="w-full px-4 py-3 text-xs sm:text-sm rounded-2xl bg-canvas-base border border-orange-100 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all text-right">
+                                   class="w-full px-4 py-3 text-xs sm:text-sm rounded-2xl bg-[#FBF6EA]/40 border border-[#EADFC8] text-[#2B2118] placeholder-[#8F7B63] focus:outline-none focus:ring-2 focus:ring-[#382416] focus:bg-white transition-all text-right">
                         </div>
                     </div>
 
                     {{-- Password --}}
                     <div>
                         <div class="flex items-center justify-between mb-1.5">
-                            <label for="password" class="block text-xs font-bold text-gray-700">
+                            <label for="password" class="block text-xs font-bold text-[#2B2118]">
                                 كلمة المرور
                             </label>
                             @if (Route::has('password.request'))
-                                <a href="{{ route('password.request') }}" class="text-[11px] font-bold text-orange-600 hover:underline">
+                                <a href="{{ route('password.request') }}" class="text-[11px] font-bold text-[#A9552F] hover:underline">
                                     نسيت كلمة المرور؟
                                 </a>
                             @endif
@@ -194,7 +170,7 @@
                                    name="password" 
                                    required 
                                    placeholder="••••••••"
-                                   class="w-full px-4 py-3 text-xs sm:text-sm rounded-2xl bg-canvas-base border border-orange-100 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all text-right">
+                                   class="w-full px-4 py-3 text-xs sm:text-sm rounded-2xl bg-[#FBF6EA]/40 border border-[#EADFC8] text-[#2B2118] placeholder-[#8F7B63] focus:outline-none focus:ring-2 focus:ring-[#382416] focus:bg-white transition-all text-right">
                         </div>
                     </div>
 
@@ -205,57 +181,57 @@
                                    name="remember" 
                                    id="remember" 
                                    checked
-                                   class="w-4 h-4 rounded text-red-600 focus:ring-red-500 border-gray-300">
-                            <span class="text-xs text-gray-600 font-bold">تذكر تسجيل دخولي</span>
+                                   class="w-4 h-4 rounded text-[#382416] focus:ring-[#382416] border-[#EADFC8] accent-[#382416]">
+                            <span class="text-xs text-[#6B5642] font-bold">تذكر تسجيل دخولي</span>
                         </label>
                     </div>
 
                     {{-- Submit Button --}}
                     <button type="submit" 
-                            class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white text-xs sm:text-sm font-black transition-all shadow-lg hover:shadow-orange-500/30 active:scale-98 flex items-center justify-center gap-2 cursor-pointer">
+                            class="w-full py-3.5 rounded-2xl bg-[#382416] hover:bg-[#2B2118] text-[#FBF6EA] text-xs sm:text-sm font-black transition-all shadow-md active:scale-98 flex items-center justify-center gap-2 cursor-pointer">
                         <span>تسجيل الدخول</span>
                         <span class="rotate-180">←</span>
                     </button>
                 </form>
 
                 {{-- Register Link --}}
-                <div class="mt-7 text-center text-xs text-gray-500 font-medium">
+                <div class="mt-7 text-center text-xs text-[#8F7B63] font-medium">
                     <span>ليس لديك حساب حتى الآن؟</span>
-                    <a href="{{ route('register') }}" class="font-bold text-red-600 hover:underline ms-1">
+                    <a href="{{ route('register') }}" class="font-bold text-[#A9552F] hover:underline ms-1">
                         إنشاء حساب عميل جديد
                     </a>
                 </div>
             </div>
 
             {{-- Bottom Footer --}}
-            <div class="text-center text-[11px] text-gray-400 mt-4 font-medium">
-                &copy; {{ date('Y') }} ألبان وسوبرماركت التوحيد بالعامرية. جميع الحقوق محفوظة.
+            <div class="text-center text-[11px] text-[#8F7B63] mt-4 font-medium">
+                &copy; {{ date('Y') }} {{ settings('site_name', 'أزياء لافيستا') }}. جميع الحقوق محفوظة.
             </div>
         </div>
 
         {{-- Left / Showcase Side --}}
         <div class="split-image-col">
-            <div class="relative z-10 max-w-lg p-8 sm:p-10 rounded-3xl bg-black/40 backdrop-blur-md border border-white/20 text-white shadow-2xl space-y-4 text-right" dir="rtl">
-                <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-400 text-gray-950 text-xs font-black">
-                    <span>🥛 منتجات ألبان بلدية 100% طازجة</span>
+            <div class="relative z-10 max-w-lg p-8 sm:p-10 rounded-3xl bg-[#2B2118]/80 backdrop-blur-md border border-[#CDB78F]/30 text-[#FBF6EA] shadow-2xl space-y-4 text-right" dir="rtl">
+                <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F3E9D2] text-[#382416] text-xs font-black">
+                    <span>✨ تشكيلات أزياء راقية وخامات طبيعية</span>
                 </div>
                 
-                <h2 class="text-2xl sm:text-3xl font-black leading-snug">
-                    ألبان وسوبرماركت التوحيد بالعامرية
+                <h2 class="text-2xl sm:text-3xl font-black leading-snug text-[#FBF6EA]">
+                    {{ settings('site_name', 'أزياء لافيستا') }}
                 </h2>
                 
-                <p class="text-xs sm:text-sm text-gray-100 leading-relaxed font-medium">
-                    لوحة الإدارة والتحكم لمتابعة طلبات التوصيل بالعامرية، تحديث كميات الأجبان والألبان الفلاحية والمخزون، وتأكيد تحويلات إنستاباي.
+                <p class="text-xs sm:text-sm text-[#EADFC8] leading-relaxed font-medium">
+                    لوحة الإدارة والتحكم لمتابعة طلبيات الأزياء، وتنسيق المقاسات وتحديث المخزون وإدارة المعروضات، وتأكيد تحويلات إنستاباي.
                 </p>
 
-                <div class="pt-4 border-t border-white/20 flex items-center justify-between text-xs text-gray-200">
+                <div class="pt-4 border-t border-[#CDB78F]/30 flex items-center justify-between text-xs text-[#EADFC8]">
                     <div class="flex items-center gap-1.5 font-bold">
-                        <span class="text-emerald-400">✓</span>
-                        <span>4 فروع في خدمتك</span>
+                        <span class="text-[#CDB78F]">✓</span>
+                        <span>فروع وبوتيكات متعددة</span>
                     </div>
                     <div class="flex items-center gap-1.5 font-bold">
-                        <span class="text-emerald-400">✓</span>
-                        <span>توصيل سريع حتى 2 صباحاً</span>
+                        <span class="text-[#CDB78F]">✓</span>
+                        <span>شحن سريع ومعاينة قبل الاستلام</span>
                     </div>
                 </div>
             </div>

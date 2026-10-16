@@ -1,10 +1,10 @@
 {{-- resources/views/storefront/checkout.blade.php --}}
 @extends('layouts.storefront')
 
-@section('title', 'إتمام الطلب والدفع | ألبان وسوبرماركت التوحيد')
+@section('title', 'إتمام الطلب والدفع الآمن | ' . settings('site_name', 'أزياء لافيستا'))
 
 @section('content')
-<div class="py-6 sm:py-10 bg-canvas-base min-h-screen"
+<div class="py-8 sm:py-12 bg-white min-h-screen"
      x-data="{
         deliveryType: '{{ old('delivery_type', $deliveryType) }}',
         paymentMethod: '{{ old('payment_method', 'cash') }}',
@@ -65,26 +65,26 @@
         }
      }">
     
-    <div class="container mx-auto px-3 sm:px-4 md:px-6 max-w-7xl space-y-6">
+    <div class="container mx-auto px-3 sm:px-4 md:px-6 max-w-7xl space-y-6" dir="rtl">
         
         <!-- Breadcrumbs -->
-        <nav class="flex items-center gap-2 text-xs font-bold text-charcoal-muted flex-wrap">
-            <a href="{{ route('site.home') }}" class="hover:text-red-600 transition-colors">الرئيسية</a>
+        <nav class="flex items-center gap-2 text-xs font-semibold text-[#8F7B63] flex-wrap">
+            <a href="{{ route('site.home') }}" class="hover:text-[#382416] transition-colors">الرئيسية</a>
             <span>/</span>
-            <a href="{{ route('cart') }}" class="hover:text-red-600 transition-colors">سلة المشتريات</a>
+            <a href="{{ route('cart') }}" class="hover:text-[#382416] transition-colors">حقيبة التسوق</a>
             <span>/</span>
-            <span class="text-charcoal-heading font-black">إتمام الطلب والدفع</span>
+            <span class="text-[#2B2118] font-bold">إتمام الطلب والدفع</span>
         </nav>
 
         <!-- Page Header -->
-        <div class="pb-3 border-b border-cream flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div class="pb-3 border-b border-[#EADFC8] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-                <h1 class="text-xl sm:text-2xl md:text-3xl font-black text-charcoal-heading">إتمام الطلب والدفع</h1>
-                <p class="text-xs sm:text-sm text-charcoal-muted mt-1">ألبان وسوبرماركت التوحيد • خدمة التوصيل السريع بالعامرية</p>
+                <h1 class="text-xl sm:text-2xl md:text-3xl font-serif font-black text-[#2B2118]">إتمام الطلب والشحن</h1>
+                <p class="text-xs sm:text-sm text-[#8F7B63] mt-1">{{ settings('site_name', 'أزياء لافيستا') }} • تجربة تسوق راقية وشحن سريع لباب البيت</p>
             </div>
-            <div class="flex items-center gap-2 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl self-start sm:self-auto">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>فروعنا مفتوحة للتوصيل والاستلام حتى 2:00 صباحاً</span>
+            <div class="flex items-center gap-2 text-xs font-bold text-[#382416] bg-[#F3E9D2] border border-[#CDB78F] px-3.5 py-1.5 rounded-xl self-start sm:self-auto shadow-2xs">
+                <span class="w-2 h-2 rounded-full bg-[#A9552F]"></span>
+                <span>معاينة وقياس القطع متاح عند الاستلام</span>
             </div>
         </div>
 
@@ -99,34 +99,34 @@
             <div class="lg:col-span-7 space-y-5">
                 
                 <!-- 1. Customer Information Card -->
-                <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-cream shadow-xs space-y-4">
-                    <div class="flex items-center gap-2.5 border-b border-cream pb-3">
-                        <span class="w-7 h-7 rounded-xl bg-red-50 text-red-600 text-xs font-black flex items-center justify-center border border-red-200 shrink-0">1</span>
+                <div class="bg-[#FDFBF7] rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-[#EADFC8] shadow-xs space-y-4">
+                    <div class="flex items-center gap-2.5 border-b border-[#EADFC8] pb-3">
+                        <span class="w-7 h-7 rounded-xl bg-[#382416] text-[#FBF6EA] text-xs font-bold flex items-center justify-center shrink-0">1</span>
                         <div>
-                            <h2 class="font-black text-sm sm:text-base text-charcoal-heading">بيانات العميل والتواصل</h2>
-                            <p class="text-[11px] text-charcoal-muted">الاسم ورقم الهاتف لمتابعة طلبك وتوصيله</p>
+                            <h2 class="font-serif font-bold text-sm sm:text-base text-[#2B2118]">بيانات العميل والتواصل</h2>
+                            <p class="text-[11px] text-[#8F7B63]">الاسم ورقم الهاتف لتأكيد المقاس وتوصيل طلبك</p>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
                         <!-- Full Name -->
                         <div>
-                            <label for="name" class="font-bold text-charcoal-heading block mb-1">
-                                الاسم بالكامل <span class="text-red-600">*</span>
+                            <label for="name" class="font-bold text-[#2B2118] block mb-1">
+                                الاسم بالكامل <span class="text-[#A9552F]">*</span>
                             </label>
                             <input type="text" 
                                    id="name" 
                                    name="name" 
                                    value="{{ old('name', $user?->name) }}" 
-                                   placeholder="أحمد محمود علي"
+                                   placeholder="أحمد محمد"
                                    required 
-                                   class="w-full bg-canvas-base border border-cream focus:border-red-500 focus:ring-2 focus:ring-red-500/20 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-charcoal outline-none transition-all">
+                                   class="w-full bg-[#F3E9D2]/30 border border-[#EADFC8] focus:border-[#382416] focus:bg-white rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-[#2B2118] outline-none transition-all">
                         </div>
 
                         <!-- Phone -->
                         <div>
-                            <label for="phone" class="font-bold text-charcoal-heading block mb-1">
-                                رقم الهاتف (واتساب) <span class="text-red-600">*</span>
+                            <label for="phone" class="font-bold text-[#2B2118] block mb-1">
+                                رقم الهاتف (واتساب) <span class="text-[#A9552F]">*</span>
                             </label>
                             <input type="tel" 
                                    id="phone" 
@@ -135,53 +135,53 @@
                                    placeholder="01012345678"
                                    dir="ltr"
                                    required 
-                                   class="w-full bg-canvas-base border border-cream focus:border-red-500 focus:ring-2 focus:ring-red-500/20 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-charcoal text-right outline-none transition-all">
-                            <span class="text-[10px] text-charcoal-muted mt-1 block">رقم للتواصل ومتابعة حالة الأوردر عبر واتساب</span>
+                                   class="w-full bg-[#F3E9D2]/30 border border-[#EADFC8] focus:border-[#382416] focus:bg-white rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-[#2B2118] text-right outline-none transition-all">
+                            <span class="text-[10px] text-[#8F7B63] mt-1 block">رقم للتواصل وتأكيد موعد التسليم عبر واتساب</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- 2. Branch Selection Card -->
-                <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-cream shadow-xs space-y-4">
-                    <div class="flex items-center justify-between border-b border-cream pb-3">
+                <!-- 2. Boutique / Branch Selection Card -->
+                <div class="bg-[#FDFBF7] rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-[#EADFC8] shadow-xs space-y-4">
+                    <div class="flex items-center justify-between border-b border-[#EADFC8] pb-3">
                         <div class="flex items-center gap-2.5">
-                            <span class="w-7 h-7 rounded-xl bg-red-50 text-red-600 text-xs font-black flex items-center justify-center border border-red-200 shrink-0">2</span>
+                            <span class="w-7 h-7 rounded-xl bg-[#382416] text-[#FBF6EA] text-xs font-bold flex items-center justify-center shrink-0">2</span>
                             <div>
-                                <h2 class="font-black text-sm sm:text-base text-charcoal-heading">اختيار الفرع بالعامرية</h2>
-                                <p class="text-[11px] text-charcoal-muted">حدد الفرع الأقرب إليك للتجهيز أو التوصيل منه</p>
+                                <h2 class="font-serif font-bold text-sm sm:text-base text-[#2B2118]">اختيار البوتيك / الفرع</h2>
+                                <p class="text-[11px] text-[#8F7B63]">حدد الفرع الأقرب إليك للتجهيز أو الاستلام المباشر</p>
                             </div>
                         </div>
-                        <span class="text-[10px] font-black px-2.5 py-1 rounded-lg bg-orange-100 text-orange-900 border border-orange-200">
-                            4 فروع بالعامرية
+                        <span class="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-[#F3E9D2] text-[#382416] border border-[#CDB78F]">
+                            فروع {{ settings('site_name', 'أزياء لافيستا') }}
                         </span>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                         @foreach($branches as $branch)
-                        <label class="relative p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between select-none group"
+                        <label class="relative p-3.5 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between select-none group"
                                :class="selectedBranch == {{ $branch->id }} 
-                                    ? 'border-red-600 bg-red-50/70 shadow-sm ring-2 ring-red-500/20' 
-                                    : 'border-cream hover:border-orange-300 bg-white hover:bg-orange-50/30'">
+                                    ? 'border-[#382416] bg-[#F3E9D2] shadow-xs' 
+                                    : 'border-[#EADFC8] hover:border-[#CDB78F] bg-white'">
                             
                             <div class="flex items-start gap-2.5 mb-2">
                                 <input type="radio" 
                                        name="branch_id" 
                                        value="{{ $branch->id }}" 
                                        x-model="selectedBranch"
-                                       class="text-red-600 focus:ring-red-500 mt-0.5 shrink-0">
+                                       class="text-[#382416] focus:ring-[#382416] mt-0.5 shrink-0">
                                 <div class="min-w-0">
-                                    <span class="font-black text-xs sm:text-sm text-charcoal-heading block group-hover:text-red-700 transition-colors">
+                                    <span class="font-bold text-xs sm:text-sm text-[#2B2118] block group-hover:text-[#A9552F] transition-colors">
                                         {{ $branch->name }}
                                     </span>
-                                    <span class="text-[10px] text-charcoal-muted block leading-relaxed mt-0.5 line-clamp-2">
+                                    <span class="text-[10px] text-[#8F7B63] block leading-relaxed mt-0.5 line-clamp-2">
                                         📍 {{ $branch->address }}
                                     </span>
                                 </div>
                             </div>
 
-                            <div class="pt-2 border-t border-cream/70 flex items-center justify-between text-[10px]">
-                                <span class="text-charcoal font-bold" dir="ltr">📞 {{ $branch->phone ?: '01234567890' }}</span>
-                                <span class="font-black" :class="selectedBranch == {{ $branch->id }} ? 'text-red-700' : 'text-emerald-700'">
+                            <div class="pt-2 border-t border-[#EADFC8] flex items-center justify-between text-[10px]">
+                                <span class="text-[#6B5642] font-semibold" dir="ltr">📞 {{ $branch->phone ?: '01000000000' }}</span>
+                                <span class="font-bold" :class="selectedBranch == {{ $branch->id }} ? 'text-[#382416]' : 'text-[#8F7B63]'">
                                     <span x-show="selectedBranch == {{ $branch->id }}">✓ المختار</span>
                                     <span x-show="selectedBranch != {{ $branch->id }}">متاح</span>
                                 </span>
@@ -192,61 +192,61 @@
                 </div>
 
                 <!-- 3. Delivery Method & Address Card -->
-                <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-cream shadow-xs space-y-4">
-                    <div class="flex items-center gap-2.5 border-b border-cream pb-3">
-                        <span class="w-7 h-7 rounded-xl bg-red-50 text-red-600 text-xs font-black flex items-center justify-center border border-red-200 shrink-0">3</span>
+                <div class="bg-[#FDFBF7] rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-[#EADFC8] shadow-xs space-y-4">
+                    <div class="flex items-center gap-2.5 border-b border-[#EADFC8] pb-3">
+                        <span class="w-7 h-7 rounded-xl bg-[#382416] text-[#FBF6EA] text-xs font-bold flex items-center justify-center shrink-0">3</span>
                         <div>
-                            <h2 class="font-black text-sm sm:text-base text-charcoal-heading">طريقة الاستلام وعنوان التوصيل</h2>
-                            <p class="text-[11px] text-charcoal-muted">اختر توصيل لباب البيت أو الاستلام بنفسك من الفرع</p>
+                            <h2 class="font-serif font-bold text-sm sm:text-base text-[#2B2118]">طريقة الاستلام وعنوان التوصيل</h2>
+                            <p class="text-[11px] text-[#8F7B63]">اختر الشحن لباب البيت أو الاستلام بنفسك من البوتيك</p>
                         </div>
                     </div>
 
                     <!-- Delivery Type Radios -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                        <label class="relative flex items-center gap-3 p-3.5 rounded-2xl border-2 cursor-pointer transition-all select-none"
+                        <label class="relative flex items-center gap-3 p-3.5 rounded-2xl border cursor-pointer transition-all select-none"
                                :class="deliveryType === 'delivery' 
-                                    ? 'border-red-600 bg-red-50/70 shadow-sm ring-2 ring-red-500/20' 
-                                    : 'border-cream hover:border-orange-300 bg-white'">
+                                    ? 'border-[#382416] bg-[#F3E9D2] shadow-xs' 
+                                    : 'border-[#EADFC8] hover:border-[#CDB78F] bg-white'">
                             <input type="radio" 
                                    name="delivery_type" 
                                    value="delivery" 
                                    x-model="deliveryType" 
-                                   class="text-red-600 focus:ring-red-500">
+                                   class="text-[#382416] focus:ring-[#382416]">
                             <div class="flex-1">
-                                <span class="font-black text-xs sm:text-sm text-charcoal-heading block">🛵 توصيل سريع للمنزل</span>
-                                <span class="text-[10px] text-charcoal-muted block mt-0.5">توصيل فورى لباب البيت لجميع مناطق العامرية</span>
+                                <span class="font-bold text-xs sm:text-sm text-[#2B2118] block">🛵 شحن وتوصيل للمنزل</span>
+                                <span class="text-[10px] text-[#8F7B63] block mt-0.5">توصيل سريع لباب البيت مع حق المعاينة</span>
                             </div>
                         </label>
 
-                        <label class="relative flex items-center gap-3 p-3.5 rounded-2xl border-2 cursor-pointer transition-all select-none"
+                        <label class="relative flex items-center gap-3 p-3.5 rounded-2xl border cursor-pointer transition-all select-none"
                                :class="deliveryType === 'pickup' 
-                                    ? 'border-red-600 bg-red-50/70 shadow-sm ring-2 ring-red-500/20' 
-                                    : 'border-cream hover:border-orange-300 bg-white'">
+                                    ? 'border-[#382416] bg-[#F3E9D2] shadow-xs' 
+                                    : 'border-[#EADFC8] hover:border-[#CDB78F] bg-white'">
                             <input type="radio" 
                                    name="delivery_type" 
                                    value="pickup" 
                                    x-model="deliveryType" 
-                                   class="text-red-600 focus:ring-red-500">
+                                   class="text-[#382416] focus:ring-[#382416]">
                             <div class="flex-1">
-                                <span class="font-black text-xs sm:text-sm text-charcoal-heading block">🏪 استلام من الفرع المختار</span>
-                                <span class="text-[10px] text-emerald-700 font-bold block mt-0.5">تجهيز فوري ومجاناً (0 ج.م رسوم)</span>
+                                <span class="font-bold text-xs sm:text-sm text-[#2B2118] block">🏪 استلام من البوتيك المختار</span>
+                                <span class="text-[10px] text-[#382416] font-bold block mt-0.5">تجهيز فوري ومجاني (0 ج.م رسوم)</span>
                             </div>
                         </label>
                     </div>
 
-                    <!-- Home Delivery Address Field (Visible when deliveryType === 'delivery') -->
+                    <!-- Home Delivery Address Field -->
                     <div x-show="deliveryType === 'delivery'" x-transition class="space-y-2 text-xs pt-1">
-                        <label for="address" class="font-bold text-charcoal-heading block">
-                            عنوان التوصيل بالتفصيل <span class="text-red-600">*</span>
+                        <label for="address" class="font-bold text-[#2B2118] block">
+                            عنوان التوصيل بالتفصيل <span class="text-[#A9552F]">*</span>
                         </label>
 
                         @if($user && !empty($user->addresses) && count($user->addresses) > 0)
-                        <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-                            <span class="text-[10px] text-charcoal-muted shrink-0 font-bold">عناوينك المسجلة:</span>
+                        <div class="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+                            <span class="text-[10px] text-[#8F7B63] shrink-0 font-bold">عناوينك المسجلة:</span>
                             @foreach($user->addresses as $savedAddr)
                             <button type="button" 
                                     onclick="document.getElementById('address').value = {{ json_encode($savedAddr['address'] ?? '') }};"
-                                    class="px-2.5 py-1 rounded-lg bg-canvas-base border border-cream hover:border-red-500 hover:text-red-700 text-[11px] font-bold text-charcoal shrink-0 transition-colors cursor-pointer">
+                                    class="px-2.5 py-1 rounded-lg bg-[#F3E9D2]/40 border border-[#EADFC8] hover:border-[#382416] hover:text-[#382416] text-[11px] font-bold text-[#6B5642] shrink-0 transition-colors cursor-pointer">
                                 {{ $savedAddr['title'] ?? 'عنوان' }}
                             </button>
                             @endforeach
@@ -256,139 +256,139 @@
                         <textarea id="address" 
                                   name="address" 
                                   rows="3" 
-                                  placeholder="اسم المنطقة، الشارع، رقم العمارة، رقم الشقة، علامة مميزة (مثال: بجوار مسجد...)"
-                                  class="w-full bg-canvas-base border border-cream focus:border-red-500 focus:ring-2 focus:ring-red-500/20 rounded-xl p-3 text-xs sm:text-sm text-charcoal outline-none transition-all leading-relaxed">{{ old('address', $user?->address) }}</textarea>
+                                  placeholder="اسم المدينة، الحي، الشارع، رقم العمارة، رقم الشقة، علامة مميزة..."
+                                  class="w-full bg-[#F3E9D2]/30 border border-[#EADFC8] focus:border-[#382416] focus:bg-white rounded-xl p-3 text-xs sm:text-sm text-[#2B2118] outline-none transition-all leading-relaxed">{{ old('address', $user?->address) }}</textarea>
                     </div>
 
-                    <!-- Pickup Notice (Visible when deliveryType === 'pickup') -->
-                    <div x-show="deliveryType === 'pickup'" x-cloak x-transition class="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl text-xs space-y-1">
-                        <div class="font-black text-emerald-800 flex items-center gap-1.5">
+                    <!-- Pickup Notice -->
+                    <div x-show="deliveryType === 'pickup'" x-cloak x-transition class="p-3 bg-[#F3E9D2] border border-[#CDB78F] rounded-xl text-xs space-y-1">
+                        <div class="font-bold text-[#382416] flex items-center gap-1.5">
                             <span>✓</span>
-                            <span>سيتم تجهيز طلبك في <strong x-text="branchesData[selectedBranch]?.name || 'الفرع المختار'"></strong> للاستلام فور وصولك.</span>
+                            <span>سيتم تجهيز طلبك في <strong x-text="branchesData[selectedBranch]?.name || 'البوتيك المختار'"></strong> وتجربة القياس متاحة.</span>
                         </div>
-                        <p class="text-[11px] text-emerald-700" x-text="'عنوان الفرع: ' + (branchesData[selectedBranch]?.address || '')"></p>
+                        <p class="text-[11px] text-[#6B5642]" x-text="'عنوان الفرع: ' + (branchesData[selectedBranch]?.address || '')"></p>
                     </div>
                 </div>
 
                 <!-- 4. Payment Method Card -->
-                <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-cream shadow-xs space-y-4">
-                    <div class="flex items-center gap-2.5 border-b border-cream pb-3">
-                        <span class="w-7 h-7 rounded-full bg-red-50 text-red-600 text-xs font-black flex items-center justify-center border border-red-200 shrink-0">4</span>
+                <div class="bg-[#FDFBF7] rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-[#EADFC8] shadow-xs space-y-4">
+                    <div class="flex items-center gap-2.5 border-b border-[#EADFC8] pb-3">
+                        <span class="w-7 h-7 rounded-full bg-[#382416] text-[#FBF6EA] text-xs font-bold flex items-center justify-center shrink-0">4</span>
                         <div>
-                            <h2 class="font-black text-sm sm:text-base text-charcoal-heading">طريقة الدفع</h2>
-                            <p class="text-[11px] text-charcoal-muted">اختر الدفع نقداً كاش أو بالتحويل اللحظي إنستاباي</p>
+                            <h2 class="font-serif font-bold text-sm sm:text-base text-[#2B2118]">طريقة الدفع</h2>
+                            <p class="text-[11px] text-[#8F7B63]">اختر الدفع نقداً عند الاستلام أو بالتحويل اللحظي إنستاباي</p>
                         </div>
                     </div>
 
                     <!-- Payment Radios -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                        <label class="relative flex items-center gap-3 p-3.5 rounded-2xl border-2 cursor-pointer transition-all select-none"
+                        <label class="relative flex items-center gap-3 p-3.5 rounded-2xl border cursor-pointer transition-all select-none"
                                :class="paymentMethod === 'cash' 
-                                    ? 'border-red-600 bg-red-50/70 shadow-sm ring-2 ring-red-500/20' 
-                                    : 'border-cream hover:border-orange-300 bg-white'">
+                                    ? 'border-[#382416] bg-[#F3E9D2] shadow-xs' 
+                                    : 'border-[#EADFC8] hover:border-[#CDB78F] bg-white'">
                             <input type="radio" 
                                    name="payment_method" 
                                    value="cash" 
                                    x-model="paymentMethod" 
-                                   class="text-red-600 focus:ring-red-500">
+                                   class="text-[#382416] focus:ring-[#382416]">
                             <div class="flex-1">
-                                <span class="font-black text-xs sm:text-sm text-charcoal-heading block">💵 الدفع عند الاستلام (كاش)</span>
-                                <span class="text-[10px] text-charcoal-muted block mt-0.5" 
-                                      x-text="deliveryType === 'pickup' ? 'تدفع في الفرع عند استلام الأوردر' : 'تدفع للمندوب عند باب البيت'"></span>
+                                <span class="font-bold text-xs sm:text-sm text-[#2B2118] block">💵 الدفع عند الاستلام (كاش)</span>
+                                <span class="text-[10px] text-[#8F7B63] block mt-0.5" 
+                                      x-text="deliveryType === 'pickup' ? 'تدفع في البوتيك عند الاستلام' : 'تدفع لمندوب الشحن بعد المعاينة'"></span>
                             </div>
                         </label>
 
-                        <label class="relative flex items-center gap-3 p-3.5 rounded-2xl border-2 cursor-pointer transition-all select-none"
+                        <label class="relative flex items-center gap-3 p-3.5 rounded-2xl border cursor-pointer transition-all select-none"
                                :class="paymentMethod === 'instapay' 
-                                    ? 'border-red-600 bg-red-50/70 shadow-sm ring-2 ring-red-500/20' 
-                                    : 'border-cream hover:border-orange-300 bg-white'">
+                                    ? 'border-[#382416] bg-[#F3E9D2] shadow-xs' 
+                                    : 'border-[#EADFC8] hover:border-[#CDB78F] bg-white'">
                             <input type="radio" 
                                    name="payment_method" 
                                    value="instapay" 
                                    x-model="paymentMethod" 
-                                   class="text-red-600 focus:ring-red-500">
+                                   class="text-[#382416] focus:ring-[#382416]">
                             <div class="flex-1">
-                                <span class="font-black text-xs sm:text-sm text-charcoal-heading block">📱 الدفع عبر InstaPay / المحفظة</span>
-                                <span class="text-[10px] text-charcoal-muted block mt-0.5">تحويل فوري برقم الفرع المختار</span>
+                                <span class="font-bold text-xs sm:text-sm text-[#2B2118] block">📱 التحويل عبر InstaPay / المحفظة</span>
+                                <span class="text-[10px] text-[#8F7B63] block mt-0.5">تحويل لحظي مباشر للفرع المختار</span>
                             </div>
                         </label>
                     </div>
 
-                    <!-- InstaPay Details Panel (Dynamically Tailored by Selected Branch) -->
-                    <div x-show="paymentMethod === 'instapay'" x-cloak x-transition class="space-y-4 pt-3 border-t border-cream text-xs">
+                    <!-- InstaPay Details Panel -->
+                    <div x-show="paymentMethod === 'instapay'" x-cloak x-transition class="space-y-4 pt-3 border-t border-[#EADFC8] text-xs">
                         
                         <!-- Account Details Box -->
-                        <div class="p-4 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-orange-200 space-y-2.5">
-                            <div class="font-black text-amber-950 flex items-center justify-between flex-wrap gap-2">
+                        <div class="p-4 rounded-2xl bg-[#F3E9D2]/70 border border-[#CDB78F] space-y-2.5">
+                            <div class="font-bold text-[#2B2118] flex items-center justify-between flex-wrap gap-2">
                                 <div class="flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-4 h-4 text-[#A9552F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                                     </svg>
-                                    <span>بيانات التحويل المباشر للفرع المختار:</span>
+                                    <span>بيانات التحويل المباشر:</span>
                                 </div>
-                                <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-orange-200 text-orange-900 font-bold" 
-                                      x-text="branchesData[selectedBranch]?.name || 'الفرع المختار'"></span>
+                                <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-[#382416] text-[#FBF6EA] font-bold" 
+                                      x-text="branchesData[selectedBranch]?.name || 'البوتيك المختار'"></span>
                             </div>
                             
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
-                                <div class="bg-white p-3 rounded-xl border border-orange-200 shadow-2xs">
-                                    <span class="text-[10px] text-gray-500 block">عنوان الدفع اللحظي (IPA):</span>
-                                    <span class="font-mono font-black text-red-600 text-xs sm:text-sm select-all block mt-0.5">
+                                <div class="bg-white p-3 rounded-xl border border-[#EADFC8] shadow-2xs">
+                                    <span class="text-[10px] text-[#8F7B63] block">عنوان الدفع اللحظي (IPA):</span>
+                                    <span class="font-mono font-bold text-[#382416] text-xs sm:text-sm select-all block mt-0.5">
                                         {{ settings('instapay_username', 'altawheed@instapay') }}
                                     </span>
                                 </div>
-                                <div class="bg-white p-3 rounded-xl border border-orange-200 shadow-2xs">
-                                    <span class="text-[10px] text-gray-500 block">رقم تحويل ومحفظة الفرع:</span>
-                                    <span class="font-mono font-black text-emerald-700 text-xs sm:text-sm select-all block mt-0.5" 
+                                <div class="bg-white p-3 rounded-xl border border-[#EADFC8] shadow-2xs">
+                                    <span class="text-[10px] text-[#8F7B63] block">رقم تحويل المحفظة / الفرع:</span>
+                                    <span class="font-mono font-bold text-[#382416] text-xs sm:text-sm select-all block mt-0.5" 
                                           dir="ltr"
-                                          x-text="branchesData[selectedBranch]?.phone || '{{ settings('instapay_number', '01234567890') }}'">
+                                          x-text="branchesData[selectedBranch]?.phone || '{{ settings('instapay_number', '01000000000') }}'">
                                     </span>
                                 </div>
                             </div>
-                            <div class="text-[10px] text-amber-900 font-medium bg-white/80 p-2.5 rounded-xl border border-amber-200 leading-relaxed">
-                                بعد إتمام التحويل عبر تطبيق InstaPay أو محفظتك الإلكترونية، يرجى رفع صورة إيصال التحويل بالأسفل لتأكيد وتنفيذ الأوردر في الحال.
+                            <div class="text-[10px] text-[#6B5642] font-medium bg-white/70 p-2.5 rounded-xl border border-[#EADFC8] leading-relaxed">
+                                بعد إتمام التحويل عبر تطبيق InstaPay أو محفظتك، يرجى رفع صورة إيصال التحويل بالأسفل لتأكيد وتجهيز طلبك على الفور.
                             </div>
                         </div>
 
                         <!-- Upload Receipt -->
                         <div>
-                            <label for="payment_proof_image" class="font-bold text-charcoal-heading block mb-1">
-                                صورة إيصال التحويل <span class="text-red-600">*</span>
+                            <label for="payment_proof_image" class="font-bold text-[#2B2118] block mb-1">
+                                صورة إيصال التحويل <span class="text-[#A9552F]">*</span>
                             </label>
                             <input type="file" 
                                    id="payment_proof_image" 
                                    name="payment_proof_image" 
                                    accept="image/*"
-                                   class="w-full bg-canvas-base border border-cream rounded-xl p-2.5 text-xs text-charcoal file:ml-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-red-600 file:text-white hover:file:bg-red-700 cursor-pointer">
-                            <span class="text-[10px] text-charcoal-muted mt-1 block">ارفع لقطة شاشة لعملية التحويل الناجحة</span>
+                                   class="w-full bg-[#F3E9D2]/30 border border-[#EADFC8] rounded-xl p-2.5 text-xs text-[#2B2118] file:ml-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#382416] file:text-[#FBF6EA] hover:file:bg-[#2B2118] cursor-pointer">
+                            <span class="text-[10px] text-[#8F7B63] mt-1 block">ارفع لقطة شاشة لعملية التحويل الناجحة</span>
                         </div>
 
                         <!-- Reference ID -->
                         <div>
-                            <label for="instapay_reference" class="font-bold text-charcoal-heading block mb-1">
-                                رقم المرجع أو كود المعاملة <span class="text-charcoal-muted font-normal">(اختياري)</span>
+                            <label for="instapay_reference" class="font-bold text-[#2B2118] block mb-1">
+                                رقم المرجع أو كود المعاملة <span class="text-[#8F7B63] font-normal">(اختياري)</span>
                             </label>
                             <input type="text" 
                                    id="instapay_reference" 
                                    name="instapay_reference" 
                                    value="{{ old('instapay_reference') }}" 
                                    placeholder="مثال: Ref #12345678"
-                                   class="w-full bg-canvas-base border border-cream focus:border-red-500 focus:ring-2 focus:ring-red-500/20 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-charcoal outline-none transition-all">
+                                   class="w-full bg-[#F3E9D2]/30 border border-[#EADFC8] focus:border-[#382416] focus:bg-white rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-[#2B2118] outline-none transition-all">
                         </div>
 
                     </div>
                 </div>
 
                 <!-- 5. Notes Card -->
-                <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-cream shadow-xs space-y-2">
-                    <label for="notes" class="font-bold text-xs sm:text-sm text-charcoal-heading block">
-                        ملاحظات إضافية لتجهيز وتوصيل الطلب <span class="text-charcoal-muted font-normal">(اختياري)</span>
+                <div class="bg-[#FDFBF7] rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-[#EADFC8] shadow-xs space-y-2">
+                    <label for="notes" class="font-bold text-xs sm:text-sm text-[#2B2118] block">
+                        ملاحظات إضافية لتجهيز وتوصيل الطلب <span class="text-[#8F7B63] font-normal">(اختياري)</span>
                     </label>
                     <textarea id="notes" 
                               name="notes" 
                               rows="2" 
-                              placeholder="أي تعليمات خاصة للمندوب، طريقة التقطيع للأجبان، أو مواعيد التوصيل المفضلة..." 
-                              class="w-full bg-canvas-base border border-cream focus:border-red-500 focus:ring-2 focus:ring-red-500/20 rounded-xl p-3 text-xs sm:text-sm text-charcoal outline-none transition-all leading-relaxed">{{ old('notes') }}</textarea>
+                              placeholder="أي تعليمات خاصة للمندوب، مواعيد التسليم المفضلة، أو تفاصيل خاصة بالمقاسات..." 
+                              class="w-full bg-[#F3E9D2]/30 border border-[#EADFC8] focus:border-[#382416] focus:bg-white rounded-xl p-3 text-xs sm:text-sm text-[#2B2118] outline-none transition-all leading-relaxed">{{ old('notes') }}</textarea>
                 </div>
 
             </div>
@@ -396,37 +396,37 @@
             <!-- Summary Right / Sidebar Column (5 cols) -->
             <div class="lg:col-span-5 space-y-5">
                 
-                <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-cream shadow-xs space-y-4 lg:sticky lg:top-24">
-                    <div class="flex items-center justify-between border-b border-cream pb-3">
-                        <h3 class="font-black text-sm sm:text-base text-charcoal-heading">
-                            ملخص الطلب
+                <div class="bg-[#FDFBF7] rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-[#EADFC8] shadow-xs space-y-4 lg:sticky lg:top-24">
+                    <div class="flex items-center justify-between border-b border-[#EADFC8] pb-3">
+                        <h3 class="font-serif font-bold text-sm sm:text-base text-[#2B2118]">
+                            ملخص حقيبة التسوق
                         </h3>
-                        <span class="px-2.5 py-0.5 rounded-full text-xs font-black bg-red-50 text-red-600 border border-red-200">
-                            {{ count($items) }} أصناف
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#F3E9D2] text-[#382416] border border-[#CDB78F]">
+                            {{ count($items) }} قطع
                         </span>
                     </div>
 
                     <!-- Compact Items List -->
-                    <div class="max-h-64 overflow-y-auto divide-y divide-cream/60 pl-1 admin-scrollbar">
+                    <div class="max-h-64 overflow-y-auto divide-y divide-[#EADFC8] pl-1 no-scrollbar">
                         @foreach($items as $item)
                         <div class="py-2.5 first:pt-0 last:pb-0 flex items-center justify-between gap-3 text-xs">
                             <div class="flex items-center gap-2.5 min-w-0">
-                                <div class="w-11 h-11 rounded-xl bg-canvas-base border border-cream p-1 shrink-0 flex items-center justify-center overflow-hidden">
+                                <div class="w-11 h-11 rounded-xl bg-[#F3E9D2]/30 border border-[#EADFC8] p-1 shrink-0 flex items-center justify-center overflow-hidden">
                                     @if($item['image'])
-                                        <img src="{{ $item['image'] }}" alt="{{ $item['name'] }}" class="w-full h-full object-contain">
+                                        <img src="{{ $item['image'] }}" alt="{{ $item['name'] }}" class="w-full h-full object-cover rounded-lg">
                                     @else
                                         <span class="text-lg">🛍️</span>
                                     @endif
                                 </div>
                                 <div class="min-w-0 space-y-0.5">
-                                    <div class="font-black text-charcoal-heading truncate">{{ $item['name'] }}</div>
+                                    <div class="font-bold text-[#2B2118] truncate">{{ $item['name'] }}</div>
                                     @if(!empty($item['portion_label']))
-                                        <div class="text-[10px] text-orange-800 font-bold">{{ $item['portion_label'] }}</div>
+                                        <div class="text-[10px] text-[#A9552F] font-bold">{{ $item['portion_label'] }}</div>
                                     @endif
-                                    <div class="text-[10px] text-charcoal-muted">الكمية: <strong class="text-charcoal">{{ $item['quantity'] }}</strong></div>
+                                    <div class="text-[10px] text-[#8F7B63]">الكمية: <strong class="text-[#2B2118]">{{ $item['quantity'] }}</strong></div>
                                 </div>
                             </div>
-                            <div class="font-black text-red-600 text-xs sm:text-sm tabular-nums shrink-0">
+                            <div class="font-bold text-[#382416] text-xs sm:text-sm tabular-nums shrink-0">
                                 {{ number_format($item['price_usd'] * $item['quantity'], 2) }} ج.م
                             </div>
                         </div>
@@ -434,31 +434,31 @@
                     </div>
 
                     <!-- Financial Breakdown -->
-                    <div class="space-y-2.5 text-xs pt-3 border-t border-cream">
-                        <div class="flex items-center justify-between text-charcoal-muted">
-                            <span class="font-bold">المجموع الفرعي</span>
-                            <span class="font-bold text-charcoal tabular-nums">{{ $totals['formatted_subtotal'] }}</span>
+                    <div class="space-y-2.5 text-xs pt-3 border-t border-[#EADFC8]">
+                        <div class="flex items-center justify-between text-[#8F7B63]">
+                            <span>المجموع الفرعي</span>
+                            <span class="font-bold text-[#2B2118] tabular-nums">{{ $totals['formatted_subtotal'] }}</span>
                         </div>
 
                         @if(!empty($totals['coupon_code']) && ($totals['discount_amount'] ?? 0) > 0)
-                        <div class="flex items-center justify-between text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-xl border border-emerald-200 text-xs font-bold">
+                        <div class="flex items-center justify-between text-[#A9552F] bg-[#A9552F]/10 px-2.5 py-1.5 rounded-xl border border-[#A9552F]/20 text-xs font-bold">
                             <span>خصم الكوبون ({{ $totals['coupon_code'] }})</span>
                             <span class="tabular-nums">- {{ $totals['formatted_discount'] }}</span>
                         </div>
                         @endif
 
-                        <div class="flex items-center justify-between text-charcoal-muted">
-                            <span class="font-bold">رسوم التوصيل</span>
-                            <span class="font-black tabular-nums"
-                                  :class="deliveryType === 'pickup' ? 'text-emerald-600' : 'text-charcoal'"
-                                  x-text="deliveryType === 'pickup' ? 'مجاناً (استلام من الفرع)' : '{{ $totals['formatted_delivery_fee'] }}'">
+                        <div class="flex items-center justify-between text-[#8F7B63]">
+                            <span>رسوم التوصيل</span>
+                            <span class="font-bold tabular-nums"
+                                  :class="deliveryType === 'pickup' ? 'text-[#382416]' : 'text-[#2B2118]'"
+                                  x-text="deliveryType === 'pickup' ? 'مجاناً (استلام من البوتيك)' : '{{ $totals['formatted_delivery_fee'] }}'">
                             </span>
                         </div>
 
-                        <div class="border-t border-cream pt-3 flex items-center justify-between text-sm sm:text-base font-black text-charcoal-heading">
+                        <div class="border-t border-[#EADFC8] pt-3 flex items-center justify-between text-sm sm:text-base font-bold text-[#2B2118]">
                             <span>الإجمالي النهائي:</span>
-                            <span class="text-lg sm:text-xl text-red-600 tabular-nums"
-                                  x-text="grandTotal.toFixed(2) + ' ج.م'">
+                            <span class="text-lg sm:text-xl font-black text-[#AC9653] tabular-nums"
+                                  x-text="grandTotal.toFixed(2) + ' ر.س'">
                             </span>
                         </div>
                     </div>
@@ -467,17 +467,17 @@
                     <div class="pt-2">
                         <button type="submit" 
                                 :disabled="submitting"
-                                class="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white font-black text-sm text-center shadow-lg shadow-red-600/25 hover:scale-[1.01] active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+                                class="w-full py-4 px-6 bg-[#CBA367] hover:bg-[#b88f55] text-white font-bold text-sm text-center shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
                             <svg x-show="submitting" x-cloak class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                             </svg>
-                            <span x-text="submitting ? 'جاري تأكيد وتسجيل طلبك...' : 'تأكيد الطلب الآن 🛍️'">تأكيد الطلب الآن 🛍️</span>
+                            <span x-text="submitting ? 'جاري تسجيل وتأكيد طلبك الفاخر...' : 'تأكيد الطلب الفاخر الآن'">تأكيد الطلب الفاخر الآن</span>
                         </button>
                     </div>
 
-                    <div class="text-center text-[10px] text-charcoal-muted pt-1 leading-relaxed">
-                        بالضغط على "تأكيد الطلب"، يتم إرسال طلبك مباشرة لقسم التجهيز في الفرع ومتابعته معك عبر واتساب.
+                    <div class="text-center text-[10px] text-[#8F7B63] pt-1 leading-relaxed">
+                        بالضغط على "تأكيد الطلب"، يتم إرسال طلبك مباشرة للمتابعة معك والتجهيز.
                     </div>
                 </div>
 

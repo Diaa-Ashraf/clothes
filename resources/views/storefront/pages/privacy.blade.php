@@ -1,78 +1,77 @@
 {{-- resources/views/storefront/pages/privacy.blade.php --}}
 @extends('layouts.storefront')
 
-@section('title', 'سياسة الخصوصية | ' . settings('site_name', 'ألبان وسوبرماركت التوحيد'))
+@section('title', 'سياسة الخصوصية | ' . settings('site_name', 'أزياء لافيستا'))
 
 @section('content')
 @php
     $customPrivacy = settings('privacy_content');
 @endphp
 
-<div class="bg-gray-50/50 min-h-screen py-8">
+<div class="bg-[#FBF6EA] min-h-screen py-10">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
 
         <!-- Breadcrumbs -->
-        <nav class="flex items-center gap-2 text-xs font-medium text-charcoal-muted" aria-label="Breadcrumb">
-            <a href="{{ route('site.home') }}" class="hover:text-primary-800 transition-colors">الرئيسية</a>
+        <nav class="flex items-center gap-2 text-xs font-medium text-[#8F7B63]" aria-label="Breadcrumb">
+            <a href="{{ route('site.home') }}" class="hover:text-[#2B2118] transition-colors">الرئيسية</a>
             <span>/</span>
-            <span class="text-charcoal-heading font-bold">سياسة الخصوصية</span>
+            <span class="text-[#2B2118] font-bold">سياسة الخصوصية</span>
         </nav>
 
         <!-- Main Card -->
-        <div class="bg-white rounded-3xl border border-cream p-6 sm:p-10 shadow-sm space-y-8">
-            <div class="border-b border-gray-100 pb-5 space-y-2">
-                <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-100">
+        <div class="bg-white rounded-3xl border border-[#EADFC8] p-6 sm:p-10 shadow-sm space-y-8">
+            <div class="border-b border-[#EADFC8] pb-6 space-y-2">
+                <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-[#F3E9D2] text-[#6B5642] border border-[#EADFC8]">
                     أمان وسرية بياناتكم
                 </span>
-                <h1 class="text-2xl sm:text-3xl font-black text-charcoal-heading">سياسة الخصوصية وحماية البيانات</h1>
-                <p class="text-xs text-charcoal-muted">آخر تحديث: {{ date('Y') }}</p>
+                <h1 class="text-2xl sm:text-3xl font-black text-[#2B2118]">سياسة الخصوصية وحماية البيانات</h1>
+                <p class="text-xs text-[#8F7B63]">آخر تحديث: {{ date('Y') }}</p>
             </div>
 
             @if(!empty($customPrivacy))
-            <div class="text-xs sm:text-sm text-charcoal leading-relaxed whitespace-pre-line space-y-4">
+            <div class="text-xs sm:text-sm text-[#2B2118] leading-relaxed whitespace-pre-line space-y-4">
                 {{ $customPrivacy }}
             </div>
             @else
-            <div class="text-xs sm:text-sm text-charcoal leading-relaxed space-y-6">
+            <div class="text-xs sm:text-sm text-[#2B2118] leading-relaxed space-y-6">
                 <section class="space-y-2">
-                    <h2 class="text-base font-bold text-primary-800">1. التزامنا بحماية خصوصيتك</h2>
-                    <p class="text-charcoal-muted">
-                        نحن في {{ settings('site_name', 'ألبان وسوبرماركت التوحيد') }} نعتز بثقتكم الغالية، ونلتزم بأقصى درجات السرية والأمان تجاه بياناتكم الشخصية. تشرح هذه السياسة كيفية جمع واستخدام وحماية معلوماتكم عند استخدام موقعنا الإلكتروني.
+                    <h2 class="text-base font-bold text-[#A9552F]">1. التزامنا بحماية خصوصيتك</h2>
+                    <p class="text-[#6B5642]">
+                        نحن في {{ settings('site_name', 'أزياء لافيستا') }} نعتز بثقتكم الكريمة، ونلتزم بأعلى معايير السرية والأمان تجاه بياناتكم الشخصية. توضح هذه الوثيقة كيفية حفظ واستخدام معلوماتكم عند تسوقكم من متجرنا الإلكتروني.
                     </p>
                 </section>
 
                 <section class="space-y-2">
-                    <h2 class="text-base font-bold text-primary-800">2. البيانات التي نجمعها</h2>
-                    <p class="text-charcoal-muted">
-                        نقوم بجمع البيانات الضرورية فقط لتنفيذ وتوصيل طلباتكم بدقة وأمان، وتشمل:
+                    <h2 class="text-base font-bold text-[#A9552F]">2. البيانات التي نجمعها</h2>
+                    <p class="text-[#6B5642]">
+                        نقوم بجمع البيانات الضرورية فقط لضمان دقة تنفيذ وتوصيل طلبيات الأزياء والمقاسات المطلوبة:
                     </p>
-                    <ul class="list-disc list-inside space-y-1 text-charcoal-muted pr-2">
-                        <li>الاسم الكامل ورقم الهاتف المحمول للتواصل أثناء التوصيل.</li>
-                        <li>عنوان التوصيل التفصيلي (المنطقة، الشارع، رقم العقار والشقة).</li>
-                        <li>البريد الإلكتروني (اختياري، لإرسال فواتير الطلبات وإشعارات الحساب).</li>
-                        <li>إيصالات تحويل InstaPay في حالة اختيار الدفع المسبق لتأكيد عملية التحويل.</li>
-                        <li>ملفات السير الذاتية في حال التقديم على وظائف التوحيد.</li>
+                    <ul class="list-disc list-inside space-y-1 text-[#6B5642] pr-2">
+                        <li>الاسم ورقم الهاتف لتنسيق موعد التسليم والمقاسات.</li>
+                        <li>عنوان التوصيل أو الفرع المفضل للاستلام وقياس الملابس.</li>
+                        <li>البريد الإلكتروني لتأكيد استلام الطلب وتتبع الشحن.</li>
+                        <li>إيصالات تحويل إنستاباي في حال اختيار الدفع المسبق لتأكيد التحويل.</li>
                     </ul>
                 </section>
 
                 <section class="space-y-2">
-                    <h2 class="text-base font-bold text-primary-800">3. كيف نستخدم معلوماتك</h2>
-                    <p class="text-charcoal-muted">
-                        تُستخدم البيانات لأغراض: تجهيز وتوصيل طلباتك، إرسال إشعارات التتبع وحالة الطلب، الرد على استفساراتكم وشكاواكم، وتحسين تجربة التسوق في المتجر.
+                    <h2 class="text-base font-bold text-[#A9552F]">3. كيف نستخدم معلوماتك</h2>
+                    <p class="text-[#6B5642]">
+                        تُستخدم البيانات لتجهيز قطع الأزياء، وتنسيق التوصيل السريع، وإرسال تحديثات حالة الطلب ومواعيد الشحن، والرد على أي استفسارات تخص المقاسات والتنسيقات.
                     </p>
                 </section>
 
                 <section class="space-y-2">
-                    <h2 class="text-base font-bold text-primary-800">4. عدم مشاركة البيانات مع أطراف ثالثة</h2>
-                    <p class="text-charcoal-muted">
-                        نضمن لك أننا لا نقوم ببيع أو تأجير أو مشاركة بياناتك الشخصية مع أي جهات تسويقية خارجية على الإطلاق. لا يتم تزويد مندوبي التوصيل إلا بالاسم ورقم الهاتف والعنوان لتسليم الطلب فقط.
+                    <h2 class="text-base font-bold text-[#A9552F]">4. الخصوصية وعدم مشاركة البيانات</h2>
+                    <p class="text-[#6B5642]">
+                        نؤكد لكم أننا لا نقوم ببيع أو تأجير أو مشاركة بياناتكم مع أي جهة إعلانية خارجية. بياناتكم محفوظة في خوادم مشفرة وآمنة تماماً.
                     </p>
                 </section>
 
                 <section class="space-y-2">
-                    <h2 class="text-base font-bold text-primary-800">5. حقوقك في تعديل أو حذف البيانات</h2>
-                    <p class="text-charcoal-muted">
-                        يمكنك في أي وقت الدخول إلى <a href="{{ route('account.profile') }}" class="text-primary-800 font-bold underline">صفحة حسابك</a> لتعديل بياناتك، أو تعديل وحذف العناوين المحفوظة، أو التواصل مع خدمة العملاء لطلب حذف الحساب بالكامل.
+                    <h2 class="text-base font-bold text-[#A9552F]">5. تعديل بياناتك الشخصية</h2>
+                    <p class="text-[#6B5642]">
+                        يمكنك دائماً تعديل بياناتك أو عناوين التوصيل عبر <a href="{{ route('account.profile') }}" class="text-[#A9552F] font-bold underline">صفحة حسابك الشخصي</a>، أو طلب حذف بياناتك عبر التواصل مع خدمة العملاء.
                     </p>
                 </section>
             </div>

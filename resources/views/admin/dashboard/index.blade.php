@@ -8,9 +8,9 @@
     <div class="bg-white border border-orange-100 rounded-3xl p-6 sm:p-8 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <div class="flex items-center gap-2 mb-1.5">
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-orange-100 text-orange-700">
-                    <span class="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span>
-                    <span>لوحة تحكم ألبان وسوبرماركت التوحيد بالعامرية</span>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-[#F3E9D2] text-[#6B5642]">
+                    <span class="w-2 h-2 rounded-full bg-[#A9552F] animate-pulse"></span>
+                    <span>لوحة تحكم {{ settings('site_name', 'أزياء لافيستا') }}</span>
                 </span>
             </div>
             <h1 class="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
@@ -122,8 +122,8 @@
         <div class="lg:col-span-8 bg-white border border-orange-100 rounded-3xl p-6 shadow-xs">
             <div class="flex items-center justify-between mb-5">
                 <div>
-                    <h2 class="text-base font-black text-gray-900">الأصناف والمنتجات الأكثر مبيعاً</h2>
-                    <p class="text-xs text-gray-500">المنتجات الأكثر طلباً في ألبان وسوبرماركت التوحيد</p>
+                    <h2 class="text-base font-black text-gray-900">الموديلات والقطع الأكثر مبيعاً</h2>
+                    <p class="text-xs text-gray-500">الأزياء والموديلات الأكثر طلباً في {{ settings('site_name', 'أزياء لافيستا') }}</p>
                 </div>
                 <a href="{{ route('admin.products.index') }}" class="text-xs font-bold text-red-600 hover:text-orange-600 transition-colors">
                     عرض كل المنتجات ←
@@ -243,3 +243,4 @@
     </div>
 </div>
 @endsection
+

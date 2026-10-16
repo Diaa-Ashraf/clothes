@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('تعديل العرض المجمع'))
+@section('title', 'تعديل العرض المجمع: ' . $bundle->name)
 
 @section('content')
 @php
@@ -60,21 +60,32 @@
              return '0.00';
          }
      }">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#EADFC8] pb-4">
         <div>
-            <h2 class="text-2xl font-black text-gray-900 tracking-tight">{{ __('تعديل العرض المجمع') }}: <span class="text-red-600">{{ $bundle->name }}</span></h2>
-            <p class="text-xs text-gray-500 font-medium mt-0.5">{{ __('تعديل المنتجات المشمولة، سعر العرض المخفض، أو المواعيد') }}</p>
+            <div class="flex items-center gap-2 text-xs text-[#8F7B63] mb-1">
+                <a href="{{ route('admin.dashboard') }}" class="hover:text-[#2B2118] transition-colors">لوحة التحكم</a>
+                <span class="text-[#CDB78F]">/</span>
+                <a href="{{ route('admin.bundles.index') }}" class="hover:text-[#2B2118] transition-colors">العروض المجمعة</a>
+                <span class="text-[#CDB78F]">/</span>
+                <span class="text-[#2B2118] font-medium">تعديل: {{ $bundle->name }}</span>
+            </div>
+            <h1 class="text-2xl font-serif font-bold text-[#2B2118]">تعديل العرض المجمع</h1>
+            <p class="text-sm text-[#6B5642] mt-0.5">تحديث محتويات وأسعار باقة: {{ $bundle->name }}</p>
         </div>
-        <a href="{{ route('admin.bundles.index') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-orange-200 bg-canvas-base hover:bg-orange-50 text-gray-900 text-xs font-bold transition-colors">
-            <span>&rarr;</span>
-            <span>{{ __('العودة للعروض المجمعة') }}</span>
+        <a href="{{ route('admin.bundles.index') }}" 
+           class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#EADFC8] text-[#2B2118] hover:bg-[#FBF6EA] transition-all text-sm font-medium shadow-sm w-fit">
+            <svg class="w-4 h-4 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span>العودة للعروض</span>
         </a>
     </div>
 
     @if ($errors->any())
-        <div class="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-800 text-xs font-bold">
-            <div class="mb-1">{{ __('يرجى تصحيح الأخطاء التالية:') }}</div>
-            <ul class="list-disc list-inside space-y-1 font-medium">
+        <div class="p-4 rounded-xl bg-red-50/50 border border-[#A9552F]/30 text-[#A9552F] text-xs space-y-1">
+            <div class="font-bold">يرجى مراجعة وتصحيح الملاحظات التالية:</div>
+            <ul class="list-disc list-inside space-y-0.5">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -85,130 +96,150 @@
     <form action="{{ route('admin.bundles.update', $bundle->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
         @csrf
         @method('PUT')
+        
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {{-- Left column: Details --}}
+            {{-- Right column: Details --}}
             <div class="lg:col-span-6 space-y-6">
-                <div class="bg-white border border-orange-100 rounded-3xl p-6 sm:p-7 shadow-xs space-y-5">
-                    <h3 class="font-black text-gray-900 text-sm border-b border-orange-100 pb-3 flex items-center gap-2">
-                        <span>📦</span>
-                        <span>1. تفاصيل الباقة والعرض</span>
+                <div class="bg-white border border-[#EADFC8] rounded-2xl p-6 shadow-sm space-y-5">
+                    <h3 class="font-serif font-bold text-[#2B2118] text-base border-b border-[#EADFC8] pb-3 flex items-center gap-2">
+                        <span>🛍️</span>
+                        <span>1. بيانات الباقة والعرض</span>
                     </h3>
                     
-                    <div>
-                        <label class="block text-xs font-bold text-gray-900 mb-2">{{ __('اسم العرض المجمع') }} <span class="text-red-500">*</span></label>
-                        <input type="text" name="name" class="w-full px-4 py-2.5 rounded-xl border border-orange-100 bg-canvas-base text-gray-900 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none text-xs font-bold transition-all" value="{{ old('name', $bundle->name) }}" required>
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-[#2B2118]">
+                            اسم العرض المجمع <span class="text-[#A9552F]">*</span>
+                        </label>
+                        <input type="text" name="name" 
+                               class="w-full px-4 py-2.5 rounded-xl border border-[#EADFC8] focus:border-[#2B2118] focus:ring-1 focus:ring-[#2B2118] bg-white text-sm text-[#2B2118] transition-all" 
+                               value="{{ old('name', $bundle->name) }}" required>
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-bold text-gray-900 mb-2">{{ __('وصف مختصر للعرض') }}</label>
-                        <textarea name="description" rows="3" class="w-full px-4 py-2.5 rounded-xl border border-orange-100 bg-canvas-base text-gray-900 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none text-xs font-medium transition-all">{{ old('description', $bundle->description) }}</textarea>
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-[#2B2118]">
+                            وصف تفصيلي للباقة
+                        </label>
+                        <textarea name="description" rows="3" 
+                                  class="w-full px-4 py-2.5 rounded-xl border border-[#EADFC8] focus:border-[#2B2118] focus:ring-1 focus:ring-[#2B2118] bg-white text-sm text-[#2B2118] transition-all">{{ old('description', $bundle->description) }}</textarea>
                     </div>
 
                     <div class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-900 mb-2">{{ __('سعر الباقة الإجمالي المخفض') }} (ج.م) <span class="text-red-500">*</span></label>
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-bold text-[#2B2118]">
+                                سعر الباقة الإجمالي المخفض (ج.م) <span class="text-[#A9552F]">*</span>
+                            </label>
                             <div class="relative">
-                                <input type="number" step="0.01" name="bundle_price" x-model="bundlePrice" class="w-full pl-12 pr-4 py-2.5 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-800 font-black text-xs focus:outline-none" required>
-                                <span class="absolute left-3 top-2.5 text-xs text-emerald-600 font-bold">ج.م</span>
+                                <input type="number" step="0.01" min="0" name="bundle_price" x-model="bundlePrice" 
+                                       class="w-full pl-12 pr-4 py-2.5 rounded-xl border border-[#CDB78F] bg-[#FDFBF7] text-[#2B2118] font-bold text-sm focus:border-[#2B2118] focus:outline-none dir-ltr text-right" 
+                                       required>
+                                <span class="absolute left-3.5 top-2.5 text-xs text-[#8F7B63] font-bold">ج.م</span>
                             </div>
-                            <small class="text-[11px] text-gray-400 mt-1 block font-medium">السعر المخفض النهائي للزبون</small>
+                            <span class="text-[11px] text-[#8F7B63] block">السعر المخفض النهائي الذي يدفعه المشتري عند إضافة الباقة للسلة</span>
                         </div>
 
-                        {{-- Real-time calculation summary card --}}
-                        <div class="p-4 rounded-2xl bg-orange-50/50 border border-orange-200 space-y-2.5">
-                            <div class="flex items-center justify-between text-xs">
-                                <span class="text-gray-600 font-bold">مجموع الأسعار الأصلية:</span>
-                                <span class="font-black text-gray-900 tabular-nums" x-text="originalTotal.toFixed(2) + ' ج.م'">{{ number_format($bundle->original_total, 2) }} ج.م</span>
+                        {{-- Calculation Summary Card --}}
+                        <div class="p-4 rounded-xl bg-[#FBF6EA] border border-[#EADFC8] space-y-2 text-xs">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[#6B5642] font-medium">مجموع الأسعار الأصلية للقطع:</span>
+                                <span class="font-bold text-[#2B2118] tabular-nums" x-text="originalTotal.toFixed(2) + ' ج.م'">0.00 ج.م</span>
                             </div>
-                            <div class="flex items-center justify-between text-xs">
-                                <span class="text-gray-600 font-bold">قيمة التوفير للعميل:</span>
-                                <span class="font-black text-emerald-600 tabular-nums" x-text="savingsAmount + ' ج.م'">0.00 ج.م</span>
+                            <div class="flex items-center justify-between">
+                                <span class="text-[#6B5642] font-medium">قيمة التوفير المباشر للعميل:</span>
+                                <span class="font-bold text-[#A9552F] tabular-nums" x-text="savingsAmount + ' ج.م'">0.00 ج.م</span>
                             </div>
-                            <div class="flex items-center justify-between text-xs pt-2 border-t border-orange-200/60">
-                                <span class="text-gray-700 font-bold">نسبة الخصم المحسوبة:</span>
-                                <span class="px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-black text-xs tabular-nums" x-text="'%' + discountPercent">%{{ $bundle->discount_percent }}</span>
+                            <div class="flex items-center justify-between pt-2 border-t border-[#EADFC8]">
+                                <span class="text-[#2B2118] font-bold">نسبة الخصم الإجمالية:</span>
+                                <span class="px-2.5 py-0.5 rounded-full bg-red-50 text-[#A9552F] border border-red-200 font-bold tabular-nums" x-text="'%' + discountPercent">%0</span>
                             </div>
                         </div>
 
-                        <div>
-                            <label class="block text-xs font-bold text-gray-900 mb-2">{{ __('صورة العرض الترويجي') }}</label>
+                        <div class="space-y-2">
+                            <label class="block text-xs font-bold text-[#2B2118]">صورة الباقة الترويجية</label>
                             @if($bundle->image_url)
-                                <div class="mb-2 flex items-center gap-3 p-2 bg-canvas-base rounded-2xl border border-orange-100">
-                                    <img src="{{ $bundle->image_url }}" alt="" class="w-12 h-12 rounded-xl object-cover border border-orange-200">
-                                    <span class="text-[11px] text-gray-400 font-medium">الصورة الحالية للباقة</span>
+                                <div class="flex items-center gap-3 p-2 bg-[#FBF6EA] rounded-xl border border-[#EADFC8] mb-2">
+                                    <img src="{{ $bundle->image_url }}" alt="" class="w-12 h-12 object-cover rounded-lg border border-[#EADFC8]">
+                                    <span class="text-xs text-[#8F7B63]">الصورة الحالية للباقة</span>
                                 </div>
                             @endif
-                            <input type="file" name="image" class="w-full px-3.5 py-2 rounded-xl border border-orange-100 bg-canvas-base text-gray-900 text-xs focus:outline-none file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-gray-900 file:text-white hover:file:bg-red-600 cursor-pointer" accept="image/*">
+                            <input type="file" name="image" 
+                                   class="w-full px-3 py-2 rounded-xl border border-[#EADFC8] bg-white text-xs text-[#2B2118] focus:outline-none file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-[#382416] file:text-[#FBF6EA] cursor-pointer" 
+                                   accept="image/*">
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white border border-orange-100 rounded-3xl p-6 shadow-xs space-y-4">
-                    <h3 class="font-black text-gray-900 text-sm border-b border-orange-100 pb-3 flex items-center gap-2">
-                        <span>⏰</span>
-                        <span>3. توقيت الصلاحية والحالة</span>
+                <!-- Timing Card -->
+                <div class="bg-white border border-[#EADFC8] rounded-2xl p-6 shadow-sm space-y-4">
+                    <h3 class="font-serif font-bold text-[#2B2118] text-base border-b border-[#EADFC8] pb-3 flex items-center gap-2">
+                        <span>⏳</span>
+                        <span>3. فترات السريان وتاريخ الصلاحية</span>
                     </h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-900 mb-2">{{ __('تاريخ بدء العرض') }}</label>
-                            <input type="datetime-local" name="starts_at" class="w-full px-4 py-2.5 rounded-xl border border-orange-100 bg-canvas-base text-gray-900 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none text-xs font-bold transition-all" value="{{ old('starts_at', $bundle->starts_at?->format('Y-m-d\TH:i')) }}">
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-bold text-[#2B2118]">تاريخ بدء العرض</label>
+                            <input type="datetime-local" name="starts_at" 
+                                   class="w-full px-4 py-2.5 rounded-xl border border-[#EADFC8] bg-white text-xs text-[#2B2118] focus:border-[#2B2118] focus:outline-none" 
+                                   value="{{ old('starts_at', $bundle->starts_at ? $bundle->starts_at->format('Y-m-d\TH:i') : '') }}">
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-900 mb-2">{{ __('تاريخ انتهاء العرض') }}</label>
-                            <input type="datetime-local" name="ends_at" class="w-full px-4 py-2.5 rounded-xl border border-orange-100 bg-canvas-base text-gray-900 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none text-xs font-bold transition-all" value="{{ old('ends_at', $bundle->ends_at?->format('Y-m-d\TH:i')) }}">
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-bold text-[#2B2118]">تاريخ انتهاء العرض</label>
+                            <input type="datetime-local" name="ends_at" 
+                                   class="w-full px-4 py-2.5 rounded-xl border border-[#EADFC8] bg-white text-xs text-[#2B2118] focus:border-[#2B2118] focus:outline-none" 
+                                   value="{{ old('ends_at', $bundle->ends_at ? $bundle->ends_at->format('Y-m-d\TH:i') : '') }}">
                         </div>
                     </div>
-                    <div class="p-4 rounded-2xl bg-canvas-base border border-orange-100">
-                        <label class="inline-flex items-center gap-3 cursor-pointer">
-                            <input type="checkbox" name="is_active" value="1" class="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-orange-200" {{ $bundle->is_active ? 'checked' : '' }}>
-                            <span class="text-xs font-bold text-gray-900">✓ تفعيل هذا العرض في المتجر</span>
+                    <div class="pt-2 border-t border-[#EADFC8]">
+                        <label class="relative inline-flex items-center gap-3 cursor-pointer">
+                            <input type="checkbox" name="is_active" value="1" {{ old('is_active', $bundle->is_active) ? 'checked' : '' }} class="sr-only peer">
+                            <div class="w-11 h-6 bg-[#EADFC8] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#382416]"></div>
+                            <span class="text-xs font-bold text-[#2B2118]">تفعيل هذا العرض في المتجر</span>
                         </label>
                     </div>
                 </div>
             </div>
 
-            {{-- Right column: Dynamic Products Repeater --}}
+            {{-- Left column: Products Repeater --}}
             <div class="lg:col-span-6">
-                <div class="bg-white border border-orange-100 rounded-3xl p-6 sm:p-7 shadow-xs space-y-5">
-                    <div class="flex items-center justify-between border-b border-orange-100 pb-3">
+                <div class="bg-white border border-[#EADFC8] rounded-2xl p-6 shadow-sm space-y-5">
+                    <div class="flex items-center justify-between border-b border-[#EADFC8] pb-3">
                         <div>
-                            <h3 class="font-black text-gray-900 text-sm flex items-center gap-2">
-                                <span>🛍️</span>
-                                <span>2. المنتجات المشمولة في الباقة</span>
+                            <h3 class="font-serif font-bold text-[#2B2118] text-base flex items-center gap-2">
+                                <span>👗</span>
+                                <span>2. القطع المشمولة في الباقة</span>
                             </h3>
-                            <p class="text-[11px] text-gray-400 mt-0.5 font-medium">عدّل أو أضف أي أصناف بالكميات المطلوبة</p>
+                            <p class="text-[11px] text-[#8F7B63] mt-0.5">اختر الأصناف والكمية المحددة لكل صنف داخل العرض</p>
                         </div>
-                        <button type="button" @click="addItem()" class="px-3 py-1.5 rounded-xl bg-orange-100 hover:bg-orange-200 text-orange-800 text-xs font-black transition-colors flex items-center gap-1.5 cursor-pointer">
+                        <button type="button" @click="addItem()" 
+                                class="px-3 py-1.5 rounded-xl bg-[#F3E9D2] hover:bg-[#EADFC8] text-[#2B2118] text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer">
                             <span>+</span>
-                            <span>إضافة منتج آخر</span>
+                            <span>إضافة صنف آخر</span>
                         </button>
                     </div>
 
                     <div class="space-y-3.5">
                         <template x-for="(item, index) in items" :key="index">
-                            <div class="p-4 rounded-2xl bg-canvas-base border border-orange-100 transition-all hover:border-orange-300 relative space-y-3">
+                            <div class="p-4 rounded-xl bg-[#FBF6EA] border border-[#EADFC8] relative space-y-3">
                                 <div class="flex items-center justify-between">
-                                    <span class="text-xs font-black text-red-600 flex items-center gap-1.5">
-                                        <span class="w-5 h-5 rounded-full bg-red-100 text-red-700 flex items-center justify-center text-[10px]" x-text="index + 1"></span>
-                                        <span>المنتج رقم <span x-text="index + 1"></span></span>
+                                    <span class="text-xs font-bold text-[#2B2118] flex items-center gap-1.5">
+                                        <span class="w-5 h-5 rounded-full bg-[#EADFC8] text-[#2B2118] flex items-center justify-center text-[10px]" x-text="index + 1"></span>
+                                        <span>القطعة رقم <span x-text="index + 1"></span></span>
                                     </span>
                                     <button type="button" 
                                             x-show="items.length > 1" 
                                             @click="removeItem(index)" 
-                                            class="text-xs text-rose-500 hover:text-rose-700 font-bold p-1 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
-                                            title="حذف هذا المنتج من الباقة">
+                                            class="text-xs text-[#A9552F] hover:text-red-700 font-medium p-1 rounded-lg hover:bg-red-50 transition-colors cursor-pointer">
                                         ✕ إزالة
                                     </button>
                                 </div>
 
                                 <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
-                                    <div class="sm:col-span-8">
-                                        <label class="block text-[11px] font-bold text-gray-700 mb-1">اختر المنتج <span class="text-red-500">*</span></label>
+                                    <div class="sm:col-span-8 space-y-1">
+                                        <label class="block text-[11px] font-bold text-[#2B2118]">اختر قطعة الأزياء <span class="text-[#A9552F]">*</span></label>
                                         <select :name="'products[' + index + '][id]'" 
                                                 x-model="item.id" 
-                                                class="w-full px-3 py-2 rounded-xl border border-orange-100 bg-white text-gray-900 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none text-xs font-bold" 
+                                                class="w-full px-3 py-2 rounded-xl border border-[#EADFC8] bg-white text-[#2B2118] focus:border-[#2B2118] focus:outline-none text-xs" 
                                                 required>
-                                            <option value="">-- اختر المنتج من القائمة --</option>
+                                            <option value="">-- اضغط لاختيار منتج من القائمة --</option>
                                             <template x-for="p in catalog" :key="p.id">
                                                 <option :value="p.id" 
                                                         :selected="item.id == p.id"
@@ -218,36 +249,35 @@
                                         </select>
                                     </div>
 
-                                    <div class="sm:col-span-4">
-                                        <label class="block text-[11px] font-bold text-gray-700 mb-1">الكمية في الباقة</label>
-                                        <div class="relative">
-                                            <input type="number" 
-                                                   min="1" 
-                                                   :name="'products[' + index + '][quantity]'" 
-                                                   x-model="item.quantity" 
-                                                   class="w-full px-3 py-2 rounded-xl border border-orange-100 bg-white text-gray-900 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none text-xs font-bold text-center" 
-                                                   required>
-                                        </div>
+                                    <div class="sm:col-span-4 space-y-1">
+                                        <label class="block text-[11px] font-bold text-[#2B2118]">الكمية بالباقة</label>
+                                        <input type="number" 
+                                               min="1" 
+                                               :name="'products[' + index + '][quantity]'" 
+                                               x-model="item.quantity" 
+                                               class="w-full px-3 py-2 rounded-xl border border-[#EADFC8] bg-white text-[#2B2118] focus:border-[#2B2118] focus:outline-none text-xs text-center font-bold" 
+                                               required>
                                     </div>
                                 </div>
 
                                 {{-- Selected Product Info Pill --}}
-                                <div x-show="item.id && getProduct(item.id)" class="pt-1 flex items-center justify-between text-[11px] text-gray-500 bg-white/70 px-3 py-1.5 rounded-lg border border-orange-50">
-                                    <span>سعر القطعة المفردة: <strong class="text-gray-900" x-text="getProduct(item.id) ? getProduct(item.id).price.toFixed(2) + ' ج.م' : ''"></strong></span>
-                                    <span>الإجمالي للصنف: <strong class="text-red-600" x-text="getProduct(item.id) ? ((getProduct(item.id).price * (parseInt(item.quantity) || 1)).toFixed(2) + ' ج.م') : ''"></strong></span>
+                                <div x-show="item.id && getProduct(item.id)" class="pt-1 flex items-center justify-between text-[11px] text-[#6B5642] bg-white px-3 py-1.5 rounded-lg border border-[#EADFC8]">
+                                    <span>سعر القطعة المفردة: <strong class="text-[#2B2118]" x-text="getProduct(item.id) ? getProduct(item.id).price.toFixed(2) + ' ج.م' : ''"></strong></span>
+                                    <span>الإجمالي للصنف: <strong class="text-[#A9552F]" x-text="getProduct(item.id) ? ((getProduct(item.id).price * (parseInt(item.quantity) || 1)).toFixed(2) + ' ج.م') : ''"></strong></span>
                                 </div>
                             </div>
                         </template>
                     </div>
 
-                    <button type="button" @click="addItem()" class="w-full py-2.5 rounded-xl border-2 border-dashed border-orange-200 hover:border-orange-400 bg-orange-50/40 hover:bg-orange-50 text-orange-800 text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer">
-                        <span>+ إضافة منتج إضافي للعرض المجمع</span>
+                    <button type="button" @click="addItem()" 
+                            class="w-full py-2.5 rounded-xl border-2 border-dashed border-[#CDB78F] hover:border-[#2B2118] bg-[#FBF6EA] hover:bg-[#F3E9D2] text-[#2B2118] text-xs font-medium transition-all flex items-center justify-center gap-2 cursor-pointer">
+                        <span>+ إضافة قطعة أزياء إضافية للباقة</span>
                     </button>
 
-                    <div class="pt-4 border-t border-orange-100">
-                        <button type="submit" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white font-black text-xs shadow-md shadow-red-500/20 transition-all cursor-pointer flex items-center justify-center gap-2">
-                            <span>✓</span>
-                            <span>حفظ التعديلات</span>
+                    <div class="pt-4 border-t border-[#EADFC8]">
+                        <button type="submit" 
+                                class="w-full py-3 rounded-xl bg-[#382416] hover:bg-[#2B2118] text-[#FBF6EA] font-medium text-sm shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2">
+                            <span>تحديث ونشر العرض المجمع</span>
                         </button>
                     </div>
                 </div>

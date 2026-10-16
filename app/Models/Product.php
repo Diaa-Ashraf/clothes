@@ -28,9 +28,15 @@ class Product extends Model
 
     protected $fillable = [
         'name',
+        'sku',
         'description',
         'keywords',
         'category_id',
+        'brand_id',
+        'gender',
+        'season',
+        'material',
+        'fit',
         'image',
         'quantity',
         'stock_quantity',
@@ -99,6 +105,21 @@ class Product extends Model
     public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function brand(): BelongsTo
+    {
+        return $this->belongsTo(Brand::class);
+    }
+
+    public function variants(): HasMany
+    {
+        return $this->hasMany(ProductVariant::class)->orderBy('id', 'asc');
+    }
+
+    public function activeVariants(): HasMany
+    {
+        return $this->hasMany(ProductVariant::class)->where('is_active', true);
     }
 
     public function reviews(): HasMany

@@ -3,96 +3,90 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreDealRequest;
+use App\Http\Requests\Admin\UpdateDealRequest;
 use App\Models\Deal;
 use App\Models\Product;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class DealController extends Controller
 {
-    /**
-     * Display a listing of deals
-     */
-    public function index()
+    public function index(): View
     {
-        $deals = Deal::with('product')->ordered()->paginate(15);
+        $deals = Deal::query()
+            ->select([
+                'id',
+                'product_id',
+                'original_price',
+                'deal_price',
+                'discount_percent',
+                'badge_text',
+                'is_active',
+                'starts_at',
+                'ends_at',
+                'sort_order',
+                'created_at',
+            ])
+            ->with([
+                'product' => fn($q) => $q->select(['id', 'name', 'price', 'image']),
+            ])
+            ->ordered()
+            ->paginate(15);
+
         return view('admin.deals.index', compact('deals'));
     }
 
-    /**
-     * Show form for creating new deal
-     */
-    public function create()
+    public function create(): View
     {
-        $products = Product::all();
+        $products = Product::query()
+            ->select(['id', 'name', 'price'])
+            ->orderBy('name')
+            ->get();
+
         return view('admin.deals.create', compact('products'));
     }
 
-    /**
-     * Store a new deal
-     */
-    public function store(Request $request)
+    public function store(StoreDealRequest $request): RedirectResponse
     {
-        $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'discount_percent' => 'required|integer|min:1|max:99',
-            'original_price' => 'required|numeric|min:0',
-            'deal_price' => 'required|numeric|min:0',
-            'badge_text' => 'nullable|string|max:100',
-            'is_active' => 'boolean',
-            'starts_at' => 'nullable|date',
-            'ends_at' => 'nullable|date|after_or_equal:starts_at',
-            'sort_order' => 'nullable|integer',
-        ]);
-
-        $data = $request->all();
-        $data['is_active'] = $request->has('is_active');
-        $data['badge_text'] = $request->badge_text ?? 'عرض لمدة محدودة';
+        $data = $request->validated();
+        $data['is_active'] = $request->boolean('is_active');
+        $data['badge_text'] = $request->filled('badge_text') ? $request->badge_text : 'تخفيض خاص';
 
         Deal::create($data);
 
-        return redirect()->route('deals.index')->with('success', __('Deal created successfully!'));
+        return redirect()->route('admin.deals.index')->with('success', 'تم إنشاء العرض الخاص بنجاح.');
     }
 
-    /**
-     * Show form for editing deal
-     */
-    public function edit(Deal $deal)
+    public function edit(int $id): View
     {
-        $products = Product::all();
+        $deal = Deal::findOrFail($id);
+
+        $products = Product::query()
+            ->select(['id', 'name', 'price'])
+            ->orderBy('name')
+            ->get();
+
         return view('admin.deals.edit', compact('deal', 'products'));
     }
 
-    /**
-     * Update deal
-     */
-    public function update(Request $request, Deal $deal)
+    public function update(UpdateDealRequest $request, int $id): RedirectResponse
     {
-        $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'discount_percent' => 'required|integer|min:1|max:99',
-            'original_price' => 'required|numeric|min:0',
-            'deal_price' => 'required|numeric|min:0',
-            'badge_text' => 'nullable|string|max:100',
-            'is_active' => 'boolean',
-            'starts_at' => 'nullable|date',
-            'ends_at' => 'nullable|date|after_or_equal:starts_at',
-            'sort_order' => 'nullable|integer',
-        ]);
-
-        $data = $request->all();
-        $data['is_active'] = $request->has('is_active');
+        $deal = Deal::findOrFail($id);
+        $data = $request->validated();
+        $data['is_active'] = $request->boolean('is_active');
+        $data['badge_text'] = $request->filled('badge_text') ? $request->badge_text : 'تخفيض خاص';
 
         $deal->update($data);
 
-        return redirect()->route('deals.index')->with('success', __('Deal updated successfully!'));
+        return redirect()->route('admin.deals.index')->with('success', 'تم تحديث العرض بنجاح.');
     }
 
-    /**
-     * Delete deal
-     */
-    public function destroy(Deal $deal)
+    public function destroy(int $id): RedirectResponse
     {
+        $deal = Deal::findOrFail($id);
         $deal->delete();
-        return redirect()->route('deals.index')->with('success', __('Deal deleted successfully!'));
+
+        return redirect()->route('admin.deals.index')->with('success', 'تم حذف العرض بنجاح.');
     }
 }

@@ -13,126 +13,107 @@ export default {
     theme: {
         extend: {
             colors: {
-                // Al-Tawheed Signature Signboard Palette (أحمر اليافطة الناري والبرتقالي الساطع)
+                // Section 5.2 Atelier Warm Palette Tokens
+                vanilla: '#F3E9D2',   // Page canvas
+                cream: '#FBF6EA',     // Cards, inputs, modals
+                linen: '#EADFC8',     // Subtle sections, table stripes
+                beige: '#E2D2B3',     // Hover surfaces, chips
+                sand: '#CDB78F',      // Borders, dividers
+
+                espresso: {
+                    DEFAULT: '#2B2118', // Primary text
+                    deep: '#1A110A',
+                    heading: '#1A110A',
+                    dark: '#2B2118',
+                    light: '#382416',
+                },
+                mocha: {
+                    DEFAULT: '#6B5642', // Secondary text
+                    secondary: '#6B5642',
+                },
+                taupe: {
+                    DEFAULT: '#8F7B63', // Muted / placeholder
+                    muted: '#8F7B63',
+                },
+                clay: {
+                    DEFAULT: '#A9552F', // Terracotta accent (sales, highlights)
+                    soft: '#E9CDB8',
+                    hover: '#8E4524',
+                },
+                action: {
+                    DEFAULT: '#382416', // Primary button fill
+                    hover: '#25170D',
+                    ink: '#FBF6EA',     // Primary button text
+                },
+                status: {
+                    success: '#5F6B3A', // Olive
+                    warning: '#B8862B', // Ochre
+                    danger: '#9E3B2E',  // Brick
+                    neutral: '#8F7B63', // Taupe
+                },
+
+                // Aliases for compatibility with existing view components
                 primary: {
-                    50: '#FEF2F2',
-                    100: '#FEE2E2',
-                    200: '#FECACA',
-                    300: '#FCA5A5',
-                    400: '#F87171',
-                    500: '#EF4444',
-                    600: '#DC2626',
-                    700: '#B91C1C',
-                    800: '#991B1B',
-                    900: '#7F1D1D',
-                    DEFAULT: '#DC2626', // أحمر التوحيد الناري من اليافطة
-                    dark: '#991B1B',
-                    light: '#EF4444',
+                    50: '#FBF6EA',
+                    100: '#F3E9D2',
+                    200: '#EADFC8',
+                    300: '#E2D2B3',
+                    400: '#CDB78F',
+                    500: '#382416',
+                    600: '#2B2118',
+                    700: '#25170D',
+                    800: '#1A110A',
+                    900: '#100904',
+                    DEFAULT: '#382416',
+                    dark: '#1A110A',
+                    light: '#6B5642',
                 },
-                // Electric Amber / Orange Accent (برتقالي اليافطة المضيء "ماركت وألبان")
                 accent: {
-                    50: '#FFF7ED',
-                    100: '#FFEDD5',
-                    200: '#FED7AA',
-                    300: '#FDBA74',
-                    400: '#FB923C',
-                    500: '#F97316',
-                    600: '#EA580C',
-                    700: '#C2410C',
-                    DEFAULT: '#F97316', // برتقالي اليافطة الصريح
+                    50: '#FDF7F3',
+                    100: '#F8ECE4',
+                    200: '#E9CDB8',
+                    300: '#D9AB8D',
+                    400: '#C27C56',
+                    500: '#A9552F',
+                    600: '#8E4524',
+                    700: '#73351A',
+                    DEFAULT: '#A9552F',
                 },
-                // Warm Cream Backgrounds (درجات القشطة والزبادي والكانفاس المريح)
                 canvas: {
-                    base: '#FBF9F5',
-                    subtle: '#F4EFE6',
-                    dark: '#EAE2D5',
+                    base: '#F3E9D2',
+                    subtle: '#EADFC8',
+                    dark: '#E2D2B3',
                 },
                 surface: {
-                    card: '#FFFFFF',
-                    base: '#FFFFFF',
-                    hover: '#F9F7F2',
-                    border: '#EDE7DC',
-                    subtle: '#F6F3EC',
-                    champagne: '#E5DDCF',
+                    card: '#FBF6EA',
+                    base: '#FBF6EA',
+                    hover: '#E2D2B3',
+                    border: '#CDB78F',
+                    subtle: '#EADFC8',
+                    champagne: '#EADFC8',
                 },
-                // Deep Charcoal Typography for maximum legibility
                 charcoal: {
-                    heading: '#111827',
-                    DEFAULT: '#1F2937',
-                    secondary: '#4B5563',
-                    muted: '#6B7280',
-                    light: '#9CA3AF',
-                },
-                // Legacy compatibility tokens
-                gold: {
-                    champagne: '#D97706',
-                    satin: '#B45309',
-                    bronze: '#92400E',
-                    dark: '#78350F',
-                    DEFAULT: '#D97706',
-                },
-                obsidian: {
-                    DEFAULT: '#111827',
-                    secondary: '#4B5563',
-                    muted: '#6B7280',
-                },
-                espresso: {
-                    main: '#111827',
-                    secondary: '#4B5563',
-                    muted: '#6B7280',
-                },
-                emerald: {
-                    wa: '#25D366',
-                },
-                rose: {
-                    promo: '#DC2626',
+                    heading: '#1A110A',
+                    DEFAULT: '#2B2118',
+                    secondary: '#6B5642',
+                    muted: '#8F7B63',
+                    light: '#A3907A',
                 },
             },
             fontFamily: {
-                sans: ['Cairo', 'Alexandria', 'Readex Pro', ...defaultTheme.fontFamily.sans],
-                arabic: ['Cairo', 'Alexandria', 'Readex Pro', 'sans-serif'],
-                display: ['Cairo', 'Alexandria', 'sans-serif'],
-                royal: ['Cairo', 'serif'],
+                sans: ['"IBM Plex Sans Arabic"', 'Alexandria', 'Cairo', ...defaultTheme.fontFamily.sans],
+                arabic: ['"IBM Plex Sans Arabic"', 'Alexandria', 'Cairo', 'sans-serif'],
+                display: ['"IBM Plex Sans Arabic"', 'Alexandria', 'sans-serif'],
             },
             borderRadius: {
-                'card': '1rem',
-                'btn': '0.75rem',
+                'card': '12px',
+                'btn': '36px',
                 'pill': '9999px',
+                'ghost': '22px',
+                'input': '8px',
             },
-            boxShadow: {
-                'card-soft': '0 2px 12px -2px rgba(115, 14, 31, 0.05), 0 4px 16px -2px rgba(0, 0, 0, 0.04)',
-                'card-hover': '0 12px 28px -4px rgba(115, 14, 31, 0.10), 0 8px 16px -4px rgba(0, 0, 0, 0.06)',
-                'maroon-glow': '0 4px 20px -2px rgba(115, 14, 31, 0.35)',
-                'amber-glow': '0 4px 20px -2px rgba(217, 119, 6, 0.35)',
-                'card-luxury': '0 4px 20px rgba(0, 0, 0, 0.04)',
-                'gold-subtle': '0 4px 16px rgba(217, 119, 6, 0.18)',
-            },
-            keyframes: {
-                'marquee-scroll': {
-                    '0%': { transform: 'translateX(0%)' },
-                    '100%': { transform: 'translateX(-50%)' },
-                },
-                'pulse-subtle': {
-                    '0%, 100%': { transform: 'scale(1)', opacity: '1' },
-                    '50%': { transform: 'scale(1.05)', opacity: '0.92' },
-                },
-                'float': {
-                    '0%, 100%': { transform: 'translateY(0px)' },
-                    '50%': { transform: 'translateY(-6px)' },
-                },
-                'glow-pulse': {
-                    '0%, 100%': { boxShadow: '0 0 15px rgba(220, 38, 38, 0.4)' },
-                    '50%': { boxShadow: '0 0 25px rgba(249, 115, 22, 0.8)' },
-                },
-                'shimmer': {
-                    '100%': { transform: 'translateX(100%)' },
-                }
-            },
-            animation: {
-                'marquee': 'marquee-scroll 25s linear infinite',
-                'pulse-subtle': 'pulse-subtle 2s infinite ease-in-out',
-                'float': 'float 3s ease-in-out infinite',
-                'glow': 'glow-pulse 2s infinite ease-in-out',
+            borderWidth: {
+                'hairline': '1px',
             },
         },
     },

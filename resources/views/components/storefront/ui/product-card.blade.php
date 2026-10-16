@@ -8,50 +8,50 @@
         ? round((($product->price - $finalPrice) / $product->price) * 100) 
         : 0);
     $isInStock = ($product->is_available && ($product->stock_quantity > 0 || $product->quantity > 0));
-    $isWeighted = (bool)($product->is_weighted ?? false);
     $imageUrl = $product->image_url ?: asset('assets/site/img/product-placeholder.png');
+    $variants = $product->relationLoaded('variants') ? $product->variants : $product->variants()->with('attributeValues.attribute')->get();
+    if ($variants->isNotEmpty() && !$variants->first()->relationLoaded('attributeValues')) {
+        $variants->load('attributeValues.attribute');
+    }
+    $hasVariants = $variants->isNotEmpty();
+
+    $availableSizes = $hasVariants ? $variants->flatMap(function($v) {
+        return $v->attributeValues->filter(fn($av) => ($av->attribute->code ?? '') === 'size');
+    })->unique('id')->sortBy('sort_order') : collect();
+
+    $availableColors = $hasVariants ? $variants->flatMap(function($v) {
+        return $v->attributeValues->filter(fn($av) => ($av->attribute->code ?? '') === 'color');
+    })->unique('id')->sortBy('sort_order') : collect();
+
+    $firstInStockVariant = $hasVariants ? ($variants->firstWhere('stock_quantity', '>', 0) ?? $variants->first()) : null;
+    $initialVariantId = $firstInStockVariant ? $firstInStockVariant->id : 'null';
+    $initialVariantPrice = $firstInStockVariant ? (float)($firstInStockVariant->effective_price ?? $finalPrice) : (float)$finalPrice;
+    $initialVariantLabel = $firstInStockVariant ? ($firstInStockVariant->attributeValues->pluck('value')->implode(' • ') ?: 'قياسي') : '';
 @endphp
 
-<div class="group relative bg-white rounded-2xl border border-gray-100 hover:border-red-400 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full overflow-hidden hover:-translate-y-1" 
+<div class="group relative bg-white rounded-xl border border-gray-200 card-lift shadow-xs flex flex-col h-full overflow-hidden" 
      x-data="{ 
          adding: false,
-         portionModalOpen: false,
-         basePrice: {{ (float)$finalPrice }},
-         isWeighted: {{ $isWeighted ? 'true' : 'false' }},
-         portionType: '250g',
-         customAmount: 20,
-         notes: '',
+         variantModalOpen: false,
+         selectedVariantId: {{ $initialVariantId }},
+         selectedVariantPrice: {{ $initialVariantPrice }},
+         selectedVariantLabel: '{{ addslashes($initialVariantLabel) }}',
 
-         get unitPrice() {
-             if (!this.isWeighted || this.portionType === 'piece') return this.basePrice;
-             if (this.portionType === '125g') return Math.round(this.basePrice * 0.125 * 100) / 100;
-             if (this.portionType === '250g') return Math.round(this.basePrice * 0.25 * 100) / 100;
-             if (this.portionType === '500g') return Math.round(this.basePrice * 0.5 * 100) / 100;
-             if (this.portionType === '1000g') return this.basePrice;
-             if (this.portionType === 'custom_price') return parseFloat(this.customAmount) || 0;
-             return this.basePrice;
+         selectVariant(id, price, label) {
+             this.selectedVariantId = id;
+             this.selectedVariantPrice = price;
+             this.selectedVariantLabel = label;
          },
 
-         get approxGrams() {
-             if (this.portionType === 'custom_price' && this.basePrice > 0) {
-                 return Math.round(((parseFloat(this.customAmount) || 0) / this.basePrice) * 1000);
-             }
-             return 0;
+         quickAddToCart() {
+             @if($hasVariants)
+                 this.variantModalOpen = true;
+             @else
+                 this.submitAdd(null);
+             @endif
          },
 
-         handleAddClick() {
-             if (this.isWeighted) {
-                 this.portionModalOpen = true;
-             } else {
-                 this.submitAddToCart('piece', null, null);
-             }
-         },
-
-         submitAddToCart(portion, customAmt, noteText) {
-             if (portion === 'custom_price' && (!customAmt || customAmt <= 0)) {
-                 toastr.warning('يرجى إدخال المبلغ المطلوب');
-                 return;
-             }
+         submitAdd(variantId) {
              this.adding = true;
              fetch('{{ route('AddToCart', $product->id) }}', {
                  method: 'POST',
@@ -62,20 +62,18 @@
                  },
                  body: JSON.stringify({
                      quantity: 1,
-                     portion_type: portion,
-                     custom_amount: portion === 'custom_price' ? parseFloat(customAmt) : null,
-                     notes: noteText
+                     variant_id: variantId
                  })
              })
              .then(res => res.json())
              .then(data => {
                  this.adding = false;
-                 this.portionModalOpen = false;
+                 this.variantModalOpen = false;
                  if (data.success || data.status) {
-                     toastr.success(data.message || 'تمت إضافة المنتج إلى السلة بنجاح');
+                     toastr.success(data.message || 'تمت إضافة القطعة إلى سلة مشترياتك بنجاح');
                      window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cart_count ?? data.count } }));
                  } else {
-                     toastr.info(data.message || 'تم تحديث السلة');
+                     toastr.warning(data.message || 'تعذر الإضافة');
                  }
              })
              .catch(err => {
@@ -85,25 +83,20 @@
          }
      }">
     
-    <!-- Badges (Discount & Weighted & Stock) -->
-    <div class="absolute top-2.5 right-2.5 z-10 flex flex-col gap-1.5 items-start">
+    <!-- Badges (Discount, Stock, Featured) -->
+    <div class="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 z-10 flex flex-col gap-1 items-start">
         @if($hasDiscount && $discountPercent > 0)
-            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-black bg-gradient-to-r from-red-600 to-orange-500 text-white shadow-md">
-                خصم {{ $discountPercent }}%
-            </span>
-        @endif
-        @if($isWeighted)
-            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-400 text-gray-950 shadow-xs">
-                بالوزن والطلب
+            <span class="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-md text-[9.5px] sm:text-[10.5px] font-black bg-[#CBA367] text-white shadow-xs shimmer-badge">
+                وفر {{ $discountPercent }}%
             </span>
         @endif
         @if(!$isInStock)
-            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-900/85 text-white backdrop-blur-xs">
+            <span class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-md text-[9px] sm:text-[10px] font-bold bg-gray-900/80 text-white backdrop-blur-xs">
                 نفد مؤقتاً
             </span>
         @elseif($product->featured)
-            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-white shadow-xs">
-                مميز
+            <span class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-md text-[9px] sm:text-[10px] font-bold bg-[#AC9653] text-white shadow-xs">
+                الأكثر طلباً
             </span>
         @endif
     </div>
@@ -111,198 +104,239 @@
     <!-- Wishlist Button -->
     <button type="button" 
             onclick="window.toggleWishlist({{ $product->id }}, this)"
-            class="absolute top-2.5 left-2.5 z-10 w-8 h-8 rounded-full bg-white/90 backdrop-blur-xs text-gray-500 hover:text-red-600 hover:bg-white shadow-sm flex items-center justify-center transition-all duration-200 cursor-pointer"
+            class="absolute top-2 left-2 sm:top-2.5 sm:left-2.5 z-10 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/90 hover:bg-white text-gray-500 hover:text-red-500 shadow-sm flex items-center justify-center transition-all cursor-pointer border border-gray-100"
             title="إضافة للمفضلة">
-        <svg class="w-4 h-4 transition-transform active:scale-125" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform active:scale-125" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
         </svg>
     </button>
 
     <!-- Product Image with Link -->
-    <a href="{{ route('product.details', $product->id) }}" class="relative block pt-[80%] overflow-hidden bg-gradient-to-b from-orange-50/30 to-red-50/20">
+    <a href="{{ route('product.details', $product->id) }}" class="relative block pt-[118%] overflow-hidden bg-gray-50 border-b border-gray-100">
         @if($product->image_url)
             <img src="{{ $product->image_url }}" 
                  alt="{{ $product->name }}" 
                  loading="lazy"
-                 class="absolute inset-0 w-full h-full object-contain p-3 group-hover:scale-108 transition-transform duration-500 ease-out" />
+                 class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500 ease-out" />
         @else
-            <div class="w-10 h-10 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center absolute inset-0 m-auto">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gray-200 text-gray-500 flex items-center justify-center absolute inset-0 m-auto">
+                <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
             </div>
+        @endif
+
+        @if($product->brand)
+            <span class="absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2 px-1.5 sm:px-2 py-0.5 rounded bg-white/90 text-gray-800 text-[9px] sm:text-[10px] font-bold shadow-2xs backdrop-blur-xs">
+                {{ $product->brand->name }}
+            </span>
         @endif
     </a>
 
     <!-- Card Content -->
-    <div class="p-3.5 sm:p-4 flex flex-col flex-grow justify-between gap-3">
+    <div class="p-2.5 sm:p-4 flex flex-col flex-grow justify-between gap-2 sm:gap-3 text-right" dir="rtl">
         <div>
             <!-- Category Tag -->
             @if($product->category)
-                <a href="{{ route('category.product', $product->category->id) }}" 
-                   class="text-[11px] font-bold text-orange-700 hover:text-red-700 transition-colors inline-block mb-1">
+                <a href="{{ route('shop', ['category_id' => $product->category->id]) }}" 
+                   class="text-[10px] sm:text-[11px] font-semibold text-[#AC9653] hover:underline inline-block mb-0.5 sm:mb-1">
                     {{ $product->category->name }}
                 </a>
             @endif
 
             <!-- Product Name -->
-            <h3 class="font-bold text-xs sm:text-sm text-gray-900 group-hover:text-red-600 transition-colors line-clamp-2 leading-snug">
+            <h3 class="font-bold text-xs sm:text-sm text-gray-900 group-hover:text-[#AC9653] transition-colors line-clamp-2 leading-tight sm:leading-snug min-h-[2.1rem] sm:min-h-[2.5rem]">
                 <a href="{{ route('product.details', $product->id) }}">
                     {{ $product->name }}
                 </a>
             </h3>
+
+            <!-- Available Sizes & Color Swatches Preview -->
+            @if($availableSizes->isNotEmpty() || $availableColors->isNotEmpty())
+                <div class="flex items-center justify-between gap-1.5 mt-2 pt-2 border-t border-gray-100 text-right">
+                    <!-- Sizes list -->
+                    @if($availableSizes->isNotEmpty())
+                        <div class="flex items-center gap-1 flex-wrap">
+                            @foreach($availableSizes->take(3) as $sz)
+                                <span class="px-1.5 py-0.5 text-[8.5px] sm:text-[10px] font-bold rounded bg-[#FAF8F5] text-[#2E2416] border border-[#BDAB75]/40" title="مقاس {{ $sz->value }}">
+                                    {{ $sz->value }}
+                                </span>
+                            @endforeach
+                            @if($availableSizes->count() > 3)
+                                <span class="text-[8.5px] sm:text-[9px] text-[#AC9653] font-bold">+{{ $availableSizes->count() - 3 }}</span>
+                            @endif
+                        </div>
+                    @else
+                        <div></div>
+                    @endif
+
+                    <!-- Colors swatches -->
+                    @if($availableColors->isNotEmpty())
+                        <div class="flex items-center gap-1 shrink-0">
+                            @foreach($availableColors->take(2) as $col)
+                                <span class="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full border border-gray-300 shadow-2xs inline-block" 
+                                      style="background-color: {{ $col->color_code ?: '#2E2416' }}" 
+                                      title="{{ $col->value }}"></span>
+                            @endforeach
+                            @if($availableColors->count() > 2)
+                                <span class="text-[8.5px] sm:text-[9px] text-gray-400 font-bold">+{{ $availableColors->count() - 2 }}</span>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+            @endif
         </div>
 
         <div>
-            <!-- Pricing Row -->
-            <div class="flex items-baseline justify-between mb-3">
-                <div class="flex items-baseline gap-2">
-                    <span class="text-base sm:text-lg font-black text-red-600 tabular-nums">
+            <!-- Pricing Row in EGP (ج.م) -->
+            <div class="flex items-baseline justify-between mb-2 sm:mb-3 pt-1.5 sm:pt-2 border-t border-gray-100">
+                <div class="flex items-baseline gap-1.5 sm:gap-2">
+                    <span class="text-sm sm:text-lg font-black text-gray-900 tabular-nums">
                         {{ format_currency($finalPrice) }}
                     </span>
                     @if($hasDiscount)
-                        <span class="text-xs text-gray-400 line-through tabular-nums">
+                        <span class="text-[10px] sm:text-xs text-gray-400 line-through tabular-nums">
                             {{ format_currency($product->price) }}
                         </span>
                     @endif
                 </div>
-                @if($isWeighted)
-                    <span class="text-[10px] text-gray-500 font-bold bg-gray-100 px-1.5 py-0.5 rounded">لكل كجم</span>
+                @if($product->gender)
+                    <span class="text-[9px] sm:text-[10px] text-gray-500 font-semibold bg-gray-100 px-1.5 sm:px-2 py-0.5 rounded">
+                        {{ $product->gender == 'men' ? 'رجالي' : ($product->gender == 'women' ? 'نسائي' : ($product->gender == 'kids' ? 'أطفال' : 'للجنسين')) }}
+                    </span>
                 @endif
             </div>
 
-            <!-- Add to Cart Action Button -->
+            <!-- Add to Cart Action Button in Rich Camel #CBA367 -->
             @if($isInStock)
                 <button type="button" 
-                        @click="handleAddClick()"
+                        @click="quickAddToCart()"
                         :disabled="adding"
-                        class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 active:scale-[0.98] text-white text-xs font-black transition-all shadow-md hover:shadow-orange-500/25 flex items-center justify-center gap-1.5 cursor-pointer">
-                    <svg x-show="!adding" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        class="w-full py-2 sm:py-2.5 px-2 rounded-lg bg-[#CBA367] hover:bg-[#b88f55] active:scale-95 text-white text-[11px] sm:text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer">
+                    <svg x-show="!adding" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                     </svg>
-                    <svg x-show="adding" x-cloak class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <svg x-show="adding" x-cloak class="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                     </svg>
-                    <span x-text="adding ? 'جاري الإضافة...' : (isWeighted ? 'تحديد الوزن والإضافة' : 'أضف للسلة')">
-                        {{ $isWeighted ? 'تحديد الوزن والإضافة' : 'أضف للسلة' }}
+                    <span x-text="adding ? 'جاري الإضافة...' : 'أضف للسلة'">
+                        أضف للسلة
                     </span>
                 </button>
             @else
-                <button type="button" disabled class="w-full py-2 px-3 rounded-xl bg-gray-100 text-gray-400 text-xs font-bold cursor-not-allowed text-center">
-                    غير متوفر حالياً
+                <button type="button" disabled class="w-full py-2 sm:py-2.5 px-2 rounded-lg bg-gray-100 text-gray-400 text-[10px] sm:text-xs font-bold cursor-not-allowed text-center">
+                    نفد مؤقتاً
                 </button>
             @endif
         </div>
     </div>
 
-    <!-- Quick Portion / Weight Modal for Weighted Products in Cards -->
-    @if($isWeighted)
-        <div x-show="portionModalOpen" 
-             x-cloak 
-             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-xs"
-             @click.self="portionModalOpen = false"
-             @keydown.escape.window="portionModalOpen = false">
-            
-            <div class="bg-white rounded-3xl max-w-sm w-full p-5 sm:p-6 shadow-2xl border border-orange-200 space-y-4 text-right" 
-                 dir="rtl"
-                 @click.stop>
+    <!-- Quick Size/Variant Selection Modal -->
+    @if($hasVariants)
+        <template x-teleport="body">
+            <div x-show="variantModalOpen" 
+                 x-cloak 
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs select-none"
+                 @click.self="variantModalOpen = false"
+                 @keydown.escape.window="variantModalOpen = false">
                 
-                <div class="flex items-center justify-between border-b border-orange-100 pb-3">
-                    <div>
-                        <h4 class="font-black text-sm text-gray-900">{{ $product->name }}</h4>
-                        <span class="text-[11px] text-gray-500 font-bold">سعر الكيلو: {{ format_currency($finalPrice) }}</span>
-                    </div>
-                    <button type="button" @click="portionModalOpen = false" class="p-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600">
-                        ✕
-                    </button>
-                </div>
-
-                <div class="space-y-3 text-xs">
-                    <label class="font-black text-gray-900 block">اختر الوزن أو القيمة المطلوبة:</label>
-
-                    <div class="grid grid-cols-2 gap-2">
+                <div x-show="variantModalOpen"
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 scale-95"
+                     x-transition:enter-end="opacity-100 scale-100"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 scale-100"
+                     x-transition:leave-end="opacity-0 scale-95"
+                     class="bg-white rounded-2xl max-w-sm w-full p-5 sm:p-6 shadow-2xl border border-gray-200 space-y-4 text-right" 
+                     dir="rtl"
+                     @click.stop>
+                    
+                    <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-lg bg-[#FAF8F5] text-[#AC9653] flex items-center justify-center border border-[#BDAB75]/30">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm text-gray-900 leading-tight">اختر المقاس واللون المناسب</h4>
+                                <p class="text-[11px] text-gray-400 mt-0.5 line-clamp-1">{{ $product->name }}</p>
+                            </div>
+                        </div>
                         <button type="button" 
-                                @click="portionType = '125g'"
-                                :class="portionType === '125g' ? 'border-red-600 bg-red-600 text-white font-black' : 'border-gray-200 bg-gray-50 hover:bg-orange-50 text-gray-800 font-bold'"
-                                class="py-2 px-2.5 rounded-xl border-2 text-center transition-all cursor-pointer">
-                            <span>ثمن كيلو (125 جم)</span>
-                            <span class="block text-[10px] opacity-85" x-text="'(' + (basePrice * 0.125).toFixed(1) + ' ج.م)'"></span>
-                        </button>
-
-                        <button type="button" 
-                                @click="portionType = '250g'"
-                                :class="portionType === '250g' ? 'border-red-600 bg-red-600 text-white font-black' : 'border-gray-200 bg-gray-50 hover:bg-orange-50 text-gray-800 font-bold'"
-                                class="py-2 px-2.5 rounded-xl border-2 text-center transition-all cursor-pointer">
-                            <span>ربع كيلو (250 جم)</span>
-                            <span class="block text-[10px] opacity-85" x-text="'(' + (basePrice * 0.25).toFixed(1) + ' ج.م)'"></span>
-                        </button>
-
-                        <button type="button" 
-                                @click="portionType = '500g'"
-                                :class="portionType === '500g' ? 'border-red-600 bg-red-600 text-white font-black' : 'border-gray-200 bg-gray-50 hover:bg-orange-50 text-gray-800 font-bold'"
-                                class="py-2 px-2.5 rounded-xl border-2 text-center transition-all cursor-pointer">
-                            <span>نصف كيلو (500 جم)</span>
-                            <span class="block text-[10px] opacity-85" x-text="'(' + (basePrice * 0.5).toFixed(1) + ' ج.م)'"></span>
-                        </button>
-
-                        <button type="button" 
-                                @click="portionType = '1000g'"
-                                :class="portionType === '1000g' ? 'border-red-600 bg-red-600 text-white font-black' : 'border-gray-200 bg-gray-50 hover:bg-orange-50 text-gray-800 font-bold'"
-                                class="py-2 px-2.5 rounded-xl border-2 text-center transition-all cursor-pointer">
-                            <span>كيلو كامل</span>
-                            <span class="block text-[10px] opacity-85" x-text="'(' + basePrice.toFixed(1) + ' ج.م)'"></span>
+                                @click="variantModalOpen = false" 
+                                class="w-7 h-7 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-800 flex items-center justify-center text-xs transition-colors cursor-pointer">
+                            ✕
                         </button>
                     </div>
 
-                    <!-- Custom Price in modal -->
-                    <div class="pt-1">
-                        <button type="button" 
-                                @click="portionType = 'custom_price'"
-                                :class="portionType === 'custom_price' ? 'border-orange-500 bg-orange-50 text-orange-950 font-black' : 'border-gray-200 bg-gray-50 text-gray-700 hover:bg-orange-50 font-bold'"
-                                class="w-full py-2 px-3 rounded-xl border-2 flex items-center justify-between text-xs transition-all cursor-pointer">
-                            <span>طلب بمبلغ مالي محدد</span>
-                            <span class="text-[10px] font-bold text-orange-700">بـ 20 ج / 50 ج ↓</span>
-                        </button>
+                    <div class="space-y-2 max-h-64 overflow-y-auto pr-1">
+                        @foreach($variants as $variant)
+                            @php
+                                $vPrice = $variant->effective_price ?? $finalPrice;
+                                $vLabel = $variant->attributeValues->pluck('value')->implode(' • ');
+                                $isAvailable = $variant->stock_quantity > 0;
+                            @endphp
+                            <label @click="if({{ $isAvailable ? 'true' : 'false' }}) selectVariant({{ $variant->id }}, {{ (float)$vPrice }}, '{{ addslashes($vLabel ?: 'قياسي') }}')"
+                                   class="flex items-center justify-between p-3 rounded-xl border transition-all {{ $isAvailable ? 'cursor-pointer hover:border-[#AC9653]' : 'opacity-60 cursor-not-allowed bg-gray-50' }}"
+                                   :class="selectedVariantId == {{ $variant->id }} ? 'border-[#AC9653] bg-[#AC9653]/10 ring-1 ring-[#AC9653]' : 'border-gray-200 bg-white'">
+                                <div class="flex items-center gap-3">
+                                    <input type="radio" 
+                                           name="variant_select_{{ $product->id }}" 
+                                           value="{{ $variant->id }}" 
+                                           x-model="selectedVariantId"
+                                           {{ !$isAvailable ? 'disabled' : '' }}
+                                           class="accent-[#AC9653] w-4 h-4">
+                                    <div>
+                                        <span class="block text-xs font-bold text-gray-900">
+                                            {{ $vLabel ?: 'مقاس قياسي' }}
+                                        </span>
+                                        <span class="block text-[10px] {{ $isAvailable ? 'text-gray-400' : 'text-red-500 font-semibold' }}">
+                                            {{ $isAvailable ? 'متوفر بالمخزن (' . $variant->stock_quantity . ' قطع)' : 'نفد مؤقتاً من المخزن' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <span class="text-xs font-bold text-gray-900 tabular-nums">
+                                    {{ format_currency($vPrice) }}
+                                </span>
+                            </label>
+                        @endforeach
+                    </div>
 
-                        <div x-show="portionType === 'custom_price'" x-cloak class="mt-2 p-2.5 rounded-xl bg-orange-50/80 border border-orange-200 flex items-center gap-2">
-                            <input type="number" 
-                                   x-model.number="customAmount" 
-                                   placeholder="20" 
-                                   min="5" 
-                                   class="w-24 bg-white border border-orange-300 rounded-lg px-2.5 py-1 text-xs font-black text-gray-900 outline-none">
-                            <span class="font-bold text-gray-700">ج.م</span>
-                            <span class="text-[10px] text-gray-500 mr-auto" x-show="approxGrams > 0">
-                                ≈ <strong class="text-orange-800 font-black" x-text="approxGrams"></strong> جم
+                    <div class="pt-3 border-t border-gray-100 flex items-center justify-between">
+                        <div>
+                            <span class="block text-[10px] text-gray-400 font-medium">السعر</span>
+                            <span class="text-sm sm:text-base font-black text-gray-900 tabular-nums" x-text="selectedVariantPrice + ' ج.م'">
+                                {{ format_currency($finalPrice) }}
                             </span>
                         </div>
+                        <button type="button" 
+                                @click="submitAdd(selectedVariantId)" 
+                                :disabled="adding || !selectedVariantId"
+                                class="px-5 sm:px-6 py-2.5 rounded-lg bg-[#CBA367] hover:bg-[#b88f55] active:scale-95 disabled:opacity-50 text-white text-xs font-bold shadow-xs cursor-pointer transition-all flex items-center gap-1.5">
+                            <svg x-show="!adding" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                            </svg>
+                            <svg x-show="adding" x-cloak class="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                            </svg>
+                            <span x-text="adding ? 'جاري الإضافة...' : 'تأكيد الإضافة'">
+                                تأكيد الإضافة
+                            </span>
+                        </button>
                     </div>
 
-                    <!-- Notes -->
-                    <div class="pt-1">
-                        <input type="text" 
-                               x-model="notes" 
-                               placeholder="ملاحظات التقطيع (مثال: شرائح رفيعة، قليل الملح...)" 
-                               class="w-full bg-gray-50 border border-gray-200 focus:border-red-600 rounded-xl px-3 py-2 text-xs outline-none">
-                    </div>
                 </div>
-
-                <!-- Modal Actions -->
-                <div class="pt-2 border-t border-orange-100 flex items-center justify-between gap-3">
-                    <div class="text-xs">
-                        <span class="text-gray-500 block text-[10px]">إجمالي الصنف:</span>
-                        <span class="font-black text-base text-red-600 tabular-nums" x-text="unitPrice.toFixed(2) + ' ج.م'"></span>
-                    </div>
-
-                    <button type="button" 
-                            @click="submitAddToCart(portionType, customAmount, notes)"
-                            :disabled="adding"
-                            class="py-2.5 px-5 rounded-xl bg-gradient-to-r from-red-600 to-orange-500 text-white font-black text-xs shadow-md hover:from-red-700 hover:to-orange-600 cursor-pointer">
-                        <span x-text="adding ? 'جاري الإضافة...' : 'تأكيد وإضافة للسلة'">تأكيد وإضافة للسلة</span>
-                    </button>
-                </div>
-
             </div>
-        </div>
+        </template>
     @endif
+
 </div>

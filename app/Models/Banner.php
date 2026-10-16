@@ -11,28 +11,54 @@ class Banner extends Model
 
     protected $fillable = [
         'title',
+        'subtitle',
         'description',
         'image',
         'url',
+        'button_text',
+        'bg_color',
         'position',
         'status',
     ];
+
+    protected $casts = [
+        'status' => 'boolean',
+    ];
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', true);
+    }
+
+    public function scopeCollection($query)
+    {
+        return $query->where('position', 'home_collection');
+    }
+
+    public function scopeSlider($query)
+    {
+        return $query->where('position', 'main_slider');
+    }
 
     // Helper to get image URL
     public function getImageUrlAttribute(): ?string
     {
         if (!$this->image) {
-            return null;
+            return asset('assets/site/img/product-placeholder.png');
         }
 
-        if (\Illuminate\Support\Facades\Storage::disk('public')->exists("banners/{$this->image}")) {
-            return \Illuminate\Support\Facades\Storage::disk('public')->url("banners/{$this->image}");
+        if (str_starts_with($this->image, 'http://') || str_starts_with($this->image, 'https://')) {
+            return $this->image;
         }
 
         if (\Illuminate\Support\Facades\Storage::disk('public')->exists($this->image)) {
             return \Illuminate\Support\Facades\Storage::disk('public')->url($this->image);
         }
 
-        return asset('storage/banners/' . $this->image);
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists("banners/{$this->image}")) {
+            return \Illuminate\Support\Facades\Storage::disk('public')->url("banners/{$this->image}");
+        }
+
+        return asset('storage/' . ltrim($this->image, '/'));
     }
 }

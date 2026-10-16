@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\Deal;
 use App\Models\Bundle;
 use App\Models\Branch;
+use App\Models\Review;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Cache;
 
@@ -23,10 +24,24 @@ class HomeController extends Controller
 
         // 1. Hero Banners
         $banners = Cache::remember('storefront_home_banners', $cacheTtl, function () {
-            return Banner::select(['id', 'title', 'description', 'image', 'url', 'position'])
+            return Banner::select(['id', 'title', 'subtitle', 'description', 'image', 'url', 'position', 'button_text', 'bg_color'])
                 ->where('status', true)
+                ->where(function ($q) {
+                    $q->where('position', 'main_slider')
+                      ->orWhereNull('position');
+                })
                 ->latest('id')
                 ->take(5)
+                ->get();
+        });
+
+        // 1.5 Mid-Page Collection Banners (Displays exactly 2 collection campaigns as requested)
+        $collectionBanners = Cache::remember('storefront_home_collection_banners', $cacheTtl, function () {
+            return Banner::select(['id', 'title', 'subtitle', 'description', 'image', 'url', 'position', 'button_text', 'bg_color'])
+                ->where('status', true)
+                ->where('position', 'home_collection')
+                ->latest('id')
+                ->take(2)
                 ->get();
         });
 
@@ -96,14 +111,30 @@ class HomeController extends Controller
                 ->get();
         });
 
+        // 8. Real Customer Reviews from Egyptian Governorates
+        $reviews = Cache::remember('storefront_home_reviews', $cacheTtl, function () {
+            return Review::select(['id', 'product_id', 'user_id', 'reviewer_name', 'governorate', 'rating', 'comment', 'created_at'])
+                ->approved()
+                ->featured()
+                ->with([
+                    'product:id,name,slug,image',
+                    'user:id,name,address',
+                ])
+                ->latest('id')
+                ->take(6)
+                ->get();
+        });
+
         return view('storefront.home', compact(
             'banners',
+            'collectionBanners',
             'categories',
             'deals',
             'featuredProducts',
             'latestProducts',
             'bundles',
-            'branches'
+            'branches',
+            'reviews'
         ));
     }
 }

@@ -17,7 +17,7 @@ class BannerController extends Controller
      */
     public function index()
     {
-        $banners = Banner::orderBy('position')->get();
+        $banners = Banner::orderBy('position')->latest('id')->paginate(15);
         return view('admin.banners.index', compact('banners'));
     }
 
@@ -35,6 +35,7 @@ class BannerController extends Controller
     public function store(StoreBannerRequest $request)
     {
         $data = $request->validated();
+        $data['status'] = $request->boolean('status', true);
 
         if ($request->hasFile('image')) {
             $data['image'] = StorageHelper::uploadImage($request, 'image', 'banners', 'banner-'.time());
@@ -42,7 +43,7 @@ class BannerController extends Controller
 
         Banner::create($data);
 
-        return redirect()->route('admin.banners.index')->with('success', __('تم إنشاء البانر الإعلاني بنجاح.'));
+        return redirect()->route('admin.banners.index')->with('success', __('تم إنشاء البانر / الكولكشن بنجاح.'));
     }
 
     /**
@@ -67,9 +68,10 @@ class BannerController extends Controller
     public function update(UpdateBannerRequest $request, Banner $banner)
     {
         $data = $request->validated();
+        $data['status'] = $request->boolean('status', true);
 
         if ($request->hasFile('image')) {
-            if ($banner->image) {
+            if ($banner->image && !str_starts_with($banner->image, 'http')) {
                 Storage::disk('public')->delete($banner->image);
             }
             $data['image'] = StorageHelper::uploadImage($request, 'image', 'banners', 'banner-'.time());
@@ -77,7 +79,7 @@ class BannerController extends Controller
 
         $banner->update($data);
 
-        return redirect()->route('admin.banners.index')->with('success', __('تم تحديث بيانات البانر بنجاح.'));
+        return redirect()->route('admin.banners.index')->with('success', __('تم تحديث بيانات البانر / الكولكشن بنجاح.'));
     }
 
     /**
@@ -85,11 +87,11 @@ class BannerController extends Controller
      */
     public function destroy(Banner $banner)
     {
-        if ($banner->image) {
+        if ($banner->image && !str_starts_with($banner->image, 'http')) {
             Storage::disk('public')->delete($banner->image);
         }
         $banner->delete();
 
-        return redirect()->route('admin.banners.index')->with('success', __('Banner deleted successfully'));
+        return redirect()->route('admin.banners.index')->with('success', __('تم حذف البانر بنجاح.'));
     }
 }

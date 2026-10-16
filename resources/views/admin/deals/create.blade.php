@@ -1,130 +1,151 @@
 @extends('layouts.admin')
 
-@section('title', __('إضافة تخفيض حصري'))
+@section('title', 'إضافة عرض تخفيض خاص')
 
 @section('content')
-<div class="max-w-4xl mx-auto space-y-6">
-    <div class="flex items-center justify-between">
+<div class="space-y-6 max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#EADFC8] pb-4">
         <div>
-            <h2 class="text-2xl font-black text-gray-900 tracking-tight">{{ __('إضافة تخفيض حصري (Flash Deal)') }}</h2>
-            <p class="text-xs text-gray-500 font-medium mt-0.5">{{ __('تحديد خصم مئوي وموعد انتهاء لمنتج معين مع شارة عرض جذابة') }}</p>
+            <div class="flex items-center gap-2 text-xs text-[#8F7B63] mb-1">
+                <a href="{{ route('admin.dashboard') }}" class="hover:text-[#2B2118] transition-colors">لوحة التحكم</a>
+                <span class="text-[#CDB78F]">/</span>
+                <a href="{{ route('admin.deals.index') }}" class="hover:text-[#2B2118] transition-colors">العروض الخاصة</a>
+                <span class="text-[#CDB78F]">/</span>
+                <span class="text-[#2B2118] font-medium">إضافة عرض</span>
+            </div>
+            <h1 class="text-2xl font-serif font-bold text-[#2B2118]">إضافة عرض تخفيض مباشر</h1>
+            <p class="text-sm text-[#6B5642] mt-0.5">تحديد نسبة الخصم وسعر العرض الحصري لقطعة أزياء محددة</p>
         </div>
-        <a href="{{ route('admin.deals.index') }}" class="px-4 py-2 rounded-xl border border-orange-200 bg-canvas-base hover:bg-orange-50 text-gray-900 text-xs font-bold transition-colors">
-            &larr; {{ __('العودة للعروض') }}
+        <a href="{{ route('admin.deals.index') }}" 
+           class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#EADFC8] text-[#2B2118] hover:bg-[#FBF6EA] transition-all text-sm font-medium shadow-sm w-fit">
+            <svg class="w-4 h-4 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span>العودة للعروض</span>
         </a>
     </div>
 
     @if($errors->any())
-        <div class="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-800 text-xs font-bold">
-            <div class="mb-1">{{ __('يرجى تصحيح الأخطاء التالية:') }}</div>
-            <ul class="list-disc list-inside space-y-1 font-medium">
-                @foreach ($errors->all() as $error)
+        <div class="p-4 rounded-xl bg-red-50/50 border border-[#A9552F]/30 text-[#A9552F] text-xs space-y-1">
+            <ul class="list-disc list-inside">
+                @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
         </div>
     @endif
 
-    <div class="bg-white border border-orange-100 rounded-3xl p-6 sm:p-8 shadow-xs">
+    <!-- Form Card -->
+    <div class="bg-white rounded-2xl border border-[#EADFC8] shadow-sm p-6 sm:p-8" x-data="dealForm()">
         <form action="{{ route('admin.deals.store') }}" method="POST" class="space-y-6">
             @csrf
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label for="product_id" class="block text-xs font-bold text-gray-900 mb-2">{{ __('اختر المنتج') }} <span class="text-red-500">*</span></label>
-                    <select name="product_id" id="product_id" class="w-full px-4 py-2.5 rounded-xl border border-orange-100 bg-canvas-base text-gray-900 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none text-xs font-bold transition-all" required onchange="updatePrices()">
-                        <option value="">-- {{ __('اختر المنتج المعني') }} --</option>
+                <!-- Product Select -->
+                <div class="space-y-1.5 md:col-span-2">
+                    <label for="product_id" class="block text-xs font-bold text-[#2B2118]">
+                        اختر قطعة الأزياء المعنية بالخصم <span class="text-[#A9552F]">*</span>
+                    </label>
+                    <select name="product_id" id="product_id" required x-model="productId" @change="onProductChange($event)"
+                            class="w-full px-4 py-2.5 rounded-xl border border-[#EADFC8] focus:border-[#2B2118] focus:ring-1 focus:ring-[#2B2118] bg-white text-sm text-[#2B2118] transition-all">
+                        <option value="">-- اضغط لاختيار منتج من المتجر --</option>
                         @foreach($products as $product)
                             <option value="{{ $product->id }}" 
                                     data-price="{{ $product->price }}"
                                     {{ old('product_id') == $product->id ? 'selected' : '' }}>
-                                {{ $product->name }} - {{ number_format($product->price, 2) }} ج.م
+                                {{ $product->name }} — السعر الأساسي: {{ number_format($product->price, 2) }} ج.م
                             </option>
                         @endforeach
                     </select>
                 </div>
 
-                <div>
-                    <label for="discount_percent" class="block text-xs font-bold text-gray-900 mb-2">{{ __('نسبة الخصم المئوية') }} (%) <span class="text-red-500">*</span></label>
-                    <div class="relative">
-                        <input type="number" name="discount_percent" id="discount_percent" 
-                               class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-orange-100 bg-canvas-base text-gray-900 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none text-xs font-black transition-all" min="1" max="99" 
-                               value="{{ old('discount_percent', 10) }}" 
-                               required oninput="calculateDealPrice()">
-                        <span class="absolute left-3.5 top-2.5 text-xs font-bold text-gray-400">%</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-5 rounded-2xl bg-amber-50/50 border border-amber-100">
-                <div>
-                    <label for="original_price" class="block text-xs font-bold text-gray-700 mb-1.5">{{ __('السعر الأصلي للمنتج') }} <span class="text-red-500">*</span></label>
-                    <div class="relative">
-                        <input type="number" step="0.01" name="original_price" id="original_price" 
-                               class="w-full pl-12 pr-4 py-2 rounded-xl border border-orange-200 bg-white text-gray-900 text-xs font-black focus:outline-none" min="0" 
-                               value="{{ old('original_price') }}" 
-                               required oninput="calculateDealPrice()">
-                        <span class="absolute left-3 top-2 text-xs font-bold text-gray-400">ج.م</span>
-                    </div>
-                </div>
-
-                <div>
-                    <label for="deal_price" class="block text-xs font-bold text-emerald-900 mb-1.5">{{ __('سعر العرض النهائي بعد الخصم') }} <span class="text-red-500">*</span></label>
-                    <div class="relative">
-                        <input type="number" step="0.01" name="deal_price" id="deal_price" 
-                               class="w-full pl-12 pr-4 py-2 rounded-xl border border-emerald-200 bg-white text-emerald-700 text-xs font-black focus:outline-none" min="0" 
-                               value="{{ old('deal_price') }}" required>
-                        <span class="absolute left-3 top-2 text-xs text-emerald-600 font-bold">ج.م</span>
-                    </div>
-                    <small class="text-emerald-700 text-[11px] font-medium mt-1 block">يُحسب تلقائياً وفق نسبة الخصم المحددة أعلاه</small>
-                </div>
-            </div>
-
-            <div>
-                <label for="badge_text" class="block text-xs font-bold text-gray-900 mb-2">{{ __('نص الشارة الترويجية (Badge Text)') }}</label>
-                <input type="text" name="badge_text" id="badge_text" 
-                       class="w-full px-4 py-2.5 rounded-xl border border-orange-100 bg-canvas-base text-gray-900 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none text-xs font-bold transition-all" 
-                       value="{{ old('badge_text', 'عرض خاص') }}" 
-                       placeholder="مثال: خصم خاطف 50% أو عرض الجمعة">
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label for="starts_at" class="block text-xs font-bold text-gray-900 mb-2">{{ __('تاريخ وبدء العرض') }}</label>
-                    <input type="datetime-local" name="starts_at" id="starts_at" 
-                           class="w-full px-4 py-2.5 rounded-xl border border-orange-100 bg-canvas-base text-gray-900 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none text-xs font-bold transition-all" value="{{ old('starts_at') }}">
-                    <small class="text-gray-400 text-[11px] mt-1 block">اتركه فارغاً ليبدأ العرض فوراً</small>
-                </div>
-
-                <div>
-                    <label for="ends_at" class="block text-xs font-bold text-gray-900 mb-2">{{ __('تاريخ انتهاء العرض (عداد تنازلي)') }}</label>
-                    <input type="datetime-local" name="ends_at" id="ends_at" 
-                           class="w-full px-4 py-2.5 rounded-xl border border-orange-100 bg-canvas-base text-gray-900 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none text-xs font-bold transition-all" value="{{ old('ends_at') }}">
-                    <small class="text-gray-400 text-[11px] mt-1 block">اتركه فارغاً إذا كان العرض مستمراً دون وقت محدد</small>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                <div>
-                    <label for="sort_order" class="block text-xs font-bold text-gray-900 mb-2">{{ __('ترتيب الظهور') }}</label>
-                    <input type="number" name="sort_order" id="sort_order" 
-                           class="w-full px-4 py-2.5 rounded-xl border border-orange-100 bg-canvas-base text-gray-900 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none text-xs font-bold transition-all" value="{{ old('sort_order', 0) }}" min="0">
-                </div>
-
-                <div class="p-4 rounded-2xl bg-canvas-base border border-orange-100 mt-2">
-                    <label class="inline-flex items-center gap-3 cursor-pointer">
-                        <input type="checkbox" name="is_active" value="1" class="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-orange-200" {{ old('is_active', true) ? 'checked' : '' }}>
-                        <span class="text-xs font-bold text-gray-900">✓ تفعيل العرض فوراً بالمتجر</span>
+                <!-- Original Price -->
+                <div class="space-y-1.5">
+                    <label for="original_price" class="block text-xs font-bold text-[#2B2118]">
+                        السعر الأصلي (ج.م) <span class="text-[#A9552F]">*</span>
                     </label>
+                    <input type="number" step="0.01" min="0" name="original_price" id="original_price" required
+                           x-model="originalPrice" @input="recalculateByPercent()"
+                           class="w-full px-4 py-2.5 rounded-xl border border-[#EADFC8] focus:border-[#2B2118] focus:ring-1 focus:ring-[#2B2118] bg-[#FDFBF7] text-sm text-[#2B2118] transition-all dir-ltr text-right">
+                </div>
+
+                <!-- Discount Percent -->
+                <div class="space-y-1.5">
+                    <label for="discount_percent" class="block text-xs font-bold text-[#2B2118]">
+                        نسبة الخصم المئوية (%) <span class="text-[#A9552F]">*</span>
+                    </label>
+                    <input type="number" min="1" max="99" name="discount_percent" id="discount_percent" required
+                           x-model="discountPercent" @input="recalculateByPercent()"
+                           class="w-full px-4 py-2.5 rounded-xl border border-[#EADFC8] focus:border-[#2B2118] focus:ring-1 focus:ring-[#2B2118] bg-white text-sm text-[#2B2118] transition-all dir-ltr text-right">
+                </div>
+
+                <!-- Deal Price -->
+                <div class="space-y-1.5">
+                    <label for="deal_price" class="block text-xs font-bold text-[#2B2118]">
+                        السعر بعد الخصم (سعر العرض الحصري) <span class="text-[#A9552F]">*</span>
+                    </label>
+                    <input type="number" step="0.01" min="0" name="deal_price" id="deal_price" required
+                           x-model="dealPrice" @input="recalculateByPrice()"
+                           class="w-full px-4 py-2.5 rounded-xl border border-[#EADFC8] focus:border-[#2B2118] focus:ring-1 focus:ring-[#2B2118] bg-white text-sm font-bold text-[#A9552F] transition-all dir-ltr text-right">
+                </div>
+
+                <!-- Badge Text -->
+                <div class="space-y-1.5">
+                    <label for="badge_text" class="block text-xs font-bold text-[#2B2118]">
+                        نص الشارة الترويجية (Badge)
+                    </label>
+                    <input type="text" name="badge_text" id="badge_text" value="{{ old('badge_text', 'تخفيض خاص') }}"
+                           placeholder="مثال: خصم الصيف، عرض لفترة محدودة، صفقة حصرية"
+                           class="w-full px-4 py-2.5 rounded-xl border border-[#EADFC8] focus:border-[#2B2118] focus:ring-1 focus:ring-[#2B2118] bg-white text-sm text-[#2B2118] placeholder-[#CDB78F] transition-all">
+                </div>
+
+                <!-- Starts At -->
+                <div class="space-y-1.5">
+                    <label for="starts_at" class="block text-xs font-bold text-[#2B2118]">
+                        تاريخ ووقت بدء العرض
+                    </label>
+                    <input type="datetime-local" name="starts_at" id="starts_at" value="{{ old('starts_at') }}"
+                           class="w-full px-4 py-2.5 rounded-xl border border-[#EADFC8] focus:border-[#2B2118] focus:ring-1 focus:ring-[#2B2118] bg-white text-sm text-[#2B2118] transition-all">
+                </div>
+
+                <!-- Ends At -->
+                <div class="space-y-1.5">
+                    <label for="ends_at" class="block text-xs font-bold text-[#2B2118]">
+                        تاريخ ووقت انتهاء العرض
+                    </label>
+                    <input type="datetime-local" name="ends_at" id="ends_at" value="{{ old('ends_at') }}"
+                           class="w-full px-4 py-2.5 rounded-xl border border-[#EADFC8] focus:border-[#2B2118] focus:ring-1 focus:ring-[#2B2118] bg-white text-sm text-[#2B2118] transition-all">
+                </div>
+
+                <!-- Sort Order -->
+                <div class="space-y-1.5">
+                    <label for="sort_order" class="block text-xs font-bold text-[#2B2118]">
+                        ترتيب الظهور في الواجهة
+                    </label>
+                    <input type="number" min="0" name="sort_order" id="sort_order" value="{{ old('sort_order', 0) }}"
+                           class="w-full px-4 py-2.5 rounded-xl border border-[#EADFC8] focus:border-[#2B2118] focus:ring-1 focus:ring-[#2B2118] bg-white text-sm text-[#2B2118] transition-all dir-ltr text-right">
                 </div>
             </div>
 
-            <div class="pt-4 border-t border-orange-100 flex items-center justify-end gap-3">
-                <a href="{{ route('deals.index') }}" class="px-5 py-2.5 rounded-xl border border-orange-200 bg-canvas-base hover:bg-orange-50 text-gray-800 text-xs font-bold transition-colors">
-                    {{ __('إلغاء') }}
+            <!-- Active Status Toggle -->
+            <div class="pt-2 border-t border-[#EADFC8]">
+                <label class="relative inline-flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }} class="sr-only peer">
+                    <div class="w-11 h-6 bg-[#EADFC8] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#382416]"></div>
+                    <span class="text-xs font-bold text-[#2B2118]">تفعيل العرض فور الحفظ</span>
+                </label>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-[#EADFC8]">
+                <a href="{{ route('admin.deals.index') }}" 
+                   class="px-5 py-2.5 rounded-xl border border-[#EADFC8] text-[#6B5642] hover:bg-[#FBF6EA] transition-all text-sm font-medium">
+                    إلغاء
                 </a>
-                <button type="submit" class="px-7 py-3 rounded-2xl bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white text-xs font-black shadow-md shadow-red-500/20 transition-all cursor-pointer">
-                    {{ __('حفظ ونشر العرض') }}
+                <button type="submit" 
+                        class="px-6 py-2.5 rounded-xl bg-[#382416] hover:bg-[#2B2118] text-[#FBF6EA] transition-all text-sm font-medium shadow-sm">
+                    حفظ العرض
                 </button>
             </div>
         </form>
@@ -132,29 +153,34 @@
 </div>
 
 <script>
-function updatePrices() {
-    var select = document.getElementById('product_id');
-    var selectedOption = select.options[select.selectedIndex];
-    var price = selectedOption.getAttribute('data-price');
-    
-    if (price) {
-        document.getElementById('original_price').value = parseFloat(price).toFixed(2);
-        calculateDealPrice();
-    }
+function dealForm() {
+    return {
+        productId: '{{ old('product_id', '') }}',
+        originalPrice: {{ old('original_price', 0) }},
+        discountPercent: {{ old('discount_percent', 15) }},
+        dealPrice: {{ old('deal_price', 0) }},
+        onProductChange(event) {
+            const selected = event.target.options[event.target.selectedIndex];
+            if (selected && selected.dataset.price) {
+                this.originalPrice = parseFloat(selected.dataset.price);
+                this.recalculateByPercent();
+            }
+        },
+        recalculateByPercent() {
+            if (this.originalPrice > 0 && this.discountPercent > 0) {
+                const discountAmount = (this.originalPrice * this.discountPercent) / 100;
+                this.dealPrice = (this.originalPrice - discountAmount).toFixed(2);
+            }
+        },
+        recalculateByPrice() {
+            if (this.originalPrice > 0 && this.dealPrice > 0) {
+                const diff = this.originalPrice - this.dealPrice;
+                if (diff > 0) {
+                    this.discountPercent = Math.round((diff / this.originalPrice) * 100);
+                }
+            }
+        }
+    };
 }
-
-function calculateDealPrice() {
-    var originalPrice = parseFloat(document.getElementById('original_price').value) || 0;
-    var discountPercent = parseInt(document.getElementById('discount_percent').value) || 0;
-    
-    var dealPrice = originalPrice - (originalPrice * discountPercent / 100);
-    document.getElementById('deal_price').value = dealPrice.toFixed(2);
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    if (document.getElementById('original_price').value) {
-        calculateDealPrice();
-    }
-});
 </script>
 @endsection

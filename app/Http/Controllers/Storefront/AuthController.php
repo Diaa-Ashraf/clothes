@@ -47,7 +47,7 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
 
-            session()->flash('success', __('تم تسجيل الدخول بنجاح! مرحباً بك في ألبان التوحيد.'));
+            session()->flash('success', __('تم تسجيل الدخول بنجاح! مرحباً بك في :site.', ['site' => settings('site_name', 'أزياء لافيستا')]));
 
             if (Auth::user()->isAdmin()) {
                 return redirect()->intended(route('admin.dashboard'));
@@ -104,7 +104,7 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->intended(route('site.home'))->with('success', __('أهلاً بك! تم إنشاء حسابك بنجاح في ألبان وسوبرماركت التوحيد.'));
+        return redirect()->intended(route('site.home'))->with('success', __('أهلاً بك! تم إنشاء حسابك بنجاح في :site.', ['site' => settings('site_name', 'أزياء لافيستا')]));
     }
 
     /**

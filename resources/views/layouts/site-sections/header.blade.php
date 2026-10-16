@@ -79,17 +79,9 @@ $waConciergeUrl = "https://wa.me/{$storePhone}?text=" . urlencode("مرحباً 
  </div>
  </div>
 
- {{-- Currency & Language Controls --}}
+ {{-- Currency --}}
  <div class="flex items-center gap-2 sm:gap-3 shrink-0">
- <span class="text-[9px] sm:text-[10px] font-bold text-[#18181B] bg-[#EADBCC] rounded-full px-2 py-0.5">USD ($)</span>
-
- <div class="flex items-center gap-1 text-[9px] sm:text-[10px]">
- @if(app()->getLocale() === 'ar')
- <a href="{{ route('change.language', 'en') }}" class="text-gray-200 hover:text-[#EADBCC] px-1 font-semibold">EN</a>
- @else
- <a href="{{ route('change.language', 'ar') }}" class="text-gray-200 hover:text-[#EADBCC] px-1 font-semibold">العربية</a>
- @endif
- </div>
+ <span class="text-[9px] sm:text-[10px] font-bold text-mocha bg-linen rounded-full px-2 py-0.5 border border-sand">ج.م (EGP)</span>
  </div>
  </div>
  </div>
@@ -336,7 +328,7 @@ $waConciergeUrl = "https://wa.me/{$storePhone}?text=" . urlencode("مرحباً 
  </a>
 
  <a href="{{ route('product.shop', ['featured' => 1]) }}" class="flex items-center gap-1.5 text-[#18181B] hover:text-white transition-colors shrink-0 font-extrabold">
- <span class="px-1.5 py-0.2 rounded-full bg-[#18181B] text-[#C5A059] text-[8px] sm:text-[9px] font-extrabold shadow-xs">⭐</span>
+ <span class="px-1.5 py-0.2 rounded-full bg-[#18181B] text-[#C5A059] text-[8px] sm:text-[9px] font-extrabold shadow-xs">VIP</span>
  <span>{{ __('مختارات مميزة') }}</span>
  </a>
 
@@ -403,7 +395,7 @@ $waConciergeUrl = "https://wa.me/{$storePhone}?text=" . urlencode("مرحباً 
  <span class="px-1.5 py-0.5 rounded-full bg-rose-600 text-white text-[9px] font-bold">{{ __('خصومات') }}</span>
  </a>
  <a href="{{ route('product.shop', ['featured' => 1]) }}" @click="mobileOpen = false" class="flex items-center justify-between p-2.5 rounded-xl hover:bg-white/10 text-amber-300">
- <span>⭐ {{ __('مختارات مميزة') }}</span>
+ <span>{{ __('مختارات مميزة') }}</span>
  </a>
  <a href="{{ route('wishlist.index') }}" @click="mobileOpen = false" class="flex items-center justify-between p-2.5 rounded-xl hover:bg-white/10 text-white">
  <span> {{ __('قائمة المفضلة') }}</span>

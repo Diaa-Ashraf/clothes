@@ -19,6 +19,9 @@ class StoreSettingRequest extends FormRequest
             'site_logo' => 'nullable|image|mimes:jpeg,png,jpg,webp,svg|max:3072',
             'site_favicon' => 'nullable|mimes:jpeg,png,jpg,webp,svg,ico|max:1024',
             'og_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072',
+            'remove_site_logo' => 'nullable|boolean',
+            'remove_site_favicon' => 'nullable|boolean',
+            'remove_og_image' => 'nullable|boolean',
         ];
     }
 

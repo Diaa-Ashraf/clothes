@@ -39,8 +39,14 @@ class SettingController extends Controller
     {
         $inputSettings = $request->validated()['settings'] ?? [];
 
-        // Handle site logo upload
-        if ($request->hasFile('site_logo')) {
+        // Handle site logo removal or upload
+        if ($request->boolean('remove_site_logo')) {
+            $oldLogo = Setting::where('key', 'site_logo')->value('value');
+            if ($oldLogo && Storage::disk('public')->exists($oldLogo)) {
+                Storage::disk('public')->delete($oldLogo);
+            }
+            $this->settingsService->set('site_logo', null, 'general', 'image');
+        } elseif ($request->hasFile('site_logo')) {
             $oldLogo = Setting::where('key', 'site_logo')->value('value');
             if ($oldLogo && Storage::disk('public')->exists($oldLogo)) {
                 Storage::disk('public')->delete($oldLogo);
@@ -50,8 +56,14 @@ class SettingController extends Controller
             $this->settingsService->set('site_logo', $logoPath, 'general', 'image');
         }
 
-        // Handle site favicon upload (browser tab icon)
-        if ($request->hasFile('site_favicon')) {
+        // Handle site favicon removal or upload (browser tab icon)
+        if ($request->boolean('remove_site_favicon')) {
+            $oldFavicon = Setting::where('key', 'site_favicon')->value('value');
+            if ($oldFavicon && Storage::disk('public')->exists($oldFavicon)) {
+                Storage::disk('public')->delete($oldFavicon);
+            }
+            $this->settingsService->set('site_favicon', null, 'general', 'image');
+        } elseif ($request->hasFile('site_favicon')) {
             $oldFavicon = Setting::where('key', 'site_favicon')->value('value');
             if ($oldFavicon && Storage::disk('public')->exists($oldFavicon)) {
                 Storage::disk('public')->delete($oldFavicon);
@@ -61,8 +73,14 @@ class SettingController extends Controller
             $this->settingsService->set('site_favicon', $faviconPath, 'general', 'image');
         }
 
-        // Handle OG Image upload (social sharing card)
-        if ($request->hasFile('og_image')) {
+        // Handle OG Image removal or upload (social sharing card)
+        if ($request->boolean('remove_og_image')) {
+            $oldOgImage = Setting::where('key', 'og_image')->value('value');
+            if ($oldOgImage && Storage::disk('public')->exists($oldOgImage)) {
+                Storage::disk('public')->delete($oldOgImage);
+            }
+            $this->settingsService->set('og_image', null, 'seo', 'image');
+        } elseif ($request->hasFile('og_image')) {
             $oldOgImage = Setting::where('key', 'og_image')->value('value');
             if ($oldOgImage && Storage::disk('public')->exists($oldOgImage)) {
                 Storage::disk('public')->delete($oldOgImage);

@@ -15,7 +15,7 @@ class AdminUserSeeder extends Seeder
         $admin = User::updateOrCreate(
             ['email' => 'admin@altawheed.com'],
             [
-                'name' => 'مدير ألبان التوحيد',
+                'name' => 'مدير أزياء لافيستا',
                 'password' => Hash::make($adminPassword),
                 'phone' => '01000000000',
                 'address' => 'العامرية، الإسكندرية',
